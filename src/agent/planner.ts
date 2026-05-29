@@ -1,0 +1,90 @@
+import { nanoid } from "nanoid";
+import { EngagementRunInput, RunStep } from "../domain/schemas.js";
+import { InputRequiredError } from "./input-required.js";
+
+export type PlannedRun = {
+  targetPath?: string;
+  repoTarget?: {
+    url: string;
+    branch?: string;
+  };
+  steps: RunStep[];
+};
+
+export function planRun(input: EngagementRunInput): PlannedRun {
+  if (input.template === "web-sast") {
+    const target = input.targets.find((item) => item.kind === "local_path" || item.kind === "repo");
+
+    if (!target) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "Web SAST needs either a local source path or an HTTPS GitHub repository URL.",
+        requiredFields: [
+          {
+            key: "targets[0].kind",
+            label: "Target type",
+            description: "Use local_path or repo."
+          },
+          {
+            key: "targets[0].url",
+            label: "GitHub repository URL",
+            description: "Required when target type is repo."
+          }
+        ],
+        resumeAction: "provide_missing_target",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    if (target.kind === "local_path" && !target.path) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "The local_path target is missing its path.",
+        requiredFields: [{ key: "targets[0].path", label: "Local path" }],
+        resumeAction: "provide_missing_target_path",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    if (target.kind === "repo" && !target.url) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "The repo target is missing its GitHub URL.",
+        requiredFields: [{ key: "targets[0].url", label: "GitHub repository URL" }],
+        resumeAction: "provide_missing_repo_url",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    return {
+      targetPath: target.kind === "local_path" ? target.path : undefined,
+      repoTarget: target.kind === "repo" && target.url ? { url: target.url, branch: target.branch } : undefined,
+      steps: [
+        {
+          stepId: `step_${nanoid(10)}`,
+          tool: "semgrep",
+          status: "planned",
+          reason: target.kind === "repo"
+            ? "Repository source code was supplied, so run offline Semgrep SAST after cloning."
+            : "Local source path was supplied, so run offline Semgrep SAST."
+        }
+      ]
+    };
+  }
+
+  if (input.template === "container-image") {
+    throw new InputRequiredError({
+      id: `input_${nanoid(10)}`,
+      status: "open",
+      question: "Container image scanning is not enabled yet. Provide a web-sast repo or local_path target for the current MVP.",
+      requiredFields: [{ key: "template", label: "Supported template" }],
+      resumeAction: "change_template",
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  throw new Error(`Unsupported template: ${input.template}`);
+}

@@ -1,0 +1,18 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_demo",
+  "template": "web-sast",
+  "targets": [
+    {
+      "kind": "local_path",
+      "path": "./samples/demo-app"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": [],
+    "maxDurationMinutes": 15,
+    "network": "none",
+    "tools": ["semgrep"]
+  }
+}

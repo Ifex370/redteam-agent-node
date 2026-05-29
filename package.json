@@ -1,0 +1,28 @@
+{
+  "name": "synapdome-redteam-agent-node",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:api": "tsx watch src/api/server.ts",
+    "dev:worker": "tsx watch src/worker/worker.ts",
+    "submit:sample": "tsx src/cli/submit-sample.ts samples/web-sast.engagement.json",
+    "build": "tsc -p tsconfig.json",
+    "start:api": "node dist/api/server.js",
+    "start:worker": "node dist/worker/worker.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "bullmq": "^5.34.2",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.8.5",
+    "ioredis": "^5.4.2",
+    "nanoid": "^5.0.9",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

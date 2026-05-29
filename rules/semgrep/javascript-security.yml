@@ -1,0 +1,19 @@
+rules:
+  - id: synapdome.javascript.express-reflected-xss
+    mode: taint
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: User-controlled request data is written directly to an HTTP response. Encode or sanitize the value before rendering it.
+    metadata:
+      category: security
+      cwe:
+        - "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      owasp:
+        - A03:2021 - Injection
+    pattern-sources:
+      - pattern: $REQ.query
+      - pattern: $REQ.body
+    pattern-sinks:
+      - pattern: $RES.send(...)

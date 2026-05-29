@@ -1,0 +1,24 @@
+import { config as loadEnv } from "dotenv";
+import { resolve } from "node:path";
+
+loadEnv();
+
+export const appConfig = {
+  redis: {
+    host: process.env.REDIS_HOST ?? "127.0.0.1",
+    port: Number(process.env.REDIS_PORT ?? "6379")
+  },
+  api: {
+    host: process.env.API_HOST ?? "127.0.0.1",
+    port: Number(process.env.API_PORT ?? "4400")
+  },
+  artifactRoot: resolve(process.env.ARTIFACT_ROOT ?? "./artifacts"),
+  workerConcurrency: Number(process.env.WORKER_CONCURRENCY ?? "1"),
+  runTimeoutMs: Number(process.env.RUN_TIMEOUT_MS ?? "900000"),
+  dockerNetwork: process.env.DOCKER_NETWORK ?? "none",
+  llm: {
+    enabled: process.env.AGENT_LLM_ENABLED === "true",
+    model: process.env.AGENT_LLM_MODEL ?? "gpt-5-mini",
+    hasApiKey: Boolean(process.env.OPENAI_API_KEY)
+  }
+};

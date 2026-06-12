@@ -59,6 +59,7 @@ export async function runSemgrep(params: {
     runId: params.runId,
     image: semgrepImage,
     name: "semgrep",
+    network: "none",
     mounts: [
       { hostPath: sourcePath, containerPath: "/src", readonly: true },
       { hostPath: rulesPath, containerPath: "/rules", readonly: true },

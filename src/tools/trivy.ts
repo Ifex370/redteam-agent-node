@@ -48,13 +48,16 @@ export async function runTrivyImageTar(params: {
   asset: string;
 }) {
   const outputDir = join(runArtifactDir(params.runId), "tool-outputs", "trivy");
+  const cacheDir = join(runArtifactDir(params.runId), "tool-cache", "trivy");
 
   const result = await runDockerTool({
     runId: params.runId,
     image: trivyImage,
     name: "trivy",
+    network: "bridge",
     mounts: [
       { hostPath: join(outputDir, "input"), containerPath: "/input" },
+      { hostPath: cacheDir, containerPath: "/root/.cache/trivy" },
       { hostPath: outputDir, containerPath: "/out" }
     ],
     args: [

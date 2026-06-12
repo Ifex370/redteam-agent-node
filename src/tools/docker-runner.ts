@@ -16,6 +16,7 @@ export async function runDockerTool(params: {
   name: string;
   mounts: Array<{ hostPath: string; containerPath: string; readonly?: boolean }>;
   args: string[];
+  network?: string;
   timeoutMs?: number;
 }) {
   const startedAt = new Date().toISOString();
@@ -25,7 +26,7 @@ export async function runDockerTool(params: {
     "--name",
     `${params.runId}-${params.name}`.replace(/[^a-zA-Z0-9_.-]/g, "-"),
     "--network",
-    appConfig.dockerNetwork
+    params.network ?? appConfig.dockerNetwork
   ];
 
   for (const mount of params.mounts) {

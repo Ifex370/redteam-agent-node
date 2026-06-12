@@ -1,7 +1,8 @@
 node_modules/
 dist/
 .env
-artifacts/
+.secrets/
+/artifacts/
 targets/
 .DS_Store
 *.log

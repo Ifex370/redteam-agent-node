@@ -1,0 +1,23 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_container_demo",
+  "template": "container-scan",
+  "targets": [
+    {
+      "kind": "container_image",
+      "fetchUrl": "https://app.example.com/redteam/agent-artifacts/tenant/upload-id?exp=1760000000000&sig=replace"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": [],
+    "maxDurationMinutes": 30,
+    "network": "none",
+    "tools": ["trivy-image"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/demo/events",
+    "runId": "synapdome-run-demo",
+    "tenantId": "tenant_demo"
+  }
+}

@@ -9,6 +9,8 @@ This repository starts as a local execution node for the Red Team Agents archite
 - Dockerized Semgrep execution
 - Normalized findings export
 - SynapDome export payload
+- Optional callback events to SynapDome/CyberNexus
+- Shared-secret API auth when `REDTEAM_AGENT_SECRET` is configured
 - SSE stream for live status/log/finding events
 
 The cloud customer backend can later submit the same engagement JSON shape to the local API and ingest the generated export bundle.
@@ -70,6 +72,12 @@ Submit DVWA directly from GitHub:
 npx tsx src/cli/submit-sample.ts samples/dvwa-github-sast.engagement.json
 ```
 
+Submit a container tarball scan using a signed fetch URL:
+
+```powershell
+npx tsx src/cli/submit-sample.ts samples/container-scan-fetchurl.engagement.json
+```
+
 Or submit through the API:
 
 ```powershell
@@ -96,7 +104,11 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:4400/runs/<runId>/input -Co
 
 ## Engagement Contract
 
-The first supported template is `web-sast`, and the first supported target types are `local_path` and `repo`.
+The first supported templates are `web-sast` and `container-scan`.
+
+`web-sast` supports `local_path` and `repo`.
+
+`container-scan` supports `container_image` with a signed `fetchUrl`.
 
 ```json
 {
@@ -165,6 +177,8 @@ artifacts/<runId>/
 
 - Runs require `policy.authorized: true`.
 - MVP SAST accepts local paths and HTTPS GitHub repository URLs.
+- Container scans accept signed image tarball URLs via `fetchUrl` and run Trivy.
+- If `REDTEAM_AGENT_SECRET` is configured, API calls require `X-Internal-Secret` and callbacks send `X-Agent-Secret`.
 - Git clone runs before Dockerized scanning; Semgrep still runs with container networking disabled.
 - Repo URLs cannot contain embedded credentials.
 - The orchestrator can pause runs as `awaiting_input` and emit a structured input request for the client prompt.

@@ -3,12 +3,19 @@ import { z } from "zod";
 export const targetSchema = z.object({
   kind: z.enum(["repo", "local_path", "url", "container_image"]),
   url: z.string().url().optional(),
+  fetchUrl: z.string().url().optional(),
   path: z.string().optional(),
   image: z.string().optional(),
   branch: z.string().optional()
 });
 
 export const providedInputSchema = z.record(z.unknown()).default({});
+
+export const callbackSchema = z.object({
+  url: z.string().url(),
+  runId: z.string().min(1),
+  tenantId: z.string().min(1)
+});
 
 export const policySchema = z.object({
   authorized: z.literal(true),
@@ -22,9 +29,10 @@ export const engagementRunSchema = z.object({
   tenantId: z.string().min(1),
   engagementId: z.string().min(1),
   runId: z.string().min(1).optional(),
-  template: z.enum(["web-sast", "container-image"]),
+  template: z.enum(["web-sast", "container-image", "container-scan"]),
   targets: z.array(targetSchema).min(1),
   policy: policySchema,
+  callback: callbackSchema.optional(),
   providedInputs: providedInputSchema.optional()
 });
 
@@ -34,6 +42,7 @@ export type NormalizedFinding = {
   id: string;
   source: string;
   tool: string;
+  summary?: Record<string, unknown>;
   title: string;
   severity: "critical" | "high" | "medium" | "low" | "info";
   category: string;

@@ -8,6 +8,10 @@ export type PlannedRun = {
     url: string;
     branch?: string;
   };
+  containerTarget?: {
+    fetchUrl?: string;
+    image?: string;
+  };
   steps: RunStep[];
 };
 
@@ -75,15 +79,51 @@ export function planRun(input: EngagementRunInput): PlannedRun {
     };
   }
 
-  if (input.template === "container-image") {
-    throw new InputRequiredError({
-      id: `input_${nanoid(10)}`,
-      status: "open",
-      question: "Container image scanning is not enabled yet. Provide a web-sast repo or local_path target for the current MVP.",
-      requiredFields: [{ key: "template", label: "Supported template" }],
-      resumeAction: "change_template",
-      createdAt: new Date().toISOString()
-    });
+  if (input.template === "container-image" || input.template === "container-scan") {
+    const target = input.targets.find((item) => item.kind === "container_image");
+    if (!target) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "Container scanning needs a container_image target with either fetchUrl or image.",
+        requiredFields: [
+          { key: "targets[0].kind", label: "Target type", description: "Use container_image." },
+          { key: "targets[0].fetchUrl", label: "Signed image tarball URL" }
+        ],
+        resumeAction: "provide_container_image",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    if (!target.fetchUrl) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "The container_image target is missing its signed fetchUrl.",
+        requiredFields: [
+          { key: "targets[0].fetchUrl", label: "Signed image tarball URL" }
+        ],
+        resumeAction: "provide_container_image_source",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    return {
+      containerTarget: {
+        fetchUrl: target.fetchUrl,
+        image: target.image
+      },
+      steps: [
+        {
+          stepId: `step_${nanoid(10)}`,
+          tool: "trivy-image",
+          status: "planned",
+          reason: target.fetchUrl
+            ? "Uploaded container image tarball was supplied, so download it and run Trivy image scanning."
+            : "Container image reference was supplied, so run Trivy image scanning."
+        }
+      ]
+    };
   }
 
   throw new Error(`Unsupported template: ${input.template}`);

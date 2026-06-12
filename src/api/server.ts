@@ -14,6 +14,15 @@ import { createRedisConnection } from "../queue/connection.js";
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true });
 
+app.addHook("preHandler", async (request, reply) => {
+  if (!appConfig.api.internalSecret || request.url === "/health") return;
+
+  const provided = request.headers["x-internal-secret"];
+  if (provided !== appConfig.api.internalSecret) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+});
+
 app.get("/health", async () => ({ ok: true }));
 
 app.post("/runs", async (request, reply) => {
@@ -67,6 +76,31 @@ app.post("/runs/:runId/input", async (request, reply) => {
     jobId: job.id,
     status: "queued",
     streamUrl: `/runs/${runId}/stream`
+  });
+});
+
+app.post("/runs/:runId/cancel", async (request, reply) => {
+  const { runId } = request.params as { runId: string };
+  const queue = createAgentQueue();
+  const job = await queue.getJob(runId);
+
+  if (!job) {
+    await queue.close();
+    return reply.code(404).send({ runId, status: "not_found" });
+  }
+
+  const state = await job.getState();
+  if (state === "waiting" || state === "delayed" || state === "prioritized") {
+    await job.remove();
+    await queue.close();
+    return reply.send({ runId, status: "cancelled" });
+  }
+
+  await queue.close();
+  return reply.code(202).send({
+    runId,
+    status: "cancel_requested",
+    message: `Run is ${state}; active container termination is best-effort and not implemented yet.`
   });
 });
 

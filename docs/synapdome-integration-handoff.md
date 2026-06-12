@@ -49,9 +49,12 @@ Currently supported:
 
 ```text
 template: web-sast
+template: container-scan
 target kind: repo
 target kind: local_path
+target kind: container_image with fetchUrl
 tool: semgrep
+tool: trivy-image
 ```
 
 For cloud integration, use `repo` targets.
@@ -120,6 +123,7 @@ Expected response:
 ```http
 POST /runs
 Content-Type: application/json
+X-Internal-Secret: <shared-secret>
 ```
 
 Example request:
@@ -142,6 +146,11 @@ Example request:
     "maxDurationMinutes": 15,
     "network": "none",
     "tools": ["semgrep"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",
+    "runId": "3b1f",
+    "tenantId": "tenant_demo"
   }
 }
 ```
@@ -156,6 +165,36 @@ Expected response:
   "streamUrl": "/runs/run_xxx/stream"
 }
 ```
+
+Container image tarball request:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_456",
+  "template": "container-scan",
+  "targets": [
+    {
+      "kind": "container_image",
+      "fetchUrl": "https://app.example.com/redteam/agent-artifacts/tenant/upload-id?exp=1760000000000&sig=replace"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": [],
+    "maxDurationMinutes": 30,
+    "network": "none",
+    "tools": ["trivy-image"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",
+    "runId": "3b1f",
+    "tenantId": "tenant_demo"
+  }
+}
+```
+
+For `container-scan`, the node downloads the signed `fetchUrl` without an auth header and scans the tarball with Trivy.
 
 ### Get Run Status And Summary
 
@@ -257,6 +296,7 @@ Resume request:
 ```http
 POST /runs/:runId/input
 Content-Type: application/json
+X-Internal-Secret: <shared-secret>
 ```
 
 Example body:
@@ -281,6 +321,92 @@ Expected response:
   "jobId": "run_xxx:resume:abc123",
   "status": "queued",
   "streamUrl": "/runs/run_xxx/stream"
+}
+```
+
+### Cancel A Run
+
+```http
+POST /runs/:runId/cancel
+X-Internal-Secret: <shared-secret>
+```
+
+This is best effort. Queued jobs are removed from the queue. Active container termination is not fully implemented yet.
+
+## Callback Events Sent By The Node
+
+When the submitted job contains `callback.url`, the node pushes lifecycle events to that URL.
+
+Every callback includes:
+
+```text
+X-Agent-Secret: <shared-secret>
+```
+
+Status callback:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "kind": "status",
+  "externalRunId": "3b1f",
+  "stepTemplateSlug": "web-sast",
+  "phase": "executing",
+  "message": "Run status changed to running_tool"
+}
+```
+
+Input request callback:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "kind": "input_request",
+  "externalRunId": "3b1f",
+  "stepTemplateSlug": "container-scan",
+  "inputRequest": {
+    "id": "input_abc",
+    "status": "open",
+    "question": "The container_image target is missing its signed fetchUrl.",
+    "requiredFields": [
+      {
+        "key": "targets[0].fetchUrl",
+        "label": "Signed image tarball URL"
+      }
+    ],
+    "resumeAction": "provide_container_image_source"
+  }
+}
+```
+
+Results callback:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "kind": "results",
+  "externalRunId": "3b1f",
+  "stepTemplateSlug": "web-sast",
+  "status": "succeeded",
+  "summary": {
+    "tool": "semgrep",
+    "durationMs": 84210,
+    "findingCount": 2,
+    "toolsRun": ["semgrep"]
+  },
+  "findings": []
+}
+```
+
+Error callback:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "kind": "error",
+  "externalRunId": "3b1f",
+  "stepTemplateSlug": "web-dast",
+  "error": "Target unreachable after retries."
 }
 ```
 
@@ -427,6 +553,7 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 API_HOST=0.0.0.0
 API_PORT=4400
+REDTEAM_AGENT_SECRET=<shared-secret>
 ARTIFACT_ROOT=/var/lib/synapdome-redteam/artifacts
 WORKER_CONCURRENCY=1
 RUN_TIMEOUT_MS=900000

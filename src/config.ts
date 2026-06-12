@@ -10,7 +10,8 @@ export const appConfig = {
   },
   api: {
     host: process.env.API_HOST ?? "127.0.0.1",
-    port: Number(process.env.API_PORT ?? "4400")
+    port: Number(process.env.API_PORT ?? "4400"),
+    internalSecret: process.env.REDTEAM_AGENT_SECRET ?? process.env.INTERNAL_AGENT_SECRET ?? ""
   },
   artifactRoot: resolve(process.env.ARTIFACT_ROOT ?? "./artifacts"),
   workerConcurrency: Number(process.env.WORKER_CONCURRENCY ?? "1"),

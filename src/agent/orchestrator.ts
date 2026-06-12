@@ -3,9 +3,12 @@ import { join } from "node:path";
 import { EngagementRunInput, RunSummary } from "../domain/schemas.js";
 import { ensureRunDirs, listArtifacts, runArtifactDir, writeFindingsExport, writeJsonArtifact } from "../artifacts/artifact-store.js";
 import { publishRunEvent } from "../events/run-events.js";
+import { sendErrorCallback, sendInputRequestCallback, sendResultsCallback, sendStatusCallback } from "../events/callback-events.js";
 import { assertRunIsAllowed } from "../security/safety-gate.js";
+import { downloadArtifact } from "../tools/fetch-artifact.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runSemgrep } from "../tools/semgrep.js";
+import { runTrivyImageTar } from "../tools/trivy.js";
 import { InputRequiredError, isInputRequiredError } from "./input-required.js";
 import { planRun } from "./planner.js";
 import { writeSynapDomeExport } from "./synapdome-exporter.js";
@@ -31,7 +34,13 @@ function createBaseSummary(input: EngagementRunInput, startedAt: string): RunSum
   };
 }
 
-async function writeStatus(summary: RunSummary, status: RunSummary["status"], data?: unknown) {
+function callbackPhase(status: RunSummary["status"]) {
+  if (status === "running_tool") return "executing";
+  if (status === "analyzing_results" || status === "normalizing") return "analyzing";
+  return status;
+}
+
+async function writeStatus(input: EngagementRunInput, summary: RunSummary, status: RunSummary["status"], data?: unknown) {
   summary.status = status;
   await publishRunEvent({
     runId: summary.runId,
@@ -39,6 +48,7 @@ async function writeStatus(summary: RunSummary, status: RunSummary["status"], da
     message: status,
     data: data ?? { status }
   });
+  await sendStatusCallback(input, callbackPhase(status), `Run status changed to ${status}`);
 }
 
 export async function processRun(input: EngagementRunInput) {
@@ -55,10 +65,10 @@ export async function processRun(input: EngagementRunInput) {
   const summary = createBaseSummary(input, startedAt);
 
   try {
-    await writeStatus(summary, "validating");
+    await writeStatus(input, summary, "validating");
     assertRunIsAllowed(input);
 
-    await writeStatus(summary, "planning");
+    await writeStatus(input, summary, "planning");
     const plan = planRun(input);
     summary.steps = plan.steps;
     await writeJsonArtifact(runId, "plan.json", plan);
@@ -75,7 +85,23 @@ export async function processRun(input: EngagementRunInput) {
       await writeJsonArtifact(runId, "workspace/repo-source.json", checkout);
     }
 
-    if (!targetPath) {
+    let imageTarPath: string | undefined;
+    let imageAsset = plan.containerTarget?.image ?? "container_image";
+    if (plan.containerTarget?.fetchUrl) {
+      imageTarPath = join(runArtifactDir(runId), "tool-outputs", "trivy", "input", "image.tar");
+      await downloadArtifact({
+        runId,
+        url: plan.containerTarget.fetchUrl,
+        destination: imageTarPath
+      });
+      imageAsset = plan.containerTarget.fetchUrl;
+      await writeJsonArtifact(runId, "workspace/container-source.json", {
+        fetchUrlHost: new URL(plan.containerTarget.fetchUrl).hostname,
+        downloadedTo: "tool-outputs/trivy/input/image.tar"
+      });
+    }
+
+    if (!targetPath && !imageTarPath) {
       throw new InputRequiredError({
         id: `input_missing_target_${Date.now()}`,
         status: "open",
@@ -87,26 +113,28 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (step.tool !== "semgrep") {
+      if (step.tool !== "semgrep" && step.tool !== "trivy-image") {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
       }
 
-      await writeStatus(summary, "running_tool", { status: "running_tool", step });
+      await writeStatus(input, summary, "running_tool", { status: "running_tool", step });
       step.status = "running";
       step.startedAt = new Date().toISOString();
 
-      const semgrepResult = await runSemgrep({ runId, targetPath });
+      const toolResult = step.tool === "semgrep"
+        ? await runSemgrep({ runId, targetPath: targetPath! })
+        : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
-      step.findingCount = semgrepResult.findings.length;
-      step.artifacts = semgrepResult.artifacts;
-      summary.toolsRun.push(semgrepResult.tool);
-      summary.findings.push(...semgrepResult.findings);
+      step.findingCount = toolResult.findings.length;
+      step.artifacts = toolResult.artifacts;
+      summary.toolsRun.push(toolResult.tool);
+      summary.findings.push(...toolResult.findings);
 
-      await writeStatus(summary, "analyzing_results", { status: "analyzing_results", step });
-      for (const finding of semgrepResult.findings) {
+      await writeStatus(input, summary, "analyzing_results", { status: "analyzing_results", step });
+      for (const finding of toolResult.findings) {
         await publishRunEvent({
           runId,
           type: "finding",
@@ -116,7 +144,7 @@ export async function processRun(input: EngagementRunInput) {
       }
     }
 
-    await writeStatus(summary, "normalizing");
+    await writeStatus(input, summary, "normalizing");
     summary.status = "succeeded";
     summary.completedAt = new Date().toISOString();
     summary.durationMs = Math.round(performance.now() - started);
@@ -132,6 +160,7 @@ export async function processRun(input: EngagementRunInput) {
       message: "Run completed",
       data: { status: summary.status, findingCount: summary.findingCount, exportKey: summary.synapdomeExportKey }
     });
+    await sendResultsCallback(input, summary);
     return summary;
   } catch (error) {
     summary.completedAt = new Date().toISOString();
@@ -149,6 +178,7 @@ export async function processRun(input: EngagementRunInput) {
         message: "awaiting_input",
         data: { status: "awaiting_input", inputRequest: error.request }
       });
+      await sendInputRequestCallback(input, error.request);
       return summary;
     }
 
@@ -163,6 +193,7 @@ export async function processRun(input: EngagementRunInput) {
     summary.artifacts = await listArtifacts(runId);
     await writeJsonArtifact(runId, "run-summary.json", summary);
     await publishRunEvent({ runId, type: "error", message: summary.error });
+    await sendErrorCallback(input, summary.error);
     throw error;
   }
 }

@@ -1,5 +1,6 @@
 import { appConfig } from "../config.js";
-import { EngagementRunInput, InputRequest, NormalizedFinding, RunSummary } from "../domain/schemas.js";
+import { createSynapDomeExport } from "../agent/synapdome-exporter.js";
+import { EngagementRunInput, InputRequest, RunSummary } from "../domain/schemas.js";
 
 type CallbackKind = "status" | "input_request" | "results" | "error";
 
@@ -52,22 +53,8 @@ export async function sendInputRequestCallback(input: EngagementRunInput, inputR
   });
 }
 
-function callbackFinding(finding: NormalizedFinding) {
-  return {
-    id: finding.id,
-    title: finding.title,
-    severity: finding.severity,
-    source: finding.source,
-    tool: finding.tool,
-    category: finding.category,
-    location: finding.location,
-    evidence: finding.evidence,
-    remediation: finding.remediation,
-    raw: finding.raw
-  };
-}
-
 export async function sendResultsCallback(input: EngagementRunInput, summary: RunSummary) {
+  const synapdomeExport = createSynapDomeExport(summary);
   const firstTool = summary.toolsRun[0];
   await postCallback(input, "results", {
     status: summary.status,
@@ -75,9 +62,14 @@ export async function sendResultsCallback(input: EngagementRunInput, summary: Ru
       tool: firstTool?.name,
       durationMs: summary.durationMs,
       findingCount: summary.findingCount,
-      toolsRun: summary.toolsRun.map((tool) => tool.name)
+      toolsRun: summary.toolsRun.map((tool) => tool.name),
+      bySeverity: synapdomeExport.summary.bySeverity
     },
-    findings: summary.findings.map(callbackFinding)
+    runId: summary.runId,
+    engagementId: summary.engagementId,
+    findings: synapdomeExport.findings,
+    artifacts: synapdomeExport.artifacts,
+    synapdomeExportKey: summary.synapdomeExportKey
   });
 }
 

@@ -1,15 +1,15 @@
 import { NormalizedFinding, RunSummary } from "../domain/schemas.js";
 import { writeJsonArtifact } from "../artifacts/artifact-store.js";
 
-function countBySeverity(findings: NormalizedFinding[]) {
+export function countBySeverity(findings: NormalizedFinding[]) {
   return findings.reduce<Record<string, number>>((acc, finding) => {
     acc[finding.severity] = (acc[finding.severity] ?? 0) + 1;
     return acc;
   }, {});
 }
 
-export async function writeSynapDomeExport(summary: RunSummary) {
-  const payload = {
+export function createSynapDomeExport(summary: RunSummary) {
+  return {
     tenantId: summary.tenantId,
     engagementId: summary.engagementId,
     runId: summary.runId,
@@ -37,7 +37,10 @@ export async function writeSynapDomeExport(summary: RunSummary) {
     })),
     artifacts: summary.artifacts
   };
+}
 
+export async function writeSynapDomeExport(summary: RunSummary) {
+  const payload = createSynapDomeExport(summary);
   await writeJsonArtifact(summary.runId, "exports/synapdome-export.json", payload);
   return "exports/synapdome-export.json";
 }

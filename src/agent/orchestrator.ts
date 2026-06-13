@@ -8,6 +8,7 @@ import { assertRunIsAllowed } from "../security/safety-gate.js";
 import { downloadArtifact } from "../tools/fetch-artifact.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runSemgrep } from "../tools/semgrep.js";
+import { runTruffleHog } from "../tools/trufflehog.js";
 import { runTrivyImageTar } from "../tools/trivy.js";
 import { InputRequiredError, isInputRequiredError } from "./input-required.js";
 import { planRun } from "./planner.js";
@@ -113,7 +114,7 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (step.tool !== "semgrep" && step.tool !== "trivy-image") {
+      if (step.tool !== "semgrep" && step.tool !== "trufflehog" && step.tool !== "trivy-image") {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
@@ -125,7 +126,9 @@ export async function processRun(input: EngagementRunInput) {
 
       const toolResult = step.tool === "semgrep"
         ? await runSemgrep({ runId, targetPath: targetPath! })
-        : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
+        : step.tool === "trufflehog"
+          ? await runTruffleHog({ runId, targetPath: targetPath! })
+          : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
       step.findingCount = toolResult.findings.length;

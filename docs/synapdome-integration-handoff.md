@@ -54,6 +54,7 @@ target kind: repo
 target kind: local_path
 target kind: container_image with fetchUrl
 tool: semgrep
+tool: trufflehog
 tool: trivy-image
 ```
 
@@ -163,6 +164,64 @@ Expected response:
   "jobId": "run_xxx",
   "status": "queued",
   "streamUrl": "/runs/run_xxx/stream"
+}
+```
+
+Secrets-only source scan request:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_dvwa_github_secrets",
+  "template": "web-sast",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/digininja/DVWA.git",
+      "branch": "master"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 15,
+    "network": "none",
+    "tools": ["trufflehog"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",
+    "runId": "3b1f",
+    "tenantId": "tenant_demo"
+  }
+}
+```
+
+Combined SAST and secrets request:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_dvwa_github_sast_and_secrets",
+  "template": "web-sast",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/digininja/DVWA.git",
+      "branch": "master"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 15,
+    "network": "none",
+    "tools": ["semgrep", "trufflehog"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",
+    "runId": "3b1f",
+    "tenantId": "tenant_demo"
+  }
 }
 ```
 

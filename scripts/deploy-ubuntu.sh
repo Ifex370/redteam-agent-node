@@ -73,6 +73,7 @@ npm run build
 echo "[8/9] Starting Redis and warming scanner images"
 sudo docker compose up -d redis
 sudo docker pull semgrep/semgrep:1.99.0
+sudo docker pull trufflesecurity/trufflehog:latest
 sudo docker pull aquasec/trivy:0.58.1
 
 echo "[9/9] Starting PM2 services"

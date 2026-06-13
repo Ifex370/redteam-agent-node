@@ -15,6 +15,24 @@ export type PlannedRun = {
   steps: RunStep[];
 };
 
+function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "repo"): RunStep[] {
+  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["semgrep"];
+  const supportedTools = requestedTools.filter((tool) => tool === "semgrep" || tool === "trufflehog");
+
+  if (supportedTools.length === 0) {
+    throw new Error(`No supported web-sast tools requested. Supported tools: semgrep, trufflehog.`);
+  }
+
+  return supportedTools.map((tool) => ({
+    stepId: `step_${nanoid(10)}`,
+    tool,
+    status: "planned",
+    reason: targetKind === "repo"
+      ? `Repository source code was supplied, so run ${tool} after cloning.`
+      : `Local source path was supplied, so run ${tool}.`
+  }));
+}
+
 export function planRun(input: EngagementRunInput): PlannedRun {
   if (input.template === "web-sast") {
     const target = input.targets.find((item) => item.kind === "local_path" || item.kind === "repo");
@@ -66,16 +84,7 @@ export function planRun(input: EngagementRunInput): PlannedRun {
     return {
       targetPath: target.kind === "local_path" ? target.path : undefined,
       repoTarget: target.kind === "repo" && target.url ? { url: target.url, branch: target.branch } : undefined,
-      steps: [
-        {
-          stepId: `step_${nanoid(10)}`,
-          tool: "semgrep",
-          status: "planned",
-          reason: target.kind === "repo"
-            ? "Repository source code was supplied, so run offline Semgrep SAST after cloning."
-            : "Local source path was supplied, so run offline Semgrep SAST."
-        }
-      ]
+      steps: webSastSteps(input, target.kind as "local_path" | "repo")
     };
   }
 

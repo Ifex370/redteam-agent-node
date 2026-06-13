@@ -6,7 +6,7 @@ This repository starts as a local execution node for the Red Team Agents archite
 - Dedicated worker process
 - Bounded deterministic agent orchestrator
 - Per-run artifact folders
-- Dockerized Semgrep execution
+- Dockerized Semgrep and TruffleHog execution
 - Normalized findings export
 - SynapDome export payload
 - Optional callback events to SynapDome/CyberNexus
@@ -108,6 +108,13 @@ The first supported templates are `web-sast` and `container-scan`.
 
 `web-sast` supports `local_path` and `repo`.
 
+Supported `web-sast` tools:
+
+```text
+semgrep
+trufflehog
+```
+
 `container-scan` supports `container_image` with a signed `fetchUrl`.
 
 ```json
@@ -127,6 +134,30 @@ The first supported templates are `web-sast` and `container-scan`.
     "maxDurationMinutes": 15,
     "network": "none",
     "tools": ["semgrep"]
+  }
+}
+```
+
+Secrets-only GitHub repo target:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_dvwa_github_secrets",
+  "template": "web-sast",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/digininja/DVWA.git",
+      "branch": "master"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 15,
+    "network": "none",
+    "tools": ["trufflehog"]
   }
 }
 ```
@@ -171,6 +202,10 @@ artifacts/<runId>/
       semgrep.sarif
       stdout.log
       stderr.log
+    trufflehog/
+      trufflehog.jsonl
+      stdout.log
+      stderr.log
 ```
 
 ## Current Guardrails
@@ -179,11 +214,12 @@ artifacts/<runId>/
 - MVP SAST accepts local paths and HTTPS GitHub repository URLs.
 - Container scans accept signed image tarball URLs via `fetchUrl` and run Trivy.
 - If `REDTEAM_AGENT_SECRET` is configured, API calls require `X-Internal-Secret` and callbacks send `X-Agent-Secret`.
-- Git clone runs before Dockerized scanning; Semgrep still runs with container networking disabled.
+- Git clone runs before Dockerized scanning; Semgrep and TruffleHog run with container networking disabled.
 - Repo URLs cannot contain embedded credentials.
 - The orchestrator can pause runs as `awaiting_input` and emit a structured input request for the client prompt.
 - LLM planning is disabled by default. Set `AGENT_LLM_ENABLED=true`, `AGENT_LLM_MODEL`, and `OPENAI_API_KEY` later when adding model-backed planning/analysis.
 - Semgrep uses bundled local rules under `rules/semgrep`, so it works with container networking disabled.
+- TruffleHog runs in filesystem mode against the cloned source and stores redacted secret evidence only in normalized findings.
 - The bundled PHP rules include DVWA-oriented checks for reflected XSS, SQL injection, command injection, file inclusion, weak hashing, loose comparisons, and hardcoded credentials.
 - Docker is launched with `--network none` by default.
 - Worker concurrency defaults to `1`.
@@ -192,7 +228,7 @@ artifacts/<runId>/
 ## Next Build Steps
 
 1. Add a local run registry table or SQLite store if file summaries become too limiting.
-2. Add TruffleHog and Trivy adapters to the `web-sast` template.
+2. Add dependency scanning adapters to the `web-sast` template.
 3. Add a webhook/export client that POSTs `exports/synapdome-export.json` back to the customer backend.
 4. Add cancel support that terminates a running Docker container by run id.
 5. Add model-backed planner/analyzer using the same deterministic tool whitelist.

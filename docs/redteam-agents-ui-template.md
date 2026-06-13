@@ -281,7 +281,7 @@ Suggested current status:
 ```text
 Semgrep: Available
 Trivy Container Image Scan: Available
-TruffleHog: Coming Soon
+TruffleHog: Available
 CodeQL: Coming Soon
 Grype: Coming Soon
 Snyk: Requires Setup
@@ -347,6 +347,39 @@ Expected immediate response:
   "streamUrl": "/runs/run_xxx/stream"
 }
 ```
+
+## Current Working TruffleHog Payload
+
+Use this as the first frontend integration test for source-code secret scanning.
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_dvwa_github_secrets",
+  "template": "web-sast",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/digininja/DVWA.git",
+      "branch": "master"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 15,
+    "network": "none",
+    "tools": ["trufflehog"]
+  },
+  "callback": {
+    "url": "https://YOUR-SYNAPDOME-SERVER/api/redteam/agents/callback/runs/TENANT_ID/RUN_ID/events",
+    "runId": "client_run_dvwa_trufflehog_001",
+    "tenantId": "tenant_demo"
+  }
+}
+```
+
+Use `tools: ["semgrep", "trufflehog"]` when the user selects both Source Code Analysis and Secret Scanning for the same repository.
 
 ## Callback Events
 
@@ -461,6 +494,17 @@ const agentTools: AgentTool[] = [
     status: "available",
     template: "web-sast",
     toolId: "semgrep",
+    supportedInputs: ["GitHub repo URL", "branch"]
+  },
+  {
+    id: "trufflehog",
+    name: "TruffleHog",
+    domain: "supply-chain",
+    group: "Source Code Analysis",
+    description: "Secret scanning for exposed credentials and tokens in source code.",
+    status: "available",
+    template: "web-sast",
+    toolId: "trufflehog",
     supportedInputs: ["GitHub repo URL", "branch"]
   },
   {

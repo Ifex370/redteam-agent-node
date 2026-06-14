@@ -306,7 +306,7 @@ Use this as the first frontend integration test.
 {
   "tenantId": "tenant_demo",
   "engagementId": "engagement_dvwa_github",
-  "template": "web-sast",
+    "template": "secrets-scan",
   "targets": [
     {
       "kind": "repo",
@@ -379,7 +379,7 @@ Use this as the first frontend integration test for source-code secret scanning.
 }
 ```
 
-Use `tools: ["semgrep", "trufflehog"]` when the user selects both Source Code Analysis and Secret Scanning for the same repository.
+Use `template: "secrets-scan"` for TruffleHog-only secret scanning. Use `template: "web-sast"` with `tools: ["semgrep", "trufflehog"]` when the user selects both Source Code Analysis and Secret Scanning for the same repository.
 
 ## Callback Events
 
@@ -492,7 +492,7 @@ const agentTools: AgentTool[] = [
     group: "Source Code Analysis",
     description: "Source code SAST for insecure patterns and vulnerable code paths.",
     status: "available",
-    template: "web-sast",
+    template: "secrets-scan",
     toolId: "semgrep",
     supportedInputs: ["GitHub repo URL", "branch"]
   },

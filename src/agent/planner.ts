@@ -16,11 +16,14 @@ export type PlannedRun = {
 };
 
 function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "repo"): RunStep[] {
-  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["semgrep"];
+  const defaultTools = input.template === "secrets-scan" ? ["trufflehog"] : ["semgrep"];
+  const requestedTools = input.template === "secrets-scan"
+    ? ["trufflehog"]
+    : input.policy.tools.length > 0 ? input.policy.tools : defaultTools;
   const supportedTools = requestedTools.filter((tool) => tool === "semgrep" || tool === "trufflehog");
 
   if (supportedTools.length === 0) {
-    throw new Error(`No supported web-sast tools requested. Supported tools: semgrep, trufflehog.`);
+    throw new Error(`No supported ${input.template} tools requested. Supported tools: semgrep, trufflehog.`);
   }
 
   return supportedTools.map((tool) => ({
@@ -34,14 +37,14 @@ function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "rep
 }
 
 export function planRun(input: EngagementRunInput): PlannedRun {
-  if (input.template === "web-sast") {
+  if (input.template === "web-sast" || input.template === "secrets-scan") {
     const target = input.targets.find((item) => item.kind === "local_path" || item.kind === "repo");
 
     if (!target) {
       throw new InputRequiredError({
         id: `input_${nanoid(10)}`,
         status: "open",
-        question: "Web SAST needs either a local source path or an HTTPS GitHub repository URL.",
+        question: `${input.template} needs either a local source path or an HTTPS GitHub repository URL.`,
         requiredFields: [
           {
             key: "targets[0].kind",

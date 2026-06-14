@@ -49,6 +49,7 @@ Currently supported:
 
 ```text
 template: web-sast
+template: secrets-scan
 template: container-scan
 target kind: repo
 target kind: local_path
@@ -57,6 +58,8 @@ tool: semgrep
 tool: trufflehog
 tool: trivy-image
 ```
+
+`secrets-scan` is a compatibility template for source-code secret scanning. It uses repo/local_path targets and runs TruffleHog by default.
 
 For cloud integration, use `repo` targets.
 
@@ -173,7 +176,7 @@ Secrets-only source scan request:
 {
   "tenantId": "tenant_demo",
   "engagementId": "engagement_dvwa_github_secrets",
-  "template": "web-sast",
+  "template": "secrets-scan",
   "targets": [
     {
       "kind": "repo",

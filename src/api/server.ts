@@ -4,6 +4,7 @@ import { createReadStream } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { nanoid } from "nanoid";
+import { ZodError } from "zod";
 import { appConfig } from "../config.js";
 import { readRunSummary, runArtifactDir, writeJsonArtifact } from "../artifacts/artifact-store.js";
 import { engagementRunSchema } from "../domain/schemas.js";
@@ -13,6 +14,17 @@ import { createRedisConnection } from "../queue/connection.js";
 
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true });
+
+app.setErrorHandler((error, _request, reply) => {
+  if (error instanceof ZodError) {
+    return reply.code(400).send({
+      error: "Bad Request",
+      message: error.issues
+    });
+  }
+
+  return reply.send(error);
+});
 
 app.addHook("preHandler", async (request, reply) => {
   if (!appConfig.api.internalSecret || request.url === "/health") return;

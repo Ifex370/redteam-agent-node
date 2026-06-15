@@ -17,6 +17,9 @@ export const appConfig = {
   workerConcurrency: Number(process.env.WORKER_CONCURRENCY ?? "1"),
   runTimeoutMs: Number(process.env.RUN_TIMEOUT_MS ?? "900000"),
   dockerNetwork: process.env.DOCKER_NETWORK ?? "none",
+  codeql: {
+    cliPath: process.env.CODEQL_CLI_PATH ?? "codeql"
+  },
   llm: {
     enabled: process.env.AGENT_LLM_ENABLED === "true",
     model: process.env.AGENT_LLM_MODEL ?? "gpt-5-mini",

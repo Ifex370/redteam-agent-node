@@ -6,6 +6,7 @@ import { publishRunEvent } from "../events/run-events.js";
 import { sendErrorCallback, sendInputRequestCallback, sendResultsCallback, sendStatusCallback } from "../events/callback-events.js";
 import { assertRunIsAllowed } from "../security/safety-gate.js";
 import { downloadArtifact } from "../tools/fetch-artifact.js";
+import { runCodeQl } from "../tools/codeql.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runSemgrep } from "../tools/semgrep.js";
 import { runTruffleHog } from "../tools/trufflehog.js";
@@ -115,7 +116,7 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (step.tool !== "semgrep" && step.tool !== "trufflehog" && step.tool !== "trivy-image") {
+      if (step.tool !== "semgrep" && step.tool !== "trufflehog" && step.tool !== "codeql" && step.tool !== "trivy-image") {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
@@ -134,7 +135,9 @@ export async function processRun(input: EngagementRunInput) {
             scanMode: input.template === "secrets-scan" && Boolean(plan.repoTarget) ? "git" : "filesystem",
             source: `agent:${input.template}`
           })
-          : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
+          : step.tool === "codeql"
+            ? await runCodeQl({ runId, targetPath: targetPath! })
+            : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
       step.findingCount = toolResult.findings.length;

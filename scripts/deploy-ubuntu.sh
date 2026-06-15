@@ -7,28 +7,31 @@ REPO_URL="https://github.com/Ifex370/redteam-agent-node.git"
 BRANCH="main"
 APP_USER="${APP_USER:-ubuntu}"
 
-echo "[1/9] Installing system dependencies"
+CODEQL_ROOT="/opt/codeql"
+CODEQL_CLI="$CODEQL_ROOT/codeql/codeql"
+
+echo "[1/10] Installing system dependencies"
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg git docker.io openssl
 if ! docker compose version >/dev/null 2>&1; then
   sudo apt-get install -y docker-compose-v2
 fi
 
-echo "[2/9] Installing Node.js 20 if needed"
+echo "[2/10] Installing Node.js 20 if needed"
 if ! command -v node >/dev/null 2>&1 || ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 20 ? 0 : 1)' >/dev/null 2>&1; then
   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
   sudo apt-get install -y nodejs
 fi
 
-echo "[3/9] Enabling Docker"
+echo "[3/10] Enabling Docker"
 sudo systemctl enable --now docker
 sudo usermod -aG docker "$APP_USER"
 
-echo "[4/9] Preparing directories"
-sudo mkdir -p "$APP_DIR" "$ARTIFACT_ROOT"
-sudo chown -R "$APP_USER:$APP_USER" "$APP_DIR" /var/lib/synapdome-redteam
+echo "[4/10] Preparing directories"
+sudo mkdir -p "$APP_DIR" "$ARTIFACT_ROOT" "$CODEQL_ROOT"
+sudo chown -R "$APP_USER:$APP_USER" "$APP_DIR" /var/lib/synapdome-redteam "$CODEQL_ROOT"
 
-echo "[5/9] Fetching application"
+echo "[5/10] Fetching application"
 if [ -d "$APP_DIR/.git" ]; then
   git -C "$APP_DIR" fetch origin
   git -C "$APP_DIR" checkout "$BRANCH"
@@ -39,7 +42,16 @@ fi
 
 cd "$APP_DIR"
 
-echo "[6/9] Configuring environment"
+echo "[6/10] Installing CodeQL CLI if needed"
+if [ ! -x "$CODEQL_CLI" ]; then
+  CODEQL_ARCHIVE="/tmp/codeql-bundle-linux64.tar.gz"
+  curl -fsSL "https://github.com/github/codeql-action/releases/latest/download/codeql-bundle-linux64.tar.gz" -o "$CODEQL_ARCHIVE"
+  rm -rf "$CODEQL_ROOT/codeql"
+  tar -xzf "$CODEQL_ARCHIVE" -C "$CODEQL_ROOT"
+fi
+"$CODEQL_CLI" version
+
+echo "[7/10] Configuring environment"
 if [ ! -f .env ]; then
   cp .env.example .env
 fi
@@ -59,6 +71,7 @@ ARTIFACT_ROOT=$ARTIFACT_ROOT
 WORKER_CONCURRENCY=1
 RUN_TIMEOUT_MS=900000
 DOCKER_NETWORK=none
+CODEQL_CLI_PATH=$CODEQL_CLI
 AGENT_LLM_ENABLED=false
 AGENT_LLM_MODEL=gpt-5-mini
 OPENAI_API_KEY=
@@ -66,17 +79,17 @@ EOF
 
 chmod 600 .env
 
-echo "[7/9] Installing app dependencies and building"
+echo "[8/10] Installing app dependencies and building"
 npm ci
 npm run build
 
-echo "[8/9] Starting Redis and warming scanner images"
+echo "[9/10] Starting Redis and warming scanner images"
 sudo docker compose up -d redis
 sudo docker pull semgrep/semgrep:1.99.0
 sudo docker pull trufflesecurity/trufflehog:latest
 sudo docker pull aquasec/trivy:0.58.1
 
-echo "[9/9] Starting PM2 services"
+echo "[10/10] Starting PM2 services"
 sudo npm install -g pm2
 pm2 delete synapdome-agent-api >/dev/null 2>&1 || true
 pm2 delete synapdome-agent-worker >/dev/null 2>&1 || true

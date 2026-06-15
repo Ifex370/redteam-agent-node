@@ -21,10 +21,10 @@ function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "rep
   const requestedTools = input.template === "secrets-scan"
     ? ["trufflehog"]
     : input.policy.tools.length > 0 ? input.policy.tools : defaultTools;
-  const supportedTools = requestedTools.filter((tool) => tool === "semgrep" || tool === "trufflehog");
+  const supportedTools = requestedTools.filter((tool) => tool === "semgrep" || tool === "trufflehog" || tool === "codeql");
 
   if (supportedTools.length === 0) {
-    throw new Error(`No supported ${input.template} tools requested. Supported tools: semgrep, trufflehog.`);
+    throw new Error(`No supported ${input.template} tools requested. Supported tools: semgrep, trufflehog, codeql.`);
   }
 
   return supportedTools.map((tool) => ({

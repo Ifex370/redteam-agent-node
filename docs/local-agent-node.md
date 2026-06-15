@@ -113,7 +113,10 @@ Supported `web-sast` tools:
 ```text
 semgrep
 trufflehog
+codeql
 ```
+
+CodeQL currently supports JavaScript/TypeScript and Python in the local agent node. Compiled-language CodeQL support should be added with explicit build-command inputs.
 
 `container-scan` supports `container_image` with a signed `fetchUrl`.
 

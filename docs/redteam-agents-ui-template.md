@@ -282,7 +282,7 @@ Suggested current status:
 Semgrep: Available
 Trivy Container Image Scan: Available
 TruffleHog: Available
-CodeQL: Coming Soon
+CodeQL: Available
 Grype: Coming Soon
 Snyk: Requires Setup
 Checkov: Coming Soon
@@ -380,6 +380,37 @@ Use this as the first frontend integration test for source-code secret scanning.
 ```
 
 Use `template: "secrets-scan"` for TruffleHog-only secret scanning. Repo targets run a full-history Git scan. Use `template: "web-sast"` with `tools: ["semgrep", "trufflehog"]` when the user selects both Source Code Analysis and current-checkout Secret Scanning for the same repository.
+
+## Current Working CodeQL Payload
+
+Use this for CodeQL source analysis. Current supported languages are JavaScript/TypeScript and Python.
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_codeql_github",
+  "template": "web-sast",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/Ifex370/redteam-agent-node.git",
+      "branch": "main"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 30,
+    "network": "none",
+    "tools": ["codeql"]
+  },
+  "callback": {
+    "url": "https://YOUR-SYNAPDOME-SERVER/api/redteam/agents/callback/runs/TENANT_ID/RUN_ID/events",
+    "runId": "client_run_codeql_001",
+    "tenantId": "tenant_demo"
+  }
+}
+```
 
 ## Callback Events
 
@@ -505,6 +536,17 @@ const agentTools: AgentTool[] = [
     status: "available",
     template: "web-sast",
     toolId: "trufflehog",
+    supportedInputs: ["GitHub repo URL", "branch"]
+  },
+  {
+    id: "codeql",
+    name: "CodeQL",
+    domain: "supply-chain",
+    group: "Source Code Analysis",
+    description: "Semantic source analysis for deeper code vulnerabilities.",
+    status: "available",
+    template: "web-sast",
+    toolId: "codeql",
     supportedInputs: ["GitHub repo URL", "branch"]
   },
   {

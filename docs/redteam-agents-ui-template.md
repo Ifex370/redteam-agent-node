@@ -379,7 +379,7 @@ Use this as the first frontend integration test for source-code secret scanning.
 }
 ```
 
-Use `template: "secrets-scan"` for TruffleHog-only secret scanning. Use `template: "web-sast"` with `tools: ["semgrep", "trufflehog"]` when the user selects both Source Code Analysis and Secret Scanning for the same repository.
+Use `template: "secrets-scan"` for TruffleHog-only secret scanning. Repo targets run a full-history Git scan. Use `template: "web-sast"` with `tools: ["semgrep", "trufflehog"]` when the user selects both Source Code Analysis and current-checkout Secret Scanning for the same repository.
 
 ## Callback Events
 

@@ -71,9 +71,13 @@ function parseJsonLines(stdout: string) {
 export async function runTruffleHog(params: {
   runId: string;
   targetPath: string;
+  scanMode?: "filesystem" | "git";
+  source?: string;
 }) {
   const outputDir = join(runArtifactDir(params.runId), "tool-outputs", "trufflehog");
   const sourcePath = resolve(params.targetPath);
+  const scanMode = params.scanMode ?? "filesystem";
+  const scanTarget = scanMode === "git" ? "file:///src" : "/src";
 
   const result = await runDockerTool({
     runId: params.runId,
@@ -84,7 +88,7 @@ export async function runTruffleHog(params: {
       { hostPath: sourcePath, containerPath: "/src", readonly: true },
       { hostPath: outputDir, containerPath: "/out" }
     ],
-    args: ["filesystem", "/src", "--json", "--no-update"]
+    args: [scanMode, scanTarget, "--json", "--no-update"]
   });
 
   await writeTextArtifact(params.runId, "tool-outputs/trufflehog/trufflehog.jsonl", result.stdout);
@@ -102,7 +106,7 @@ export async function runTruffleHog(params: {
 
   return {
     tool: result.meta,
-    findings: normalizeTruffleHogResults(parsed.findings, sourcePath),
+    findings: normalizeTruffleHogResults(parsed.findings, sourcePath, params.source),
     artifacts: [
       "tool-outputs/trufflehog/trufflehog.jsonl",
       "tool-outputs/trufflehog/stdout.log",
@@ -111,7 +115,7 @@ export async function runTruffleHog(params: {
   };
 }
 
-export function normalizeTruffleHogResults(results: TruffleHogResult[], asset: string): NormalizedFinding[] {
+export function normalizeTruffleHogResults(results: TruffleHogResult[], asset: string, source = "agent:web-sast"): NormalizedFinding[] {
   return results.map((result) => {
     const detector = result.DetectorName ?? "Secret";
     const verifiedLabel = result.Verified ? "verified" : "unverified";
@@ -119,7 +123,7 @@ export function normalizeTruffleHogResults(results: TruffleHogResult[], asset: s
 
     return {
       id: `finding_${nanoid(12)}`,
-      source: "agent:web-sast",
+      source,
       tool: "trufflehog",
       title: `TruffleHog ${verifiedLabel} secret: ${detector}`,
       severity: result.Verified ? "high" : "medium",

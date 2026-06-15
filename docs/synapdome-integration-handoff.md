@@ -59,7 +59,7 @@ tool: trufflehog
 tool: trivy-image
 ```
 
-`secrets-scan` is a compatibility template for source-code secret scanning. It uses repo/local_path targets and runs TruffleHog by default.
+`secrets-scan` is a compatibility template for source-code secret scanning. It uses repo/local_path targets and runs TruffleHog by default. For repo targets, it performs a full-history Git scan. For local_path targets, it scans the supplied filesystem path.
 
 For cloud integration, use `repo` targets.
 

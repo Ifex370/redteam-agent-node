@@ -40,13 +40,17 @@ export async function cloneGitRepo(params: {
   url: string;
   branch?: string;
   destination: string;
+  depth?: number;
 }) {
   assertHttpsGitUrl(params.url);
   assertSafeBranch(params.branch);
 
   await mkdir(dirname(params.destination), { recursive: true });
   const startedAt = new Date().toISOString();
-  const args = ["clone", "--depth", "1"];
+  const args = ["clone"];
+  if (params.depth && params.depth > 0) {
+    args.push("--depth", String(params.depth));
+  }
   if (params.branch) {
     args.push("--branch", params.branch);
   }

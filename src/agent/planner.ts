@@ -7,6 +7,7 @@ export type PlannedRun = {
   repoTarget?: {
     url: string;
     branch?: string;
+    fullHistory?: boolean;
   };
   containerTarget?: {
     fetchUrl?: string;
@@ -86,7 +87,11 @@ export function planRun(input: EngagementRunInput): PlannedRun {
 
     return {
       targetPath: target.kind === "local_path" ? target.path : undefined,
-      repoTarget: target.kind === "repo" && target.url ? { url: target.url, branch: target.branch } : undefined,
+      repoTarget: target.kind === "repo" && target.url ? {
+        url: target.url,
+        branch: target.branch,
+        fullHistory: input.template === "secrets-scan"
+      } : undefined,
       steps: webSastSteps(input, target.kind as "local_path" | "repo")
     };
   }

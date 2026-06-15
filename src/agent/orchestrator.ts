@@ -80,7 +80,8 @@ export async function processRun(input: EngagementRunInput) {
         runId,
         url: plan.repoTarget.url,
         branch: plan.repoTarget.branch,
-        destination: join(runArtifactDir(runId), "workspace", "repo")
+        destination: join(runArtifactDir(runId), "workspace", "repo"),
+        depth: plan.repoTarget.fullHistory ? undefined : 1
       });
       targetPath = checkout.path;
       await writeJsonArtifact(runId, "workspace/repo-source.json", checkout);
@@ -127,7 +128,12 @@ export async function processRun(input: EngagementRunInput) {
       const toolResult = step.tool === "semgrep"
         ? await runSemgrep({ runId, targetPath: targetPath! })
         : step.tool === "trufflehog"
-          ? await runTruffleHog({ runId, targetPath: targetPath! })
+          ? await runTruffleHog({
+            runId,
+            targetPath: targetPath!,
+            scanMode: input.template === "secrets-scan" && Boolean(plan.repoTarget) ? "git" : "filesystem",
+            source: `agent:${input.template}`
+          })
           : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();

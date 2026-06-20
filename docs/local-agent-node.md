@@ -118,7 +118,7 @@ codeql
 
 CodeQL currently supports JavaScript/TypeScript and Python in the local agent node. Compiled-language CodeQL support should be added with explicit build-command inputs.
 
-`dependency-scan` supports `local_path` and `repo` targets and runs Trivy against dependency manifests and lockfiles.
+`dependency-scan` supports `local_path` and `repo` targets. Supported tools are `trivy` and `grype`; either tool or both can scan dependency manifests and lockfiles.
 
 `container-scan` supports `container_image` with a signed `fetchUrl`.
 

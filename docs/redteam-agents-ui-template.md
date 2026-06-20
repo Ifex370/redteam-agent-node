@@ -281,6 +281,7 @@ Suggested current status:
 ```text
 Semgrep: Available
 Trivy Dependency Analysis: Available
+Grype: Available
 Trivy Container Image Scan: Available
 TruffleHog: Available
 CodeQL: Available
@@ -559,6 +560,17 @@ const agentTools: AgentTool[] = [
     status: "available",
     template: "dependency-scan",
     toolId: "trivy",
+    supportedInputs: ["GitHub repo URL", "branch"]
+  },
+  {
+    id: "grype-dependencies",
+    name: "Grype",
+    domain: "supply-chain",
+    group: "Dependency Analysis",
+    description: "Open source vulnerability matching for repository dependencies and lockfiles.",
+    status: "available",
+    template: "dependency-scan",
+    toolId: "grype",
     supportedInputs: ["GitHub repo URL", "branch"]
   },
   {

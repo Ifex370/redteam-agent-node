@@ -1,0 +1,18 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_grype_local_dependencies",
+  "template": "dependency-scan",
+  "targets": [
+    {
+      "kind": "local_path",
+      "path": "samples/vulnerable-dependencies"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": [],
+    "maxDurationMinutes": 30,
+    "network": "restricted",
+    "tools": ["grype"]
+  }
+}

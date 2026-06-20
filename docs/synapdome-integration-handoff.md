@@ -59,6 +59,7 @@ tool: semgrep
 tool: trufflehog
 tool: codeql
 tool: trivy
+tool: grype
 tool: trivy-image
 ```
 
@@ -67,6 +68,8 @@ tool: trivy-image
 `codeql` is available under `web-sast` for JavaScript/TypeScript and Python repositories. It creates CodeQL databases on the Red Team Agent Node, analyzes them locally, and returns normalized findings from SARIF.
 
 `dependency-scan` runs Trivy filesystem analysis against repository dependency manifests and lockfiles. Use tool ID `trivy`.
+
+Grype is also available under `dependency-scan`. Use tool ID `grype`, or request both tools with `tools: ["trivy", "grype"]`.
 
 For cloud integration, use `repo` targets.
 
@@ -284,6 +287,35 @@ Trivy dependency scan request:
     "maxDurationMinutes": 30,
     "network": "restricted",
     "tools": ["trivy"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",
+    "runId": "3b1f",
+    "tenantId": "tenant_demo"
+  }
+}
+```
+
+Grype dependency scan request:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_grype_dependencies",
+  "template": "dependency-scan",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/Ifex370/redteam-agent-node.git",
+      "branch": "main"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 30,
+    "network": "restricted",
+    "tools": ["grype"]
   },
   "callback": {
     "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",

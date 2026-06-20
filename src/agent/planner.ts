@@ -37,15 +37,22 @@ function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "rep
   }));
 }
 
-function dependencyScanSteps(targetKind: "local_path" | "repo"): RunStep[] {
-  return [{
+function dependencyScanSteps(input: EngagementRunInput, targetKind: "local_path" | "repo"): RunStep[] {
+  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["trivy"];
+  const supportedTools = requestedTools.filter((tool) => tool === "trivy" || tool === "grype");
+
+  if (supportedTools.length === 0) {
+    throw new Error("No supported dependency-scan tools requested. Supported tools: trivy, grype.");
+  }
+
+  return supportedTools.map((tool) => ({
     stepId: `step_${nanoid(10)}`,
-    tool: "trivy",
+    tool,
     status: "planned",
     reason: targetKind === "repo"
-      ? "Repository source code was supplied, so run Trivy dependency analysis after cloning."
-      : "Local source path was supplied, so run Trivy dependency analysis."
-  }];
+      ? `Repository source code was supplied, so run ${tool} dependency analysis after cloning.`
+      : `Local source path was supplied, so run ${tool} dependency analysis.`
+  }));
 }
 
 export function planRun(input: EngagementRunInput): PlannedRun {
@@ -104,7 +111,7 @@ export function planRun(input: EngagementRunInput): PlannedRun {
         fullHistory: input.template === "secrets-scan"
       } : undefined,
       steps: input.template === "dependency-scan"
-        ? dependencyScanSteps(target.kind as "local_path" | "repo")
+        ? dependencyScanSteps(input, target.kind as "local_path" | "repo")
         : webSastSteps(input, target.kind as "local_path" | "repo")
     };
   }

@@ -73,6 +73,7 @@ RUN_TIMEOUT_MS=900000
 DOCKER_NETWORK=none
 CODEQL_CLI_PATH=$CODEQL_CLI
 TRIVY_CACHE_ROOT=/var/lib/synapdome-redteam/tool-cache/trivy
+GRYPE_CACHE_ROOT=/var/lib/synapdome-redteam/tool-cache/grype
 AGENT_LLM_ENABLED=false
 AGENT_LLM_MODEL=gpt-5-mini
 OPENAI_API_KEY=
@@ -89,6 +90,7 @@ sudo docker compose up -d redis
 sudo docker pull semgrep/semgrep:1.99.0
 sudo docker pull trufflesecurity/trufflehog:latest
 sudo docker pull aquasec/trivy:0.58.1
+sudo docker pull anchore/grype:v0.114.0
 
 echo "[10/10] Starting PM2 services"
 sudo npm install -g pm2

@@ -25,6 +25,9 @@ export const appConfig = {
   trivy: {
     cacheRoot: resolve(process.env.TRIVY_CACHE_ROOT ?? join(artifactRoot, "_tool-cache", "trivy"))
   },
+  grype: {
+    cacheRoot: resolve(process.env.GRYPE_CACHE_ROOT ?? join(artifactRoot, "_tool-cache", "grype"))
+  },
   llm: {
     enabled: process.env.AGENT_LLM_ENABLED === "true",
     model: process.env.AGENT_LLM_MODEL ?? "gpt-5-mini",

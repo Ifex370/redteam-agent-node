@@ -28,6 +28,11 @@ export const appConfig = {
   grype: {
     cacheRoot: resolve(process.env.GRYPE_CACHE_ROOT ?? join(artifactRoot, "_tool-cache", "grype"))
   },
+  mobsf: {
+    baseUrl: process.env.MOBSF_BASE_URL ?? "http://127.0.0.1:18000",
+    apiKey: process.env.MOBSF_API_KEY ?? "",
+    maxUploadBytes: Number(process.env.MOBSF_MAX_UPLOAD_BYTES ?? String(500 * 1024 * 1024))
+  },
   llm: {
     enabled: process.env.AGENT_LLM_ENABLED === "true",
     model: process.env.AGENT_LLM_MODEL ?? "gpt-5-mini",

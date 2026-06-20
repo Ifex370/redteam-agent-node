@@ -1,6 +1,7 @@
 import { performance } from "node:perf_hooks";
 import { join } from "node:path";
 import { EngagementRunInput, RunSummary } from "../domain/schemas.js";
+import { appConfig } from "../config.js";
 import { ensureRunDirs, listArtifacts, runArtifactDir, writeFindingsExport, writeJsonArtifact } from "../artifacts/artifact-store.js";
 import { publishRunEvent } from "../events/run-events.js";
 import { sendErrorCallback, sendInputRequestCallback, sendResultsCallback, sendStatusCallback } from "../events/callback-events.js";
@@ -10,6 +11,7 @@ import { runCodeQl } from "../tools/codeql.js";
 import { runCheckov } from "../tools/checkov.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runGrypeFilesystem } from "../tools/grype.js";
+import { runMobSf } from "../tools/mobsf.js";
 import { runSemgrep } from "../tools/semgrep.js";
 import { runTerrascan } from "../tools/terrascan.js";
 import { runTfsec } from "../tools/tfsec.js";
@@ -108,7 +110,26 @@ export async function processRun(input: EngagementRunInput) {
       });
     }
 
-    if (!targetPath && !imageTarPath) {
+    let mobileAppPath: string | undefined;
+    let mobileAsset = "mobile_app";
+    if (plan.mobileTarget) {
+      const safeFileName = plan.mobileTarget.fileName.replace(/[^a-zA-Z0-9_.-]/g, "_");
+      mobileAppPath = join(runArtifactDir(runId), "tool-outputs", "mobsf", "input", safeFileName);
+      await downloadArtifact({
+        runId,
+        url: plan.mobileTarget.fetchUrl,
+        destination: mobileAppPath,
+        maxBytes: appConfig.mobsf.maxUploadBytes
+      });
+      mobileAsset = plan.mobileTarget.fetchUrl;
+      await writeJsonArtifact(runId, "workspace/mobile-source.json", {
+        fetchUrlHost: new URL(plan.mobileTarget.fetchUrl).hostname,
+        fileName: plan.mobileTarget.fileName,
+        downloadedTo: `tool-outputs/mobsf/input/${safeFileName}`
+      });
+    }
+
+    if (!targetPath && !imageTarPath && !mobileAppPath) {
       throw new InputRequiredError({
         id: `input_missing_target_${Date.now()}`,
         status: "open",
@@ -120,7 +141,7 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (!["semgrep", "trufflehog", "codeql", "trivy", "grype", "checkov", "tfsec", "terrascan", "trivy-image"].includes(step.tool)) {
+      if (!["semgrep", "trufflehog", "codeql", "trivy", "grype", "checkov", "tfsec", "terrascan", "mobsf", "trivy-image"].includes(step.tool)) {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
@@ -159,7 +180,14 @@ export async function processRun(input: EngagementRunInput) {
                     ? await runTfsec({ runId, targetPath: targetPath!, asset: plan.repoTarget?.url ?? targetPath! })
                     : step.tool === "terrascan"
                       ? await runTerrascan({ runId, targetPath: targetPath!, asset: plan.repoTarget?.url ?? targetPath! })
-              : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
+                      : step.tool === "mobsf"
+                        ? await runMobSf({
+                          runId,
+                          appPath: mobileAppPath!,
+                          fileName: plan.mobileTarget!.fileName,
+                          asset: mobileAsset
+                        })
+                        : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
       step.findingCount = toolResult.findings.length;

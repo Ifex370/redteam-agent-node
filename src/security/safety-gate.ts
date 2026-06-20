@@ -53,4 +53,11 @@ export function assertRunIsAllowed(input: EngagementRunInput) {
       throw new Error("Container scan only supports container_image targets.");
     }
   }
+
+  if (input.template === "mobile-scan") {
+    const unsupported = input.targets.filter((target) => target.kind !== "mobile_app");
+    if (unsupported.length > 0) {
+      throw new Error("Mobile scan only supports mobile_app targets.");
+    }
+  }
 }

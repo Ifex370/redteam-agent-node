@@ -7,6 +7,25 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
+  mobsf:
+    image: opensecurity/mobile-security-framework-mobsf:v4.4.6
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18000:8000"
+    environment:
+      MOBSF_API_ONLY: "1"
+      MOBSF_API_KEY: "${MOBSF_API_KEY:-local-mobsf-development-key}"
+    mem_limit: 5g
+    cpus: 3.0
+    volumes:
+      - mobsf-data:/home/mobsf/.MobSF
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -H \"X-Mobsf-Api-Key: $$MOBSF_API_KEY\" http://127.0.0.1:8000/api/v1/scans >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 10m
 
 volumes:
   redis-data:
+  mobsf-data:

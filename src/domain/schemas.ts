@@ -1,12 +1,13 @@
 import { z } from "zod";
 
 export const targetSchema = z.object({
-  kind: z.enum(["repo", "local_path", "url", "container_image"]),
+  kind: z.enum(["repo", "local_path", "url", "container_image", "mobile_app"]),
   url: z.string().url().optional(),
   fetchUrl: z.string().url().optional(),
   path: z.string().optional(),
   image: z.string().optional(),
-  branch: z.string().optional()
+  branch: z.string().optional(),
+  fileName: z.string().optional()
 });
 
 export const providedInputSchema = z.record(z.unknown()).default({});
@@ -29,7 +30,7 @@ export const engagementRunSchema = z.object({
   tenantId: z.string().min(1),
   engagementId: z.string().min(1),
   runId: z.string().min(1).optional(),
-  template: z.enum(["web-sast", "secrets-scan", "dependency-scan", "iac-scan", "container-image", "container-scan"]),
+  template: z.enum(["web-sast", "secrets-scan", "dependency-scan", "iac-scan", "mobile-scan", "container-image", "container-scan"]),
   targets: z.array(targetSchema).min(1),
   policy: policySchema,
   callback: callbackSchema.optional(),

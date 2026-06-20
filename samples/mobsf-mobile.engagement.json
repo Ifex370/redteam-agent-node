@@ -1,0 +1,21 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_mobsf_mobile",
+  "template": "mobile-scan",
+  "targets": [
+    {
+      "kind": "mobile_app",
+      "fetchUrl": "https://app.example.com/redteam/agent-artifacts/tenant/upload-id?exp=1760000000000&sig=replace",
+      "fileName": "application.apk"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": [],
+    "maxDurationMinutes": 60,
+    "network": "restricted",
+    "tools": [
+      "mobsf"
+    ]
+  }
+}

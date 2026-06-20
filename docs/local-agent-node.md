@@ -104,7 +104,7 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:4400/runs/<runId>/input -Co
 
 ## Engagement Contract
 
-The supported templates include `web-sast`, `secrets-scan`, `dependency-scan`, `iac-scan`, and `container-scan`.
+The supported templates include `web-sast`, `secrets-scan`, `dependency-scan`, `iac-scan`, `mobile-scan`, and `container-scan`.
 
 `web-sast` supports `local_path` and `repo`.
 
@@ -123,6 +123,8 @@ CodeQL currently supports JavaScript/TypeScript and Python in the local agent no
 `iac-scan` supports `local_path` and `repo` targets. Supported tools are `checkov`, `tfsec`, and `terrascan`.
 
 `container-scan` supports `container_image` with a signed `fetchUrl`.
+
+`mobile-scan` supports `mobile_app` with a signed `fetchUrl` and mobile package `fileName`. Use tool ID `mobsf`.
 
 ```json
 {

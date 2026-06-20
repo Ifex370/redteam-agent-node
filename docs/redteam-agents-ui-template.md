@@ -61,6 +61,9 @@ Supply Chain
 
 ```text
 Applications
++-- Mobile
+|   +-- MobSF
+|
 +-- Web
 |   +-- ZAP
 |   +-- Nuclei
@@ -71,6 +74,15 @@ Applications
 |   +-- Nuclei API
 |
 +-- GraphQL
+```
+
+MobSF is available for static mobile application analysis. Its configure screen should upload a mobile package to SynapDome artifact storage and submit a signed download URL using:
+
+```text
+template: mobile-scan
+tool: mobsf
+target kind: mobile_app
+required target fields: fetchUrl, fileName
 ```
 
 ### Cloud

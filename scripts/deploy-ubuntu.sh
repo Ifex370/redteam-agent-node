@@ -60,6 +60,10 @@ SECRET="$(grep -E '^REDTEAM_AGENT_SECRET=' .env | cut -d= -f2- || true)"
 if [ -z "$SECRET" ]; then
   SECRET="$(openssl rand -hex 32)"
 fi
+MOBSF_API_KEY="$(grep -E '^MOBSF_API_KEY=' .env | cut -d= -f2- || true)"
+if [ -z "$MOBSF_API_KEY" ]; then
+  MOBSF_API_KEY="$(openssl rand -hex 32)"
+fi
 
 cat > .env <<EOF
 REDIS_HOST=127.0.0.1
@@ -74,6 +78,9 @@ DOCKER_NETWORK=none
 CODEQL_CLI_PATH=$CODEQL_CLI
 TRIVY_CACHE_ROOT=/var/lib/synapdome-redteam/tool-cache/trivy
 GRYPE_CACHE_ROOT=/var/lib/synapdome-redteam/tool-cache/grype
+MOBSF_BASE_URL=http://127.0.0.1:18000
+MOBSF_API_KEY=$MOBSF_API_KEY
+MOBSF_MAX_UPLOAD_BYTES=524288000
 AGENT_LLM_ENABLED=false
 AGENT_LLM_MODEL=gpt-5-mini
 OPENAI_API_KEY=
@@ -94,6 +101,16 @@ sudo docker pull anchore/grype:v0.114.0
 sudo docker pull bridgecrew/checkov:3.3.0
 sudo docker pull aquasec/tfsec:v1.28.14
 sudo docker pull tenable/terrascan:1.19.9
+sudo docker pull opensecurity/mobile-security-framework-mobsf:v4.4.6
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-$(basename "$APP_DIR")}"
+export COMPOSE_PROJECT_NAME
+MOBSF_VOLUME="${COMPOSE_PROJECT_NAME}_mobsf-data"
+sudo docker volume create "$MOBSF_VOLUME" >/dev/null
+sudo docker run --rm --user root \
+  -v "$MOBSF_VOLUME:/home/mobsf/.MobSF" \
+  opensecurity/mobile-security-framework-mobsf:v4.4.6 \
+  chown -R 9901:9901 /home/mobsf/.MobSF
+sudo docker compose up -d mobsf
 
 echo "[10/10] Starting PM2 services"
 sudo npm install -g pm2

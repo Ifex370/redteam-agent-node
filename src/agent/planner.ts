@@ -13,8 +13,28 @@ export type PlannedRun = {
     fetchUrl?: string;
     image?: string;
   };
+  mobileTarget?: {
+    fetchUrl: string;
+    fileName: string;
+  };
   steps: RunStep[];
 };
+
+const supportedMobileExtensions = [".apk", ".aab", ".apks", ".xapk", ".ipa"];
+
+function mobileScanSteps(input: EngagementRunInput): RunStep[] {
+  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["mobsf"];
+  const supportedTools = requestedTools.filter((tool) => tool === "mobsf");
+  if (supportedTools.length === 0) {
+    throw new Error("No supported mobile-scan tools requested. Supported tools: mobsf.");
+  }
+  return supportedTools.map((tool) => ({
+    stepId: `step_${nanoid(10)}`,
+    tool,
+    status: "planned",
+    reason: "A signed mobile application artifact was supplied, so download it and run MobSF static analysis."
+  }));
+}
 
 function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "repo"): RunStep[] {
   const defaultTools = input.template === "secrets-scan" ? ["trufflehog"] : ["semgrep"];
@@ -172,6 +192,47 @@ export function planRun(input: EngagementRunInput): PlannedRun {
             : "Container image reference was supplied, so run Trivy image scanning."
         }
       ]
+    };
+  }
+
+  if (input.template === "mobile-scan") {
+    const target = input.targets.find((item) => item.kind === "mobile_app");
+    if (!target?.fetchUrl) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "Mobile scanning needs a mobile_app target with a signed fetchUrl.",
+        requiredFields: [
+          { key: "targets[0].kind", label: "Target type", description: "Use mobile_app." },
+          { key: "targets[0].fetchUrl", label: "Signed mobile application URL" }
+        ],
+        resumeAction: "provide_mobile_app",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    const fileName = target.fileName?.trim() || "application.apk";
+    if (!supportedMobileExtensions.some((extension) => fileName.toLowerCase().endsWith(extension))) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "MobSF needs a supported mobile application filename.",
+        requiredFields: [{
+          key: "targets[0].fileName",
+          label: "Artifact filename",
+          description: `Use a filename ending in ${supportedMobileExtensions.join(", ")}.`
+        }],
+        resumeAction: "provide_mobile_app_filename",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    return {
+      mobileTarget: {
+        fetchUrl: target.fetchUrl,
+        fileName
+      },
+      steps: mobileScanSteps(input)
     };
   }
 

@@ -52,10 +52,12 @@ template: web-sast
 template: secrets-scan
 template: dependency-scan
 template: iac-scan
+template: mobile-scan
 template: container-scan
 target kind: repo
 target kind: local_path
 target kind: container_image with fetchUrl
+target kind: mobile_app with fetchUrl and fileName
 tool: semgrep
 tool: trufflehog
 tool: codeql
@@ -64,6 +66,7 @@ tool: grype
 tool: checkov
 tool: tfsec
 tool: terrascan
+tool: mobsf
 tool: trivy-image
 ```
 

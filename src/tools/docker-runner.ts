@@ -16,6 +16,7 @@ export async function runDockerTool(params: {
   name: string;
   mounts: Array<{ hostPath: string; containerPath: string; readonly?: boolean }>;
   args: string[];
+  env?: Record<string, string>;
   network?: string;
   timeoutMs?: number;
 }) {
@@ -35,6 +36,10 @@ export async function runDockerTool(params: {
     }
     const suffix = mount.readonly ? ":ro" : "";
     dockerArgs.push("-v", `${resolve(mount.hostPath)}:${mount.containerPath}${suffix}`);
+  }
+
+  for (const [key, value] of Object.entries(params.env ?? {})) {
+    dockerArgs.push("-e", `${key}=${value}`);
   }
 
   dockerArgs.push(params.image, ...params.args);

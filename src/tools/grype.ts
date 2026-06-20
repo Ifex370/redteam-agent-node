@@ -77,9 +77,13 @@ export async function runGrypeFilesystem(params: {
     network: "bridge",
     mounts: [
       { hostPath: params.targetPath, containerPath: "/src", readonly: true },
-      { hostPath: appConfig.grype.cacheRoot, containerPath: "/.cache/grype" },
+      { hostPath: appConfig.grype.cacheRoot, containerPath: "/cache" },
       { hostPath: outputDir, containerPath: "/out" }
     ],
+    env: {
+      GRYPE_DB_CACHE_DIR: "/cache/db",
+      GRYPE_CHECK_FOR_APP_UPDATE: "false"
+    },
     args: [
       "dir:/src",
       "--output",

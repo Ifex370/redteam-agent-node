@@ -10,7 +10,7 @@ import { runCodeQl } from "../tools/codeql.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runSemgrep } from "../tools/semgrep.js";
 import { runTruffleHog } from "../tools/trufflehog.js";
-import { runTrivyImageTar } from "../tools/trivy.js";
+import { runTrivyFilesystem, runTrivyImageTar } from "../tools/trivy.js";
 import { InputRequiredError, isInputRequiredError } from "./input-required.js";
 import { planRun } from "./planner.js";
 import { writeSynapDomeExport } from "./synapdome-exporter.js";
@@ -116,7 +116,7 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (step.tool !== "semgrep" && step.tool !== "trufflehog" && step.tool !== "codeql" && step.tool !== "trivy-image") {
+      if (step.tool !== "semgrep" && step.tool !== "trufflehog" && step.tool !== "codeql" && step.tool !== "trivy" && step.tool !== "trivy-image") {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
@@ -137,7 +137,13 @@ export async function processRun(input: EngagementRunInput) {
           })
           : step.tool === "codeql"
             ? await runCodeQl({ runId, targetPath: targetPath! })
-            : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
+            : step.tool === "trivy"
+              ? await runTrivyFilesystem({
+                runId,
+                targetPath: targetPath!,
+                asset: plan.repoTarget?.url ?? targetPath!
+              })
+              : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
       step.findingCount = toolResult.findings.length;

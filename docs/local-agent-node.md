@@ -104,7 +104,7 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:4400/runs/<runId>/input -Co
 
 ## Engagement Contract
 
-The first supported templates are `web-sast` and `container-scan`.
+The supported templates include `web-sast`, `secrets-scan`, `dependency-scan`, and `container-scan`.
 
 `web-sast` supports `local_path` and `repo`.
 
@@ -117,6 +117,8 @@ codeql
 ```
 
 CodeQL currently supports JavaScript/TypeScript and Python in the local agent node. Compiled-language CodeQL support should be added with explicit build-command inputs.
+
+`dependency-scan` supports `local_path` and `repo` targets and runs Trivy against dependency manifests and lockfiles.
 
 `container-scan` supports `container_image` with a signed `fetchUrl`.
 

@@ -280,6 +280,7 @@ Suggested current status:
 
 ```text
 Semgrep: Available
+Trivy Dependency Analysis: Available
 Trivy Container Image Scan: Available
 TruffleHog: Available
 CodeQL: Available
@@ -547,6 +548,17 @@ const agentTools: AgentTool[] = [
     status: "available",
     template: "web-sast",
     toolId: "codeql",
+    supportedInputs: ["GitHub repo URL", "branch"]
+  },
+  {
+    id: "trivy-dependencies",
+    name: "Trivy",
+    domain: "supply-chain",
+    group: "Dependency Analysis",
+    description: "Dependency vulnerability analysis from repository manifests and lockfiles.",
+    status: "available",
+    template: "dependency-scan",
+    toolId: "trivy",
     supportedInputs: ["GitHub repo URL", "branch"]
   },
   {

@@ -1,7 +1,9 @@
 import { config as loadEnv } from "dotenv";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 
 loadEnv();
+
+const artifactRoot = resolve(process.env.ARTIFACT_ROOT ?? "./artifacts");
 
 export const appConfig = {
   redis: {
@@ -13,12 +15,15 @@ export const appConfig = {
     port: Number(process.env.API_PORT ?? "4400"),
     internalSecret: process.env.REDTEAM_AGENT_SECRET ?? process.env.INTERNAL_AGENT_SECRET ?? ""
   },
-  artifactRoot: resolve(process.env.ARTIFACT_ROOT ?? "./artifacts"),
+  artifactRoot,
   workerConcurrency: Number(process.env.WORKER_CONCURRENCY ?? "1"),
   runTimeoutMs: Number(process.env.RUN_TIMEOUT_MS ?? "900000"),
   dockerNetwork: process.env.DOCKER_NETWORK ?? "none",
   codeql: {
     cliPath: process.env.CODEQL_CLI_PATH ?? "codeql"
+  },
+  trivy: {
+    cacheRoot: resolve(process.env.TRIVY_CACHE_ROOT ?? join(artifactRoot, "_tool-cache", "trivy"))
   },
   llm: {
     enabled: process.env.AGENT_LLM_ENABLED === "true",

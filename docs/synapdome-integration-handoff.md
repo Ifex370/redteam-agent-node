@@ -50,6 +50,7 @@ Currently supported:
 ```text
 template: web-sast
 template: secrets-scan
+template: dependency-scan
 template: container-scan
 target kind: repo
 target kind: local_path
@@ -57,12 +58,15 @@ target kind: container_image with fetchUrl
 tool: semgrep
 tool: trufflehog
 tool: codeql
+tool: trivy
 tool: trivy-image
 ```
 
 `secrets-scan` is a compatibility template for source-code secret scanning. It uses repo/local_path targets and runs TruffleHog by default. For repo targets, it performs a full-history Git scan. For local_path targets, it scans the supplied filesystem path.
 
 `codeql` is available under `web-sast` for JavaScript/TypeScript and Python repositories. It creates CodeQL databases on the Red Team Agent Node, analyzes them locally, and returns normalized findings from SARIF.
+
+`dependency-scan` runs Trivy filesystem analysis against repository dependency manifests and lockfiles. Use tool ID `trivy`.
 
 For cloud integration, use `repo` targets.
 
@@ -251,6 +255,35 @@ CodeQL source scan request:
     "maxDurationMinutes": 30,
     "network": "none",
     "tools": ["codeql"]
+  },
+  "callback": {
+    "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",
+    "runId": "3b1f",
+    "tenantId": "tenant_demo"
+  }
+}
+```
+
+Trivy dependency scan request:
+
+```json
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_trivy_dependencies",
+  "template": "dependency-scan",
+  "targets": [
+    {
+      "kind": "repo",
+      "url": "https://github.com/Ifex370/redteam-agent-node.git",
+      "branch": "main"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["github.com"],
+    "maxDurationMinutes": 30,
+    "network": "restricted",
+    "tools": ["trivy"]
   },
   "callback": {
     "url": "https://app.example.com/redteam/agents/callback/runs/3b1f/events",

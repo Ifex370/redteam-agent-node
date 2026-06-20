@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { nanoid } from "nanoid";
+import { appConfig } from "../config.js";
 import { NormalizedFinding } from "../domain/schemas.js";
 import { runArtifactDir, writeTextArtifact } from "../artifacts/artifact-store.js";
 import { runDockerTool } from "./docker-runner.js";
@@ -48,7 +49,7 @@ export async function runTrivyImageTar(params: {
   asset: string;
 }) {
   const outputDir = join(runArtifactDir(params.runId), "tool-outputs", "trivy");
-  const cacheDir = join(runArtifactDir(params.runId), "tool-cache", "trivy");
+  const cacheDir = appConfig.trivy.cacheRoot;
 
   const result = await runDockerTool({
     runId: params.runId,
@@ -83,19 +84,74 @@ export async function runTrivyImageTar(params: {
   const report = JSON.parse(await readFile(join(outputDir, "trivy.json"), "utf8")) as TrivyReport;
   return {
     tool: result.meta,
-    findings: normalizeTrivyReport(report, params.asset),
+    findings: normalizeTrivyReport(report, params.asset, "agent:container-scan"),
     artifacts: ["tool-outputs/trivy/trivy.json", "tool-outputs/trivy/stdout.log", "tool-outputs/trivy/stderr.log"]
   };
 }
 
-export function normalizeTrivyReport(report: TrivyReport, asset: string): NormalizedFinding[] {
+export async function runTrivyFilesystem(params: {
+  runId: string;
+  targetPath: string;
+  asset: string;
+}) {
+  const outputDir = join(runArtifactDir(params.runId), "tool-outputs", "trivy");
+  const cacheDir = appConfig.trivy.cacheRoot;
+
+  const result = await runDockerTool({
+    runId: params.runId,
+    image: trivyImage,
+    name: "trivy",
+    network: "bridge",
+    mounts: [
+      { hostPath: params.targetPath, containerPath: "/src", readonly: true },
+      { hostPath: cacheDir, containerPath: "/root/.cache/trivy" },
+      { hostPath: outputDir, containerPath: "/out" }
+    ],
+    args: [
+      "fs",
+      "--scanners",
+      "vuln",
+      "--format",
+      "json",
+      "--output",
+      "/out/trivy.json",
+      "--exit-code",
+      "0",
+      "--skip-dirs",
+      ".git",
+      "--skip-dirs",
+      "node_modules",
+      "/src"
+    ]
+  });
+
+  await writeTextArtifact(params.runId, "tool-outputs/trivy/stdout.log", result.stdout);
+  await writeTextArtifact(params.runId, "tool-outputs/trivy/stderr.log", result.stderr);
+
+  if (result.meta.exitCode !== 0) {
+    throw new Error(`Trivy dependency scan failed with exit code ${result.meta.exitCode}. See tool-outputs/trivy/stderr.log.`);
+  }
+
+  const report = JSON.parse(await readFile(join(outputDir, "trivy.json"), "utf8")) as TrivyReport;
+  return {
+    tool: result.meta,
+    findings: normalizeTrivyReport(report, params.asset, "agent:dependency-scan"),
+    artifacts: ["tool-outputs/trivy/trivy.json", "tool-outputs/trivy/stdout.log", "tool-outputs/trivy/stderr.log"]
+  };
+}
+
+export function normalizeTrivyReport(
+  report: TrivyReport,
+  asset: string,
+  source = "agent:container-scan"
+): NormalizedFinding[] {
   const findings: NormalizedFinding[] = [];
   for (const result of report.Results ?? []) {
     for (const vuln of result.Vulnerabilities ?? []) {
       const pkg = vuln.PkgName ?? "unknown package";
       findings.push({
         id: `finding_${nanoid(12)}`,
-        source: "agent:container-scan",
+        source,
         tool: "trivy",
         title: vuln.Title ?? `${vuln.VulnerabilityID ?? "Vulnerability"} in ${pkg}`,
         severity: severityFromTrivy(vuln.Severity),

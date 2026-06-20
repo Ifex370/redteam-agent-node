@@ -37,8 +37,19 @@ function webSastSteps(input: EngagementRunInput, targetKind: "local_path" | "rep
   }));
 }
 
+function dependencyScanSteps(targetKind: "local_path" | "repo"): RunStep[] {
+  return [{
+    stepId: `step_${nanoid(10)}`,
+    tool: "trivy",
+    status: "planned",
+    reason: targetKind === "repo"
+      ? "Repository source code was supplied, so run Trivy dependency analysis after cloning."
+      : "Local source path was supplied, so run Trivy dependency analysis."
+  }];
+}
+
 export function planRun(input: EngagementRunInput): PlannedRun {
-  if (input.template === "web-sast" || input.template === "secrets-scan") {
+  if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan") {
     const target = input.targets.find((item) => item.kind === "local_path" || item.kind === "repo");
 
     if (!target) {
@@ -92,7 +103,9 @@ export function planRun(input: EngagementRunInput): PlannedRun {
         branch: target.branch,
         fullHistory: input.template === "secrets-scan"
       } : undefined,
-      steps: webSastSteps(input, target.kind as "local_path" | "repo")
+      steps: input.template === "dependency-scan"
+        ? dependencyScanSteps(target.kind as "local_path" | "repo")
+        : webSastSteps(input, target.kind as "local_path" | "repo")
     };
   }
 

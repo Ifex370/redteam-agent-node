@@ -29,7 +29,7 @@ export const engagementRunSchema = z.object({
   tenantId: z.string().min(1),
   engagementId: z.string().min(1),
   runId: z.string().min(1).optional(),
-  template: z.enum(["web-sast", "secrets-scan", "container-image", "container-scan"]),
+  template: z.enum(["web-sast", "secrets-scan", "dependency-scan", "container-image", "container-scan"]),
   targets: z.array(targetSchema).min(1),
   policy: policySchema,
   callback: callbackSchema.optional(),

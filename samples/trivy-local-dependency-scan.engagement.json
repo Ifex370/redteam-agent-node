@@ -1,0 +1,18 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_trivy_local_dependencies",
+  "template": "dependency-scan",
+  "targets": [
+    {
+      "kind": "local_path",
+      "path": "."
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": [],
+    "maxDurationMinutes": 30,
+    "network": "restricted",
+    "tools": ["trivy"]
+  }
+}

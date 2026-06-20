@@ -51,6 +51,7 @@ Currently supported:
 template: web-sast
 template: secrets-scan
 template: dependency-scan
+template: iac-scan
 template: container-scan
 target kind: repo
 target kind: local_path
@@ -60,6 +61,9 @@ tool: trufflehog
 tool: codeql
 tool: trivy
 tool: grype
+tool: checkov
+tool: tfsec
+tool: terrascan
 tool: trivy-image
 ```
 

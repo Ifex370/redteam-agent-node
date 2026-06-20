@@ -55,8 +55,18 @@ function dependencyScanSteps(input: EngagementRunInput, targetKind: "local_path"
   }));
 }
 
+function iacScanSteps(input: EngagementRunInput, targetKind: "local_path" | "repo"): RunStep[] {
+  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["checkov"];
+  const supportedTools = requestedTools.filter((tool) => tool === "checkov" || tool === "tfsec" || tool === "terrascan");
+  if (supportedTools.length === 0) throw new Error("No supported iac-scan tools requested. Supported tools: checkov, tfsec, terrascan.");
+  return supportedTools.map((tool) => ({
+    stepId: `step_${nanoid(10)}`, tool, status: "planned",
+    reason: targetKind === "repo" ? `Repository source code was supplied, so run ${tool} IaC analysis after cloning.` : `Local source path was supplied, so run ${tool} IaC analysis.`
+  }));
+}
+
 export function planRun(input: EngagementRunInput): PlannedRun {
-  if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan") {
+  if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan" || input.template === "iac-scan") {
     const target = input.targets.find((item) => item.kind === "local_path" || item.kind === "repo");
 
     if (!target) {
@@ -112,6 +122,8 @@ export function planRun(input: EngagementRunInput): PlannedRun {
       } : undefined,
       steps: input.template === "dependency-scan"
         ? dependencyScanSteps(input, target.kind as "local_path" | "repo")
+        : input.template === "iac-scan"
+          ? iacScanSteps(input, target.kind as "local_path" | "repo")
         : webSastSteps(input, target.kind as "local_path" | "repo")
     };
   }

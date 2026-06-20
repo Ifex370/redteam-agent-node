@@ -91,6 +91,9 @@ sudo docker pull semgrep/semgrep:1.99.0
 sudo docker pull trufflesecurity/trufflehog:latest
 sudo docker pull aquasec/trivy:0.58.1
 sudo docker pull anchore/grype:v0.114.0
+sudo docker pull bridgecrew/checkov:3.3.0
+sudo docker pull aquasec/tfsec:v1.28.14
+sudo docker pull tenable/terrascan:1.19.9
 
 echo "[10/10] Starting PM2 services"
 sudo npm install -g pm2

@@ -40,7 +40,7 @@ export function assertRunIsAllowed(input: EngagementRunInput) {
     }
   }
 
-  if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan") {
+  if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan" || input.template === "iac-scan") {
     const unsupported = input.targets.filter((target) => target.kind !== "local_path" && target.kind !== "repo");
     if (unsupported.length > 0) {
       throw new Error(`MVP ${input.template} only supports local_path and repo targets.`);

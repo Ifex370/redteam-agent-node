@@ -1,0 +1,7 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_iac_all_local",
+  "template": "iac-scan",
+  "targets": [{"kind": "local_path", "path": "samples/vulnerable-iac"}],
+  "policy": {"authorized": true, "allowedDomains": [], "maxDurationMinutes": 30, "network": "restricted", "tools": ["checkov", "tfsec", "terrascan"]}
+}

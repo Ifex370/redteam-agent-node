@@ -287,9 +287,9 @@ TruffleHog: Available
 CodeQL: Available
 Grype: Coming Soon
 Snyk: Requires Setup
-Checkov: Coming Soon
-tfsec: Coming Soon
-Terrascan: Coming Soon
+Checkov: Available
+tfsec: Available
+Terrascan: Available
 ZAP: Coming Soon
 Nuclei: Coming Soon
 Burp: Requires Setup

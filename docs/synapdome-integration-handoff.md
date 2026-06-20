@@ -82,6 +82,8 @@ For cloud integration, use `repo` targets.
 
 GitHub repository targets must be HTTPS URLs.
 
+If a submitted branch does not exist, the Agent Node resolves and uses the repository's remote default branch. The clone artifact records both `requestedBranch` and the resolved `branch`.
+
 Do not send credentials inside Git URLs.
 
 Supported example:

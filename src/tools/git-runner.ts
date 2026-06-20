@@ -8,6 +8,7 @@ export type GitCloneResult = {
   path: string;
   url: string;
   branch?: string;
+  requestedBranch?: string;
   startedAt: string;
   completedAt: string;
   exitCode: number | null;
@@ -35,6 +36,54 @@ function assertSafeBranch(branch?: string) {
   }
 }
 
+async function runGit(args: string[]) {
+  const child = spawn("git", args, {
+    windowsHide: true,
+    env: {
+      ...process.env,
+      GIT_TERMINAL_PROMPT: "0"
+    }
+  });
+
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (chunk: Buffer) => {
+    stdout += chunk.toString();
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    stderr += chunk.toString();
+  });
+
+  const exitCode = await new Promise<number | null>((resolveCode, reject) => {
+    child.on("error", reject);
+    child.on("close", resolveCode);
+  });
+
+  return { exitCode, stdout, stderr };
+}
+
+async function resolveCloneBranch(url: string, requestedBranch?: string) {
+  if (requestedBranch) {
+    const branchCheck = await runGit(["ls-remote", "--exit-code", "--heads", url, `refs/heads/${requestedBranch}`]);
+    if (branchCheck.exitCode === 0) {
+      return requestedBranch;
+    }
+  }
+
+  const defaultBranch = await runGit(["ls-remote", "--symref", url, "HEAD"]);
+  if (defaultBranch.exitCode !== 0) {
+    throw new Error(`Could not resolve the repository default branch: ${defaultBranch.stderr.trim() || "git ls-remote failed"}`);
+  }
+
+  const match = defaultBranch.stdout.match(/^ref:\s+refs\/heads\/([^\s]+)\s+HEAD$/m);
+  if (!match?.[1]) {
+    throw new Error("Could not determine the repository default branch.");
+  }
+
+  assertSafeBranch(match[1]);
+  return match[1];
+}
+
 export async function cloneGitRepo(params: {
   runId: string;
   url: string;
@@ -47,19 +96,20 @@ export async function cloneGitRepo(params: {
 
   await mkdir(dirname(params.destination), { recursive: true });
   const startedAt = new Date().toISOString();
+  const resolvedBranch = await resolveCloneBranch(params.url, params.branch);
   const args = ["clone"];
   if (params.depth && params.depth > 0) {
     args.push("--depth", String(params.depth));
   }
-  if (params.branch) {
-    args.push("--branch", params.branch);
-  }
+  args.push("--branch", resolvedBranch);
   args.push("--", params.url, params.destination);
 
   await publishRunEvent({
     runId: params.runId,
     type: "log",
-    message: `Cloning repository ${params.url}${params.branch ? ` (${params.branch})` : ""}`
+    message: params.branch && params.branch !== resolvedBranch
+      ? `Requested branch ${params.branch} was not found; cloning default branch ${resolvedBranch}`
+      : `Cloning repository ${params.url} (${resolvedBranch})`
   });
 
   const child = spawn("git", args, {
@@ -110,7 +160,8 @@ export async function cloneGitRepo(params: {
   return {
     path: params.destination,
     url: params.url,
-    branch: params.branch,
+    branch: resolvedBranch,
+    requestedBranch: params.branch,
     startedAt,
     completedAt,
     exitCode

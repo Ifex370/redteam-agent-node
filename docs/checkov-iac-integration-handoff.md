@@ -38,6 +38,8 @@ target kinds: repo, local_path
 
 Submit with `POST /runs`, `Content-Type: application/json`, and the backend-only `X-Internal-Secret`.
 
+If the requested branch does not exist, the Agent Node automatically falls back to the repository's remote default branch.
+
 ## Results
 
 Normalized findings use:
@@ -77,4 +79,3 @@ The vulnerable Terraform fixture produced:
 status: succeeded
 findings: 15
 ```
-

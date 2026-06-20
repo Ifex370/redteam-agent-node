@@ -21,8 +21,13 @@ export async function runTerrascan(params: { runId: string; targetPath: string; 
   await writeTextArtifact(params.runId, "tool-outputs/terrascan/terrascan.json", result.stdout);
   await writeTextArtifact(params.runId, "tool-outputs/terrascan/stdout.log", result.stdout);
   await writeTextArtifact(params.runId, "tool-outputs/terrascan/stderr.log", result.stderr);
-  if (result.meta.exitCode !== 0 && result.meta.exitCode !== 3) throw new Error(`Terrascan failed with exit code ${result.meta.exitCode}.`);
-  const report = JSON.parse(result.stdout) as Report;
+  let report: Report;
+  try {
+    report = JSON.parse(result.stdout) as Report;
+  } catch {
+    throw new Error(`Terrascan failed with exit code ${result.meta.exitCode} and did not produce valid JSON.`);
+  }
+  if (![0, 3, 5].includes(result.meta.exitCode ?? -1)) throw new Error(`Terrascan failed with exit code ${result.meta.exitCode}.`);
   const findings = (report.results?.violations ?? []).map((item) => ({
     id: `finding_${nanoid(12)}`, source: "agent:iac-scan", tool: "terrascan",
     title: item.description ?? item.rule_name ?? item.rule_id ?? "Terrascan policy violation",

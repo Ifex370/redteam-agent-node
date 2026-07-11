@@ -1,0 +1,18 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_web_app_demo",
+  "template": "web-scan",
+  "targets": [
+    {
+      "kind": "url",
+      "url": "http://localhost:8080"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["localhost"],
+    "maxDurationMinutes": 15,
+    "network": "restricted",
+    "tools": ["nuclei", "zap"]
+  }
+}

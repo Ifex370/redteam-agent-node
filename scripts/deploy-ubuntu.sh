@@ -102,6 +102,8 @@ sudo docker pull bridgecrew/checkov:3.3.0
 sudo docker pull aquasec/tfsec:v1.28.14
 sudo docker pull tenable/terrascan:1.19.9
 sudo docker pull opensecurity/mobile-security-framework-mobsf:v4.4.6
+sudo docker pull projectdiscovery/nuclei:v3.3.8
+sudo docker pull ghcr.io/zaproxy/zaproxy:stable
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-$(basename "$APP_DIR")}"
 export COMPOSE_PROJECT_NAME
 MOBSF_VOLUME="${COMPOSE_PROJECT_NAME}_mobsf-data"

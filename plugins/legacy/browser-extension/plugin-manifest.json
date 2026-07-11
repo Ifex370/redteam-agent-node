@@ -1,0 +1,31 @@
+{
+  "id": "synapdome.browser-extension.legacy",
+  "name": "SynapDome Browser Traffic Legacy Plugin",
+  "version": "0.1.0",
+  "sourceConcept": "CyberStrikeAI browser extension traffic capture pattern",
+  "status": "handoff-created",
+  "direction": "browser-to-synapdome-to-redteam-agent",
+  "purpose": "Capture authorized browser DevTools traffic as HAR/API evidence, upload it to SynapDome, and allow the SynapDome agentic prompt to queue web/API scans against approved URLs.",
+  "artifactTypes": ["har", "request-response-json", "openapi-json"],
+  "requiredSynapDomeFields": {
+    "tenantId": "string",
+    "engagementId": "string",
+    "source": "browser-extension",
+    "artifactFetchUrl": "signed HTTPS URL",
+    "targetUrl": "authorized URL",
+    "allowedDomains": ["authorized domain"]
+  },
+  "recommendedAgentRuns": [
+    {
+      "template": "web-scan",
+      "tools": ["zap", "nuclei"],
+      "targetKind": "url"
+    }
+  ],
+  "securityRequirements": [
+    "Require explicit engagement selection before capture starts.",
+    "Show the hostname being captured to the user.",
+    "Redact credentials by default before upload.",
+    "Pass only signed artifact URLs or normalized target URLs to the Red Team Agent Node."
+  ]
+}

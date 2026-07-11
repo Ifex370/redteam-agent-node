@@ -9,6 +9,7 @@ import { appConfig } from "../config.js";
 import { readRunSummary, runArtifactDir, writeJsonArtifact } from "../artifacts/artifact-store.js";
 import { engagementRunSchema } from "../domain/schemas.js";
 import { runChannel } from "../events/run-events.js";
+import { roadmapStatus, synapDomePlugins } from "../plugins/catalog.js";
 import { createAgentQueue, enqueueRun } from "../queue/agent-queue.js";
 import { createRedisConnection } from "../queue/connection.js";
 
@@ -36,6 +37,23 @@ app.addHook("preHandler", async (request, reply) => {
 });
 
 app.get("/health", async () => ({ ok: true }));
+
+app.get("/plugins", async () => ({
+  plugins: synapDomePlugins,
+  roadmapStatus
+}));
+
+app.get("/plugins/:pluginId", async (request, reply) => {
+  const { pluginId } = request.params as { pluginId: string };
+  const plugin = synapDomePlugins.find((item) => item.id === pluginId);
+  if (!plugin) {
+    return reply.code(404).send({ error: "Not Found", message: `Unknown plugin: ${pluginId}` });
+  }
+
+  return plugin;
+});
+
+app.get("/roadmap", async () => roadmapStatus);
 
 app.post("/runs", async (request, reply) => {
   const input = engagementRunSchema.parse(request.body);

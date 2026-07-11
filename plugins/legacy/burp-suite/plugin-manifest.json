@@ -1,0 +1,30 @@
+{
+  "id": "synapdome.burp-suite.legacy",
+  "name": "SynapDome Burp Suite Legacy Plugin",
+  "version": "0.1.0",
+  "sourceConcept": "CyberStrikeAI Burp sidecar plugin pattern",
+  "status": "handoff-created",
+  "direction": "client-to-synapdome-to-redteam-agent",
+  "purpose": "Capture authorized Burp proxy, sitemap, scanner, and request evidence, upload it to SynapDome, then submit a signed artifact URL to the Red Team Agent Node for web/API follow-up scans.",
+  "artifactTypes": ["har", "burp-site-map-json", "burp-xml", "openapi-json"],
+  "requiredSynapDomeFields": {
+    "tenantId": "string",
+    "engagementId": "string",
+    "source": "burp-suite",
+    "artifactFetchUrl": "signed HTTPS URL",
+    "targetUrl": "authorized URL",
+    "allowedDomains": ["authorized domain"]
+  },
+  "recommendedAgentRuns": [
+    {
+      "template": "web-scan",
+      "tools": ["zap", "nuclei"],
+      "targetKind": "url"
+    }
+  ],
+  "securityRequirements": [
+    "Only capture traffic from engagements with written authorization.",
+    "Do not send cookies, bearer tokens, or session secrets unless the SynapDome engagement explicitly requires authenticated testing.",
+    "Upload raw artifacts to SynapDome storage first; pass only signed fetch URLs or normalized target URLs to the Red Team Agent Node."
+  ]
+}

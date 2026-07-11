@@ -40,6 +40,23 @@ export function assertRunIsAllowed(input: EngagementRunInput) {
     }
   }
 
+  if (input.template === "web-scan") {
+    const unsupported = input.targets.filter((target) => target.kind !== "url");
+    if (unsupported.length > 0) {
+      throw new Error("Web scan only supports url targets.");
+    }
+
+    for (const target of input.targets) {
+      if (!target.url) continue;
+      const host = new URL(target.url).hostname.toLowerCase();
+      const allowedDomains = input.policy.allowedDomains.map((domain) => domain.toLowerCase());
+      const isAllowed = allowedDomains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+      if (!isAllowed) {
+        throw new Error(`Run refused: ${host} is not listed in policy.allowedDomains.`);
+      }
+    }
+  }
+
   if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan" || input.template === "iac-scan") {
     const unsupported = input.targets.filter((target) => target.kind !== "local_path" && target.kind !== "repo");
     if (unsupported.length > 0) {

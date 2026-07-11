@@ -12,11 +12,13 @@ import { runCheckov } from "../tools/checkov.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runGrypeFilesystem } from "../tools/grype.js";
 import { runMobSf } from "../tools/mobsf.js";
+import { runNuclei } from "../tools/nuclei.js";
 import { runSemgrep } from "../tools/semgrep.js";
 import { runTerrascan } from "../tools/terrascan.js";
 import { runTfsec } from "../tools/tfsec.js";
 import { runTruffleHog } from "../tools/trufflehog.js";
 import { runTrivyFilesystem, runTrivyImageTar } from "../tools/trivy.js";
+import { runZapBaseline } from "../tools/zap.js";
 import { InputRequiredError, isInputRequiredError } from "./input-required.js";
 import { planRun } from "./planner.js";
 import { writeSynapDomeExport } from "./synapdome-exporter.js";
@@ -129,7 +131,7 @@ export async function processRun(input: EngagementRunInput) {
       });
     }
 
-    if (!targetPath && !imageTarPath && !mobileAppPath) {
+    if (!targetPath && !imageTarPath && !mobileAppPath && !plan.urlTarget) {
       throw new InputRequiredError({
         id: `input_missing_target_${Date.now()}`,
         status: "open",
@@ -141,7 +143,7 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (!["semgrep", "trufflehog", "codeql", "trivy", "grype", "checkov", "tfsec", "terrascan", "mobsf", "trivy-image"].includes(step.tool)) {
+      if (!["semgrep", "trufflehog", "codeql", "trivy", "grype", "checkov", "tfsec", "terrascan", "mobsf", "trivy-image", "nuclei", "zap"].includes(step.tool)) {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
@@ -187,7 +189,11 @@ export async function processRun(input: EngagementRunInput) {
                           fileName: plan.mobileTarget!.fileName,
                           asset: mobileAsset
                         })
-                        : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
+                        : step.tool === "nuclei"
+                          ? await runNuclei({ runId, url: plan.urlTarget!.url })
+                          : step.tool === "zap"
+                            ? await runZapBaseline({ runId, url: plan.urlTarget!.url })
+                            : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
       step.findingCount = toolResult.findings.length;

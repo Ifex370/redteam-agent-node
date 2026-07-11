@@ -4,6 +4,9 @@ import { InputRequiredError } from "./input-required.js";
 
 export type PlannedRun = {
   targetPath?: string;
+  urlTarget?: {
+    url: string;
+  };
   repoTarget?: {
     url: string;
     branch?: string;
@@ -85,7 +88,44 @@ function iacScanSteps(input: EngagementRunInput, targetKind: "local_path" | "rep
   }));
 }
 
+function webScanSteps(input: EngagementRunInput): RunStep[] {
+  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["nuclei", "zap"];
+  const supportedTools = requestedTools.filter((tool) => tool === "nuclei" || tool === "zap");
+  if (supportedTools.length === 0) {
+    throw new Error("No supported web-scan tools requested. Supported tools: nuclei, zap.");
+  }
+
+  return supportedTools.map((tool) => ({
+    stepId: `step_${nanoid(10)}`,
+    tool,
+    status: "planned",
+    reason: `A web URL was supplied, so run ${tool} against the authorized target.`
+  }));
+}
+
 export function planRun(input: EngagementRunInput): PlannedRun {
+  if (input.template === "web-scan") {
+    const target = input.targets.find((item) => item.kind === "url");
+    if (!target?.url) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "Web application scanning needs a url target.",
+        requiredFields: [
+          { key: "targets[0].kind", label: "Target type", description: "Use url." },
+          { key: "targets[0].url", label: "Authorized web application URL" }
+        ],
+        resumeAction: "provide_web_url",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    return {
+      urlTarget: { url: target.url },
+      steps: webScanSteps(input)
+    };
+  }
+
   if (input.template === "web-sast" || input.template === "secrets-scan" || input.template === "dependency-scan" || input.template === "iac-scan") {
     const target = input.targets.find((item) => item.kind === "local_path" || item.kind === "repo");
 

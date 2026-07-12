@@ -23,6 +23,8 @@ function normalizeAllowedDomain(value: string) {
 
 function hostIsInAllowedDomains(host: string, allowedDomains: string[]) {
   const normalizedHost = host.toLowerCase();
+  if (allowedDomains.length === 0) return true;
+
   return allowedDomains
     .map(normalizeAllowedDomain)
     .filter(Boolean)

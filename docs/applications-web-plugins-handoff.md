@@ -216,7 +216,8 @@ Important:
 
 - `policy.authorized` must be `true`.
 - `targets[0].url` must be an HTTP or HTTPS URL.
-- `policy.allowedDomains` must include the target hostname or parent domain. Accepted examples: `example.com`, `www.example.com`, `*.example.com`, or `https://www.example.com`.
+- `policy.allowedDomains` should include the target hostname or parent domain. Accepted examples: `example.com`, `www.example.com`, `*.example.com`, or `https://www.example.com`.
+- If `policy.allowedDomains` is empty for `web-dast`, the server treats the exact target hostname as the only allowed scope.
 - Use `tools: ["nuclei"]` for Nuclei only.
 - Use `tools: ["zap"]` for ZAP only.
 - Use `tools: ["nuclei", "zap"]` for both.

@@ -55,6 +55,7 @@ Artifacts:
 tool-outputs/nuclei/nuclei.jsonl
 tool-outputs/nuclei/stdout.log
 tool-outputs/nuclei/stderr.log
+exports/dast-report.html
 exports/synapdome-export.json
 ```
 
@@ -87,6 +88,7 @@ tool-outputs/zap/zap-report.json
 tool-outputs/zap/zap-report.html
 tool-outputs/zap/stdout.log
 tool-outputs/zap/stderr.log
+exports/dast-report.html
 exports/synapdome-export.json
 ```
 
@@ -250,6 +252,23 @@ GET /runs/:runId/artifacts/exports/synapdome-export.json
 ```bash
 curl -sS http://34.205.79.22:4400/runs/<runId>/artifacts/exports/synapdome-export.json \
   -H "x-internal-secret: <REDTEAM_AGENT_SECRET>"
+```
+
+## Fetch Detailed DAST HTML
+
+```http
+GET /runs/:runId/artifacts/exports/dast-report.html
+```
+
+```bash
+curl -sS http://34.205.79.22:4400/runs/<runId>/artifacts/exports/dast-report.html \
+  -H "x-internal-secret: <REDTEAM_AGENT_SECRET>"
+```
+
+Parsing handoff:
+
+```text
+docs/dast-html-report-handoff.md
 ```
 
 ## Frontend AI Integration Logic

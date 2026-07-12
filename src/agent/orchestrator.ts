@@ -6,6 +6,7 @@ import { ensureRunDirs, listArtifacts, runArtifactDir, writeFindingsExport, writ
 import { publishRunEvent } from "../events/run-events.js";
 import { sendErrorCallback, sendInputRequestCallback, sendResultsCallback, sendStatusCallback } from "../events/callback-events.js";
 import { assertRunIsAllowed } from "../security/safety-gate.js";
+import { writeDastHtmlReport } from "../reports/dast-html-report.js";
 import { downloadArtifact } from "../tools/fetch-artifact.js";
 import { runCodeQl } from "../tools/codeql.js";
 import { runCheckov } from "../tools/checkov.js";
@@ -218,6 +219,9 @@ export async function processRun(input: EngagementRunInput) {
     summary.durationMs = Math.round(performance.now() - started);
     summary.findingCount = summary.findings.length;
     await writeFindingsExport(runId, summary.findings);
+    if (input.template === "web-dast" || input.template === "web-scan") {
+      await writeDastHtmlReport(summary, input);
+    }
     summary.artifacts = await listArtifacts(runId);
     summary.synapdomeExportKey = await writeSynapDomeExport(summary);
     summary.artifacts = await listArtifacts(runId);

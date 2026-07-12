@@ -92,7 +92,7 @@ exports/synapdome-export.json
 
 ### Applications / Web / Burp Legacy Plugin
 
-Status: plugin handoff created
+Status: packaged MVP available
 
 Repo manifest:
 
@@ -100,13 +100,25 @@ Repo manifest:
 plugins/legacy/burp-suite/plugin-manifest.json
 ```
 
-This is a client-side plugin concept. The frontend/client team should use it to build a Burp extension that captures authorized sitemap/proxy/scanner evidence, uploads the evidence to SynapDome storage, and then queues supported Red Team Agent runs.
+Installable package:
+
+```text
+release-packages/synapdome-burp-extension-v0.1.0.jar
+```
+
+Installation guide:
+
+```text
+docs/legacy-plugin-installation.md
+```
+
+This is a client-side plugin. It captures selected authorized Burp messages, uploads the evidence to SynapDome storage, and lets SynapDome queue supported Red Team Agent runs.
 
 The current server does not run Burp Suite headlessly.
 
 ### Browser Traffic Legacy Plugin
 
-Status: plugin handoff created
+Status: packaged MVP available
 
 Repo manifest:
 
@@ -114,7 +126,19 @@ Repo manifest:
 plugins/legacy/browser-extension/plugin-manifest.json
 ```
 
-This is a client-side browser extension concept for capturing authorized DevTools/HAR/API evidence, uploading it to SynapDome storage, and using the captured context to queue web/API scans.
+Installable package:
+
+```text
+release-packages/synapdome-browser-extension-v0.1.0.zip
+```
+
+Installation guide:
+
+```text
+docs/legacy-plugin-installation.md
+```
+
+This is a client-side browser extension for capturing authorized browser traffic metadata, uploading it to SynapDome storage, and using the captured context to queue web/API scans.
 
 ## Plugin Discovery API
 
@@ -249,7 +273,7 @@ Red Team Agents
 │   ├── Web
 │   │   ├── ZAP ✅
 │   │   ├── Nuclei ✅
-│   │   └── Burp plugin handoff ✅
+│   │   └── Burp packaged MVP ✅
 │   └── Mobile
 │       ├── Android / MobSF ✅
 │       └── iOS / MobSF ✅

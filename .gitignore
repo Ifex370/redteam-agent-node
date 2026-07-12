@@ -5,5 +5,6 @@ dist/
 /artifacts/
 .tmp/
 targets/
+plugins/legacy/**/build/
 .DS_Store
 *.log

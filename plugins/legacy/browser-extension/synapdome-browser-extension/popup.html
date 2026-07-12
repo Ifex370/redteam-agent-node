@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SynapDome Traffic Capture</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <strong>SynapDome</strong>
+        <span id="state">Idle</span>
+      </header>
+
+      <label>
+        SynapDome API URL
+        <input id="apiBaseUrl" placeholder="https://synapdome.example.com">
+      </label>
+
+      <label>
+        API token
+        <input id="apiToken" type="password" placeholder="Paste user/session token">
+      </label>
+
+      <label>
+        Tenant ID
+        <input id="tenantId" placeholder="tenant_...">
+      </label>
+
+      <label>
+        Engagement ID
+        <input id="engagementId" placeholder="engagement_...">
+      </label>
+
+      <label>
+        Allowed domains
+        <input id="allowedDomains" placeholder="example.com, api.example.com">
+      </label>
+
+      <label>
+        Target URL
+        <input id="targetUrl" placeholder="https://app.example.com">
+      </label>
+
+      <section class="buttons">
+        <button id="save">Save</button>
+        <button id="toggleCapture">Start</button>
+        <button id="upload">Upload</button>
+        <button id="clear">Clear</button>
+      </section>
+
+      <p id="summary">0 captured requests</p>
+      <pre id="log"></pre>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

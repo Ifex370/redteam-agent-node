@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "SynapDome Traffic Capture",
+  "description": "Capture authorized browser traffic and submit engagement artifacts to SynapDome.",
+  "version": "0.1.0",
+  "permissions": ["storage", "webRequest", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_title": "SynapDome",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

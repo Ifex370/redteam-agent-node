@@ -103,7 +103,7 @@ For current web testing, queue:
 
 ```json
 {
-  "template": "web-scan",
+  "template": "web-dast",
   "targets": [
     {
       "kind": "url",

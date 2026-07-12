@@ -5,6 +5,30 @@ const deniedHosts = new Set([
   "metadata.google.internal"
 ]);
 
+function normalizeAllowedDomain(value: string) {
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return "";
+
+  try {
+    return new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`).hostname
+      .replace(/^\*\./, "");
+  } catch {
+    return trimmed
+      .replace(/^https?:\/\//, "")
+      .replace(/\/.*$/, "")
+      .replace(/:\d+$/, "")
+      .replace(/^\*\./, "");
+  }
+}
+
+function hostIsInAllowedDomains(host: string, allowedDomains: string[]) {
+  const normalizedHost = host.toLowerCase();
+  return allowedDomains
+    .map(normalizeAllowedDomain)
+    .filter(Boolean)
+    .some((domain) => normalizedHost === domain || normalizedHost.endsWith(`.${domain}`));
+}
+
 export function assertRunIsAllowed(input: EngagementRunInput) {
   if (!input.policy.authorized) {
     throw new Error("Run refused: authorization attestation is required.");
@@ -40,7 +64,7 @@ export function assertRunIsAllowed(input: EngagementRunInput) {
     }
   }
 
-  if (input.template === "web-scan") {
+  if (input.template === "web-scan" || input.template === "web-dast") {
     const unsupported = input.targets.filter((target) => target.kind !== "url");
     if (unsupported.length > 0) {
       throw new Error("Web scan only supports url targets.");
@@ -49,9 +73,7 @@ export function assertRunIsAllowed(input: EngagementRunInput) {
     for (const target of input.targets) {
       if (!target.url) continue;
       const host = new URL(target.url).hostname.toLowerCase();
-      const allowedDomains = input.policy.allowedDomains.map((domain) => domain.toLowerCase());
-      const isAllowed = allowedDomains.some((domain) => host === domain || host.endsWith(`.${domain}`));
-      if (!isAllowed) {
+      if (!hostIsInAllowedDomains(host, input.policy.allowedDomains)) {
         throw new Error(`Run refused: ${host} is not listed in policy.allowedDomains.`);
       }
     }

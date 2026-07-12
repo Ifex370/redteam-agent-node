@@ -34,7 +34,7 @@ Status: closed
 Run template:
 
 ```text
-web-scan
+web-dast
 ```
 
 Tool value:
@@ -65,7 +65,7 @@ Status: closed
 Run template:
 
 ```text
-web-scan
+web-dast
 ```
 
 Tool value:
@@ -190,7 +190,7 @@ Sample body:
 {
   "tenantId": "tenant_demo",
   "engagementId": "engagement_web_app_demo",
-  "template": "web-scan",
+  "template": "web-dast",
   "targets": [
     {
       "kind": "url",
@@ -216,7 +216,7 @@ Important:
 
 - `policy.authorized` must be `true`.
 - `targets[0].url` must be an HTTP or HTTPS URL.
-- `policy.allowedDomains` must include the target hostname or parent domain.
+- `policy.allowedDomains` must include the target hostname or parent domain. Accepted examples: `example.com`, `www.example.com`, `*.example.com`, or `https://www.example.com`.
 - Use `tools: ["nuclei"]` for Nuclei only.
 - Use `tools: ["zap"]` for ZAP only.
 - Use `tools: ["nuclei", "zap"]` for both.
@@ -259,7 +259,7 @@ The SynapDome frontend agent should:
 2. Ask for confirmation that the user is authorized to test the target.
 3. Derive `allowedDomains` from the target hostname, then ask the user to confirm it.
 4. Let the user choose Nuclei, ZAP, or both.
-5. Submit `POST /runs` with `template: "web-scan"`.
+5. Submit `POST /runs` with `template: "web-dast"`. The older `web-scan` template remains accepted as a compatibility alias.
 6. Subscribe to `/runs/:runId/stream` or poll `/runs/:runId`.
 7. Ingest `exports/synapdome-export.json` into SynapDome findings.
 

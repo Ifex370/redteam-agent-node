@@ -92,7 +92,7 @@ function webScanSteps(input: EngagementRunInput): RunStep[] {
   const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["nuclei", "zap"];
   const supportedTools = requestedTools.filter((tool) => tool === "nuclei" || tool === "zap");
   if (supportedTools.length === 0) {
-    throw new Error("No supported web-scan tools requested. Supported tools: nuclei, zap.");
+    throw new Error("No supported web DAST tools requested. Supported tools: nuclei, zap.");
   }
 
   return supportedTools.map((tool) => ({
@@ -104,7 +104,7 @@ function webScanSteps(input: EngagementRunInput): RunStep[] {
 }
 
 export function planRun(input: EngagementRunInput): PlannedRun {
-  if (input.template === "web-scan") {
+  if (input.template === "web-scan" || input.template === "web-dast") {
     const target = input.targets.find((item) => item.kind === "url");
     if (!target?.url) {
       throw new InputRequiredError({

@@ -10,6 +10,7 @@ import { writeDastHtmlReport } from "../reports/dast-html-report.js";
 import { downloadArtifact } from "../tools/fetch-artifact.js";
 import { runCodeQl } from "../tools/codeql.js";
 import { runCheckov } from "../tools/checkov.js";
+import { runDirectoryEnumeration } from "../tools/directory-enumeration.js";
 import { cloneGitRepo } from "../tools/git-runner.js";
 import { runGrypeFilesystem } from "../tools/grype.js";
 import { runMobSf } from "../tools/mobsf.js";
@@ -49,6 +50,13 @@ function callbackPhase(status: RunSummary["status"]) {
   if (status === "running_tool") return "executing";
   if (status === "analyzing_results" || status === "normalizing") return "analyzing";
   return status;
+}
+
+function toolMetas(toolResult: {
+  tool: RunSummary["toolsRun"][number];
+  tools?: RunSummary["toolsRun"];
+}) {
+  return toolResult.tools ?? [toolResult.tool];
 }
 
 async function writeStatus(input: EngagementRunInput, summary: RunSummary, status: RunSummary["status"], data?: unknown) {
@@ -144,7 +152,7 @@ export async function processRun(input: EngagementRunInput) {
     }
 
     for (const step of summary.steps) {
-      if (!["semgrep", "trufflehog", "codeql", "trivy", "grype", "checkov", "tfsec", "terrascan", "mobsf", "trivy-image", "nuclei", "zap"].includes(step.tool)) {
+      if (!["semgrep", "trufflehog", "codeql", "trivy", "grype", "checkov", "tfsec", "terrascan", "mobsf", "trivy-image", "nuclei", "zap", "directory-enumeration"].includes(step.tool)) {
         step.status = "skipped";
         step.error = `No adapter implemented for ${step.tool}`;
         continue;
@@ -194,12 +202,18 @@ export async function processRun(input: EngagementRunInput) {
                           ? await runNuclei({ runId, url: plan.urlTarget!.url })
                           : step.tool === "zap"
                             ? await runZapBaseline({ runId, url: plan.urlTarget!.url })
-                            : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
+                            : step.tool === "directory-enumeration"
+                              ? await runDirectoryEnumeration({
+                                runId,
+                                url: plan.urlTarget!.url,
+                                requestedTools: input.policy.tools
+                              })
+                              : await runTrivyImageTar({ runId, imageTarPath: imageTarPath!, asset: imageAsset });
       step.status = "succeeded";
       step.completedAt = new Date().toISOString();
       step.findingCount = toolResult.findings.length;
       step.artifacts = toolResult.artifacts;
-      summary.toolsRun.push(toolResult.tool);
+      summary.toolsRun.push(...toolMetas(toolResult));
       summary.findings.push(...toolResult.findings);
 
       await writeStatus(input, summary, "analyzing_results", { status: "analyzing_results", step });

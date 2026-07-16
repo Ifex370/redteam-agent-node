@@ -104,6 +104,8 @@ sudo docker pull tenable/terrascan:1.19.9
 sudo docker pull opensecurity/mobile-security-framework-mobsf:v4.4.6
 sudo docker pull projectdiscovery/nuclei:v3.3.8
 sudo docker pull ghcr.io/zaproxy/zaproxy:stable
+sudo docker pull epi052/feroxbuster:latest
+sudo docker pull ghcr.io/ffuf/ffuf:latest
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-$(basename "$APP_DIR")}"
 export COMPOSE_PROJECT_NAME
 MOBSF_VOLUME="${COMPOSE_PROJECT_NAME}_mobsf-data"

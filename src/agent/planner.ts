@@ -103,7 +103,44 @@ function webScanSteps(input: EngagementRunInput): RunStep[] {
   }));
 }
 
+function directoryEnumerationSteps(input: EngagementRunInput): RunStep[] {
+  const requestedTools = input.policy.tools.length > 0 ? input.policy.tools : ["feroxbuster", "ffuf"];
+  const supportedTools = requestedTools.filter((tool) => tool === "feroxbuster" || tool === "ffuf");
+  if (supportedTools.length === 0) {
+    throw new Error("No supported directory-enumeration tools requested. Supported tools: feroxbuster, ffuf.");
+  }
+
+  return [{
+    stepId: `step_${nanoid(10)}`,
+    tool: "directory-enumeration",
+    status: "planned",
+    reason: `A web URL was supplied, so run ${supportedTools.join(" and ")} and consolidate discovered paths into one canonical response.`
+  }];
+}
+
 export function planRun(input: EngagementRunInput): PlannedRun {
+  if (input.template === "directory-enumeration") {
+    const target = input.targets.find((item) => item.kind === "url");
+    if (!target?.url) {
+      throw new InputRequiredError({
+        id: `input_${nanoid(10)}`,
+        status: "open",
+        question: "Directory enumeration needs a url target.",
+        requiredFields: [
+          { key: "targets[0].kind", label: "Target type", description: "Use url." },
+          { key: "targets[0].url", label: "Authorized web application URL" }
+        ],
+        resumeAction: "provide_directory_url",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    return {
+      urlTarget: { url: target.url },
+      steps: directoryEnumerationSteps(input)
+    };
+  }
+
   if (input.template === "web-scan" || input.template === "web-dast") {
     const target = input.targets.find((item) => item.kind === "url");
     if (!target?.url) {

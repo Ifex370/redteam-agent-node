@@ -66,10 +66,10 @@ export function assertRunIsAllowed(input: EngagementRunInput) {
     }
   }
 
-  if (input.template === "web-scan" || input.template === "web-dast") {
+  if (input.template === "web-scan" || input.template === "web-dast" || input.template === "directory-enumeration") {
     const unsupported = input.targets.filter((target) => target.kind !== "url");
     if (unsupported.length > 0) {
-      throw new Error("Web scan only supports url targets.");
+      throw new Error(`${input.template} only supports url targets.`);
     }
 
     for (const target of input.targets) {

@@ -71,6 +71,27 @@ export const synapDomePlugins: SynapDomePlugin[] = [
     artifacts: ["tool-outputs/codeql/codeql.sarif", "exports/synapdome-export.json"]
   },
   {
+    id: "applications.web.directory-enumeration",
+    name: "Directory Enumeration",
+    category: "Applications / Web",
+    stage: "server-tool",
+    status: "available",
+    template: "directory-enumeration",
+    tool: "directory-enumeration",
+    targetKind: "url",
+    description: "Unified directory and endpoint discovery using Feroxbuster and ffuf with one canonical result contract.",
+    requiredInputs: [
+      { key: "targets[0].url", label: "Target URL", description: "Authorized HTTP or HTTPS web application URL." },
+      { key: "policy.allowedDomains", label: "Allowed domains", description: "Must include the target hostname or parent domain." }
+    ],
+    samplePolicyTools: ["feroxbuster", "ffuf"],
+    artifacts: [
+      "exports/directory-results.json",
+      "tool-outputs/feroxbuster/feroxbuster.jsonl",
+      "tool-outputs/ffuf/ffuf.json"
+    ]
+  },
+  {
     id: "applications.web.nuclei",
     name: "Nuclei",
     category: "Applications / Web",
@@ -150,6 +171,7 @@ export const roadmapStatus = {
   "Supply Chain / Infrastructure as Code / Terrascan": "closed",
   "Applications / Web / Nuclei": "closed",
   "Applications / Web / ZAP": "closed",
+  "Applications / Web / Directory Enumeration": "closed",
   "Applications / Web / Burp": "packaged-mvp-available",
   "Applications / Web / Browser Extension": "packaged-mvp-available",
   "Applications / Mobile / Android / MobSF": "closed",

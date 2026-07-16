@@ -1,0 +1,18 @@
+{
+  "tenantId": "tenant_demo",
+  "engagementId": "engagement_directory_demo",
+  "template": "directory-enumeration",
+  "targets": [
+    {
+      "kind": "url",
+      "url": "https://example.com/"
+    }
+  ],
+  "policy": {
+    "authorized": true,
+    "allowedDomains": ["example.com"],
+    "maxDurationMinutes": 15,
+    "network": "restricted",
+    "tools": ["feroxbuster", "ffuf"]
+  }
+}

@@ -11,7 +11,7 @@ import { ffufAdapter } from "../directory/adapters/ffuf.adapter.js";
 import { runDockerTool } from "./docker-runner.js";
 
 const feroxbusterImage = "epi052/feroxbuster:latest";
-const ffufImage = "ghcr.io/ffuf/ffuf:latest";
+const ffufImage = "parrotsec/ffuf:latest";
 const defaultWordlist = [
   "admin",
   "api",

@@ -1,0 +1,22 @@
+{
+  "goal": "Assess a login flow safely",
+  "requiredInputs": [
+    "authorized target URL",
+    "confirmation that authentication testing is in scope",
+    "test credentials or permission to inspect without logging in"
+  ],
+  "plan": [
+    "Discover login and account recovery pages",
+    "Capture form fields, cookies, redirects, and security headers",
+    "Request approval before submitting credentials",
+    "Run a bounded login flow script",
+    "Analyze session handling and authorization clues",
+    "Save screenshots and redacted request metadata"
+  ],
+  "approvalRequiredBefore": [
+    "credential submission",
+    "password reset request",
+    "role testing",
+    "generated script execution"
+  ]
+}

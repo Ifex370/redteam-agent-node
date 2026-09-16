@@ -1,0 +1,34 @@
+{
+  "goal": "Assess a web application for common exposure and misconfiguration issues",
+  "scope": {
+    "targets": ["https://example.com"],
+    "allowedDomains": ["example.com"]
+  },
+  "availableTools": ["nuclei", "zap", "directory-enumeration", "playwright-browser"],
+  "plan": [
+    {
+      "step": "Validate target and scope",
+      "approvalRequired": false
+    },
+    {
+      "step": "Open the target in a controlled browser and collect passive observations",
+      "approvalRequired": false
+    },
+    {
+      "step": "Run Nuclei web DAST templates",
+      "approvalRequired": true
+    },
+    {
+      "step": "Review scanner output and browser evidence",
+      "approvalRequired": false
+    },
+    {
+      "step": "Suggest follow-up ZAP baseline or directory enumeration if useful",
+      "approvalRequired": true
+    }
+  ],
+  "nextAction": {
+    "type": "request_approval",
+    "reason": "The next step sends active scanner traffic to the target"
+  }
+}

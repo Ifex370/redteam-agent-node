@@ -1,0 +1,23 @@
+{
+  "goal": "Assess a payment or checkout flow safely",
+  "requiredInputs": [
+    "authorized target URL",
+    "confirmation that payment testing is in scope",
+    "test account credentials if needed",
+    "confirmation that only sandbox or test payment data will be used"
+  ],
+  "plan": [
+    "Discover payment and checkout entry points",
+    "Observe cart, pricing, coupon, invoice, callback, and order endpoints",
+    "Request approval before form submission or state-changing actions",
+    "Generate a bounded Playwright script for approved happy-path steps",
+    "Capture network and screenshot evidence",
+    "Correlate evidence with scanner findings"
+  ],
+  "blockedActionsWithoutExplicitAuthorization": [
+    "real payment",
+    "fund transfer",
+    "order mutation",
+    "high-volume testing"
+  ]
+}

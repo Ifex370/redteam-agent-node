@@ -42,7 +42,7 @@ The form includes consent, a hidden bot field, body limits, server validation, a
 
 ## Content and launch handoff
 
-Visible copy contains no hyphen or dash characters. Assets include the supplied SynapDome logo. Fonts use Google Fonts with local system fallbacks. No testimonials, fabricated customers or numeric price claims are included.
+Visible copy contains no hyphen or dash characters. Theme matches synapdome.com with dark navy surfaces, emerald accents, Inter typography and rounded controls. Assets include the supplied SynapDome logo. Fonts use Google Fonts with local system fallbacks. No testimonials, fabricated customers or numeric price claims are included.
 
 The service catalog covers web, mobile, API, cloud, delivery pipeline and network reviews. Capability reference: https://github.com/CyberStrikeus/CyberStrike#agents and its MCP ecosystem section. Actual delivery depends on agreed access, tooling and scope.
 

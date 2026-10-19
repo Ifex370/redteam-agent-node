@@ -9,3 +9,5 @@ targets/
 plugins/legacy/**/build/
 .DS_Store
 *.log
+
+/private-onboarding/

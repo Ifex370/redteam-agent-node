@@ -53,3 +53,7 @@ The requested 48 hour refund offer is included. The page describes kickoff after
 ```sh
 python3 -m unittest test_server.py
 ```
+
+## New Node.js scope and signing flow
+
+See [ONBOARDING.md](ONBOARDING.md) for the current Node.js onboarding deployment, DocuSign template setup and integration notes. The Python deployment instructions above describe the previous intake and do not implement the new signing flow.

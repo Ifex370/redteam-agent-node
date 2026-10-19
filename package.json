@@ -9,7 +9,10 @@
     "submit:sample": "tsx src/cli/submit-sample.ts samples/web-sast.engagement.json",
     "build": "tsc -p tsconfig.json",
     "start:api": "node dist/api/server.js",
-    "start:worker": "node dist/worker/worker.js"
+    "start:worker": "node dist/worker/worker.js",
+    "dev:onboarding": "tsx watch src/onboarding/server.ts",
+    "start:onboarding": "node dist/onboarding/server.js",
+    "test:onboarding": "tsx --test tests/onboarding.test.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",

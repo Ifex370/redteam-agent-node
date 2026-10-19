@@ -21,10 +21,14 @@
     "fastify": "^5.8.5",
     "ioredis": "^5.4.2",
     "nanoid": "^5.0.9",
+    "nodemailer": "^10.1.7",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "@types/nodemailer": "^8.0.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

@@ -1,0 +1,18 @@
+{
+  "provider": "DedSec Africa",
+  "registration": "1808601",
+  "providerContact": "enterprise@dedsec.com",
+  "fee": "",
+  "taxes": "To be stated in the agreed quotation",
+  "payment": "No payment is due before kickoff. Testing starts after scope, access and commercial terms are agreed. The Customer receives notice when the final report is ready; payment unlocks access to the full report and detailed findings. Preliminary remediation guidance is provided within 48 hours so the Customer can begin fixing issues.",
+  "delivery": "Preliminary report within 48 hours and finalized report within one week (7 calendar days) of the mutually confirmed kickoff. The requested window is not a confirmed booking.",
+  "cancellation": "Any charges for work completed before cancellation must be agreed in writing before kickoff.",
+  "walkthrough": "Optional remediation walkthroughs are billed separately per hour at a rate agreed before the session.",
+  "retest": "One verification of the reported findings within 30 days of report delivery",
+  "retention": "Illustrative: assessment evidence retained for 30 days after delivery; signed agreements for 12 months; backup expiry within a further 30 days",
+  "processing": "Local generation on this computer only for this demonstration. No external model or signing service receives the form data",
+  "reportRights": "The Customer may use the report internally and share it confidentially with its advisers and remediation teams. The Provider retains its existing tools and methods",
+  "liability": "Not finalized for customer use. This preview does not establish a liability allocation or create a live engagement",
+  "law": "Not selected for this demonstration. Governing law and dispute terms must be approved by DedSec before customer signing",
+  "providerAcceptance": "Local demonstration only. No engagement is accepted or scheduled"
+}

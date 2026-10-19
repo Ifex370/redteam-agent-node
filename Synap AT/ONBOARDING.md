@@ -1,44 +1,120 @@
-# Node.js customer onboarding handoff
+# SynapDome onboarding deployment handover
 
-This adds a scope wizard and DocuSign integration for at.synapdome.com. It does not start scans or expose the assessment worker API. Production, staging and combined scopes are accepted. Signed scope is preserved as an immutable submission and attached to the agreement. Do not edit stored inputs after signature; create a replacement agreement for scope changes.
+## Approved customer flow
 
-## Run
+Customer fills details and scope → reviews the generated PDF → selects
+**Submit for review** → enterprise@synapdome.com receives the PDF → customer
+receives an acknowledgement from enterprise@synapdome.com.
 
-From the repository root, use Node.js 22 or newer:
+Operations adds the fee and hourly remediation rate, confirms scope and terms,
+then emails the finalized PDF to the customer for signature using the normal
+business mailbox. Countersign and return a completed copy. DocuSign is not
+required. No payment, signature, booking or scan is initiated by this form.
 
-```
+The agreement uses the supplied DedSec Africa letterhead. The fee is blank.
+Preliminary remediation guidance is due within 48 hours of confirmed kickoff;
+the final report is due within seven calendar days. No payment before kickoff.
+Payment unlocks the full finalized report and findings. Walkthroughs are billed
+separately per hour. There is no refund promise. Payment gating is an agreed
+commercial term, not an implemented payment portal.
+
+## Resend setup
+
+1. Create a Resend account. Add `synapdome.com` as a sending domain, so the
+   sender can be exactly `enterprise@synapdome.com`.
+2. Add the exact DNS verification records displayed by Resend and wait until
+   verified. Preserve existing mailbox MX records. Sending verification does
+   not create the business mailbox: ensure enterprise@synapdome.com actually
+   receives mail and can be used by operations to reply manually.
+3. Create a sending API key restricted to this domain where available. Save
+   it only in the deployment secret store or a private root `.env` file.
+4. Copy `Synap AT/onboarding.env.example` into the deployment environment.
+   Set SMTP_PASSWORD to that API key. SMTP username is `resend`, host is
+   `smtp.resend.com`, and port 465 uses TLS. Port 587 with STARTTLS also works.
+5. Confirm SMTP_FROM is `enterprise@synapdome.com`. The staff recipient is
+   fixed server side to that same address. Staff notifications use the
+   customer's address as Reply-To; customer acknowledgements reply to staff.
+6. Complete one real test submission using a mailbox you control. Confirm
+   both emails arrive, the PDF opens, and the acknowledgement sender is correct.
+   Inspect the Resend Emails dashboard for delivery or bounce status.
+
+Official references:
+https://resend.com/docs/send-with-smtp
+https://resend.com/docs/dashboard/domains/introduction
+
+## Deploy the Node service
+
+Use Node.js 24 LTS from the repository root:
+
+```sh
 npm ci
 npm run build
 npm run test:onboarding
 npm run start:onboarding
 ```
 
-Copy the settings in `Synap AT/onboarding.env.example` into the deployment environment or a private root `.env`. Never commit credentials or the RSA private key. Reverse proxy the site over HTTPS to ONBOARDING_PORT. The service serves the marketing files and `/onboarding.html`. Use ONE process with this file store; it serializes writes. Keep ONBOARDING_DATA_DIR on persistent private storage, back it up, restrict OS access, and set a retention policy. For multiple replicas, replace Store with a transactional database, distributed rate limits and a durable sending queue.
+Run under your existing process manager with restart on failure, working
+directory set to the repository root, and the private environment loaded.
+Create ONBOARDING_DATA_DIR with service-account-only access on persistent
+storage outside the public web root. Run one process with this file store.
+Back up the private directory and define a retention period.
 
-The earlier server.py and Dockerfile remain legacy. They cannot serve the new onboarding API. Run this Node service instead, or integrate `buildOnboarding` routes into your existing Node host. Do not expose the internal worker API to implement the public form. This does not change or connect the existing `/runs` endpoints.
+Reverse proxy HTTPS at `at.synapdome.com` to the configured loopback port
+(default 4174). Forward `/api/onboarding/*`, `/pdfjs/*`, and the static routes.
+Set PUBLIC_ORIGIN to exactly `https://at.synapdome.com`, without a trailing
+slash. ONBOARDING_LOCAL_PREVIEW must be `false` for actual email sending.
 
-The deployed marketing page has diverged from this repository. If the host has newer copy or layout, keep it and add a `href="/onboarding.html"` call to action. Deploy onboarding.html, onboarding.js, onboarding.css alongside the existing style.css and assets/logo.png. The repository index now points its review links to the wizard; the old enquiry JavaScript is removed.
+This service serves `/onboarding.html`, the PDF viewer assets and marketing
+site. The old Python server and old Dockerfile do not serve these APIs.
+Do not expose the separate internal assessment worker API. Keep newer live
+marketing changes if the deployed page differs from this repository and add
+an `/onboarding.html` link. No DocuSign environment variables are needed.
+Legacy DocuSign endpoints remain in the code for compatibility but the form
+uses the manual email review flow.
 
-## DocuSign setup required before live use
+## Draft documents and manual completion
 
-1. Create an integration key and RSA key pair, identify the sender user GUID and account GUID, and grant the sender's OAuth consent for `signature impersonation`. Configure the JWT fields in the example environment.
-2. Use the account's API base URI (from DocuSign user info). Demo defaults are supplied. Production uses `account.docusign.com` for OAuth and the account's production REST API URI. The sending account needs API access and applicable go live approval.
-3. Create a reviewed agreement template with exactly one signer role named `Customer` (or DS_SIGNER_ROLE). Include required signature/date tabs, and text tabs labelled `company_name` and `scope_summary` assigned to that role. The scope_summary points to a separate Assessment Scope document included in the same envelope. This attachment contains all customer inputs and the exact engagement reference. Ensure the template explicitly incorporates this attachment. Review the actual rendered envelope in demo, including long scope text and page breaks, before live use. Agreement terms, pricing, liability and refund wording are supplied by the business, not generated by this code.
-4. Configure an account level Connect HTTPS webhook to `/api/docusign/connect`. Use JSON SIM format, subscribe to completed, declined and voided envelope events, enable HMAC, and put the shared secret in DS_CONNECT_SECRET. Do not enable document inclusion in notifications: the listener fetches the signed combined PDF and completion certificate from the API. Its 100 KB body limit expects metadata notifications.
-5. Send a demo agreement to a mailbox you control. Verify the scope attachment and locked text, sign it, then confirm the status becomes ready_to_schedule and private storage contains the signed PDF. Test decline and webhook retry too. Unit tests mock the provider; no live DocuSign send has been performed for this change.
+`Synap AT/templates/dedsec-letterhead.pdf` supplies the letterhead.
+`Synap AT/templates/demo-terms.json` supplies draft defaults. These still
+include illustrative retention, liability, governing law and provider
+acceptance wording. Review and replace those terms in the finalized PDF
+before sending it for signature. The emailed draft is explicitly unsigned
+and marked for internal review. Do not treat it as a finalized contract.
 
-References: https://developers.docusign.com/platform/auth/jwt/ , https://developers.docusign.com/platform/webhooks/connect/hmac/ , https://developers.docusign.com/docs/esign-rest-api/reference/envelopes/envelopes/create/
+The PDFs are ordinary PDFs, not interactive form fields. Operations needs a
+PDF editor to update pricing and finalize text. Never edit a signed PDF;
+issue a replacement agreement if scope changes. Staff then stores the signed
+copy using the existing private engagement record process.
 
-## Delivery and status semantics
+## Failure handling and launch checks
 
-POST /api/onboarding validates services, counts, explicit targets, environment, activities, exclusions, window, emergency contact, consent and authority. Counts mean API operations, mobile apps, web apps, cloud accounts/environments, hosts/IPs or code repositories. Cloud resource detail and IP ranges belong in targets/details. No credentials or file uploads are collected. Swagger/documentation URLs and application build references may be specified; a separate secure upload channel can be added later.
+Submissions and draft PDFs are persisted privately before sending. Status
+`awaiting_review` means SMTP accepted the staff email, not inbox delivery.
+`acknowledged: false` means the staff email was accepted but customer
+acknowledgement failed. `delivery_uncertain` requires operator investigation
+in Resend before retrying. No automatic retry queue exists. A process crash
+can leave a record in `sending`; investigate it similarly. Resend headers
+provide separate idempotency keys per reference for staff and customer mail.
 
-The submission is persisted before sending. Unconfigured DocuSign returns 503 honestly. Provider timeouts/errors produce `delivery_uncertain`, not a false success. Contact operations rather than resubmitting. DocuSign transactionId equals the local UUID for reconciliation. On a failed/uncertain send, the operator must look up the envelope by transaction ID in DocuSign before retrying and associate its envelope ID with the private record. Do not blindly create a new envelope. Requests interrupted after persistence also need this reconciliation. The current implementation intentionally has no automatic resend.
+Add edge bot protection and rate limits before launch. The built-in rate
+limit is five POST requests per peer IP per hour; preview and submission
+both count. Behind a reverse proxy all clients may share that bucket. Adapt
+trusted proxy handling to the actual hosting topology before public traffic;
+never blindly trust arbitrary forwarded IP headers. For multiple replicas,
+replace file storage and in-memory limits with shared durable services.
 
-The browser gets an opaque status token, held only in memory and sent as an Authorization header. It is not a customer login; refreshing loses the status view. The emailed DocuSign signing link still works. No public list endpoint or public signed document download exists. Signing state is obtained from the DocuSign API after verifying Connect HMAC over the exact request bytes. Duplicate completed notifications do not redownload or regress state. Unknown envelopes return 503 for retry and require reconciliation if sending was interrupted. Store keys are random references, not email addresses.
+Verify invalid input is rejected, missing SMTP returns an honest error,
+customer data is absent from public status responses, and the private data
+folder is not web accessible. Review logs and Resend bounces for failures.
+No real Resend send was performed during implementation because credentials
+and verified sending domain were not supplied. Automated checks use mocks.
 
-Completion archives the signed combined PDF, then marks ready_to_schedule. It does not enqueue testing. Operations should match scope, arrange access and agree kickoff separately. A later worker handoff should use the stored scope rather than treating arbitrary document text as executable instructions.
+## Local demonstration
 
-## Operational requirements
+```sh
+ONBOARDING_LOCAL_PREVIEW=true ONBOARDING_PORT=4176 PUBLIC_ORIGIN=http://127.0.0.1:4176 npm run start:onboarding
+```
 
-Add edge bot protection and rate limiting before public launch. The built in limit allows five submissions per direct peer IP per hour, in memory, so reverse proxied traffic shares a bucket; configure proxy edge limits and trusted proxy handling for your hosting topology. Never trust arbitrary X-Forwarded-For headers. Same origin checks are not bot prevention. Configure monitoring for delivery_uncertain, webhook failures and storage failures. Files contain company details and target information: use encrypted disks/backups and a limited service account. Changing DS_CONNECT_SECRET requires coordinating Connect rotation. Test API reachability, sender consent, template mapping and the webhook in the real environment.
+Open http://127.0.0.1:4176/onboarding.html. Generate a PDF and select Submit
+for review. This simulates the outcome and never sends mail, even if SMTP
+credentials are present. It requires a loopback host and origin.

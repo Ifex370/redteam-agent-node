@@ -1,0 +1,20 @@
+{
+  "upstream": "https://github.com/CyberStrikeus/CyberStrike.git",
+  "commit": "2bda675b68c8f81412267a5b331b74539e2d4e19",
+  "bun": "1.3.9",
+  "android": {
+    "avd": "SynapDome_Pixel_API35",
+    "device": "pixel_7",
+    "image": "system-images;android-35;google_apis;arm64-v8a",
+    "image_revision": "9",
+    "emulator": "37.2.13",
+    "platform_tools": "37.0.1",
+    "frida": "17.8.2",
+    "serial": "emulator-5554",
+    "frida_port": 27044,
+    "ram_mb": 2048,
+    "cpu_cores": 4,
+    "frida_tools": "14.6.0"
+  },
+  "captured": "2026-11-22"
+}

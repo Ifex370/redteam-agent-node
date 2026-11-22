@@ -1,0 +1,15 @@
+*.env
+!*.env.example
+*.pem
+*.key
+*.apk
+*.ipa
+*.tar.gz
+*.xz
+*.qcow2
+*.img
+*.db
+*.sqlite*
+*.conf
+.venv/
+__pycache__/

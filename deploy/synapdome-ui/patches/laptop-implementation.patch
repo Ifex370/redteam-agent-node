@@ -1,0 +1,2232 @@
+diff --git a/packages/app/index.html b/packages/app/index.html
+index 8fd82afc..b773aa7d 100644
+--- a/packages/app/index.html
++++ b/packages/app/index.html
+@@ -3,31 +3,31 @@
+   <head>
+     <meta charset="utf-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+-    <title>CyberStrike</title>
+-    <link rel="icon" type="image/svg+xml" href="/favicon-v3.svg" />
+-    <link rel="icon" href="/favicon-v3.svg" />
+-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v3.png" />
+-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v3.svg" />
+-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-v3.svg" />
++    <title>SynapDome</title>
++    <link rel="icon" type="image/png" href="/synapdome-logo.png" />
++    <link rel="icon" href="/synapdome-logo.png" />
++    <link rel="apple-touch-icon" sizes="180x180" href="/synapdome-logo.png" />
++    <link rel="icon" type="image/png" sizes="32x32" href="/synapdome-logo.png" />
++    <link rel="icon" type="image/png" sizes="16x16" href="/synapdome-logo.png" />
+     <link rel="manifest" href="/site.webmanifest" />
+-    <link rel="shortcut icon" href="/favicon-v3.svg" />
+-    <meta name="theme-color" content="#000000" />
++    <link rel="shortcut icon" href="/synapdome-logo.png" />
++    <meta name="theme-color" content="#020617" />
+     <meta
+       name="description"
+       content="Autonomous offensive security agent — AI-powered pentesting with 13+ specialized agents, 120+ OWASP test cases, 176 MCP tools."
+     />
+-    <meta property="og:title" content="CyberStrike" />
++    <meta property="og:title" content="SynapDome" />
+     <meta
+       property="og:description"
+       content="Autonomous offensive security agent — AI-powered pentesting with 13+ specialized agents, 120+ OWASP test cases, 176 MCP tools."
+     />
+-    <meta property="og:image" content="/social-share.png" />
++    <meta property="og:image" content="/synapdome-logo.png" />
+     <meta property="og:type" content="website" />
+-    <meta property="og:site_name" content="CyberStrike" />
++    <meta property="og:site_name" content="SynapDome" />
+     <meta name="twitter:card" content="summary_large_image" />
+-    <meta name="twitter:title" content="CyberStrike" />
++    <meta name="twitter:title" content="SynapDome" />
+     <meta name="twitter:description" content="Autonomous offensive security agent — AI-powered pentesting." />
+-    <meta property="twitter:image" content="/social-share.png" />
++    <meta property="twitter:image" content="/synapdome-logo.png" />
+     <script id="cs-theme-preload-script" src="/cs-theme-preload.js"></script>
+   </head>
+   <body class="antialiased overscroll-none text-12-regular overflow-hidden">
+diff --git a/packages/app/public/cs-theme-preload.js b/packages/app/public/cs-theme-preload.js
+index 7798be0d..3cddbd54 100644
+--- a/packages/app/public/cs-theme-preload.js
++++ b/packages/app/public/cs-theme-preload.js
+@@ -1,6 +1,9 @@
+ ;(function () {
+   var themeId = localStorage.getItem("cyberstrike-theme-id")
+-  if (!themeId) return
++  if (!themeId || themeId === "cs-1") {
++    themeId = "synapdome"
++    localStorage.setItem("cyberstrike-theme-id", themeId)
++  }
+ 
+   var scheme = localStorage.getItem("cyberstrike-color-scheme") || "system"
+   var isDark = scheme === "dark" || (scheme === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
+diff --git a/packages/app/src/components/titlebar.tsx b/packages/app/src/components/titlebar.tsx
+index cd3cfbd9..7df3ae73 100644
+--- a/packages/app/src/components/titlebar.tsx
++++ b/packages/app/src/components/titlebar.tsx
+@@ -2,6 +2,7 @@ import { createEffect, createMemo, Show, untrack } from "solid-js"
+ import { createStore } from "solid-js/store"
+ import { useLocation, useNavigate } from "@solidjs/router"
+ import { IconButton } from "@cyberstrike-io/ui/icon-button"
++import { Mark } from "@cyberstrike-io/ui/logo"
+ import { Icon } from "@cyberstrike-io/ui/icon"
+ import { Button } from "@cyberstrike-io/ui/button"
+ import { Tooltip, TooltipKeybind } from "@cyberstrike-io/ui/tooltip"
+@@ -188,9 +189,13 @@ export function Titlebar() {
+             />
+           </div>
+         </Show>
++        <div class="flex items-center gap-2 px-2 shrink-0" aria-label="SynapDome">
++          <Mark />
++          <span class="hidden md:inline text-14-semibold text-text-strong">SynapDome</span>
++        </div>
+         <div class="flex items-center gap-3 shrink-0">
+           <TooltipKeybind
+-            class={web() ? "hidden xl:flex shrink-0 ml-14" : "hidden xl:flex shrink-0 ml-2"}
++            class={web() ? "hidden xl:flex shrink-0 ml-2" : "hidden xl:flex shrink-0 ml-2"}
+             placement="bottom"
+             title={language.t("command.sidebar.toggle")}
+             keybind={command.keybind("sidebar.toggle")}
+diff --git a/packages/app/src/i18n/ar.ts b/packages/app/src/i18n/ar.ts
+index 349eac70..82d8a86c 100644
+--- a/packages/app/src/i18n/ar.ts
++++ b/packages/app/src/i18n/ar.ts
+@@ -100,7 +100,7 @@ export const dict = {
+   "dialog.model.empty": "لا توجد نتائج للنماذج",
+   "dialog.model.manage": "إدارة النماذج",
+   "dialog.model.manage.description": "تخصيص النماذج التي تظهر في محدد النماذج.",
+-  "dialog.model.unpaid.freeModels.title": "نماذج مجانية مقدمة من CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "نماذج مجانية مقدمة من SynapDome",
+   "dialog.model.unpaid.addMore.title": "إضافة المزيد من النماذج من موفرين مشهورين",
+   "dialog.provider.viewAll": "عرض المزيد من الموفرين",
+   "provider.connect.title": "اتصال {{provider}}",
+@@ -111,7 +111,7 @@ export const dict = {
+   "provider.connect.status.waiting": "في انتظار التفويض...",
+   "provider.connect.status.failed": "فشل التفويض: {{error}}",
+   "provider.connect.apiKey.description":
+-    "أدخل مفتاح واجهة برمجة تطبيقات {{provider}} الخاص بك لتوصيل حسابك واستخدام نماذج {{provider}} في CyberStrike.",
++    "أدخل مفتاح واجهة برمجة تطبيقات {{provider}} الخاص بك لتوصيل حسابك واستخدام نماذج {{provider}} في SynapDome.",
+   "provider.connect.apiKey.label": "مفتاح واجهة برمجة تطبيقات {{provider}}",
+   "provider.connect.apiKey.placeholder": "مفتاح API",
+   "provider.connect.apiKey.required": "مفتاح API مطلوب",
+@@ -125,7 +125,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "قم بزيارة ",
+   "provider.connect.oauth.code.visit.link": "هذا الرابط",
+   "provider.connect.oauth.code.visit.suffix":
+-    " للحصول على رمز التفويض الخاص بك لتوصيل حسابك واستخدام نماذج {{provider}} في CyberStrike.",
++    " للحصول على رمز التفويض الخاص بك لتوصيل حسابك واستخدام نماذج {{provider}} في SynapDome.",
+   "provider.connect.oauth.code.label": "رمز تفويض {{method}}",
+   "provider.connect.oauth.code.placeholder": "رمز التفويض",
+   "provider.connect.oauth.code.required": "رمز التفويض مطلوب",
+@@ -133,7 +133,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "قم بزيارة ",
+   "provider.connect.oauth.auto.visit.link": "هذا الرابط",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " وأدخل الرمز أدناه لتوصيل حسابك واستخدام نماذج {{provider}} في CyberStrike.",
++    " وأدخل الرمز أدناه لتوصيل حسابك واستخدام نماذج {{provider}} في SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "رمز التأكيد",
+   "provider.connect.toast.connected.title": "تم توصيل {{provider}}",
+   "provider.connect.toast.connected.description": "نماذج {{provider}} متاحة الآن للاستخدام.",
+@@ -273,7 +273,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "البحث في المجلدات",
+   "dialog.directory.empty": "لم يتم العثور على مجلدات",
+   "dialog.server.title": "الخوادم",
+-  "dialog.server.description": "تبديل خادم CyberStrike الذي يتصل به هذا التطبيق.",
++  "dialog.server.description": "تبديل خادم SynapDome الذي يتصل به هذا التطبيق.",
+   "dialog.server.search.placeholder": "البحث في الخوادم",
+   "dialog.server.empty": "لا توجد خوادم بعد",
+   "dialog.server.add.title": "إضافة خادم",
+@@ -391,7 +391,7 @@ export const dict = {
+   "error.page.action.checking": "جارٍ التحقق...",
+   "error.page.action.checkUpdates": "التحقق من وجود تحديثات",
+   "error.page.action.updateTo": "تحديث إلى {{version}}",
+-  "error.page.report.prefix": "يرجى الإبلاغ عن هذا الخطأ لفريق CyberStrike",
++  "error.page.report.prefix": "يرجى الإبلاغ عن هذا الخطأ لفريق SynapDome",
+   "error.page.report.discord": "على Discord",
+   "error.page.version": "الإصدار: {{version}}",
+   "error.dev.rootNotFound":
+@@ -407,7 +407,7 @@ export const dict = {
+   "error.chain.didYouMean": "هل كنت تعني: {{suggestions}}",
+   "error.chain.modelNotFound": "النموذج غير موجود: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "تحقق من أسماء الموفر/النموذج في التكوين (cyberstrike.json)",
+-  "error.chain.mcpFailed": 'فشل خادم MCP "{{name}}". لاحظ أن CyberStrike لا يدعم مصادقة MCP بعد.',
++  "error.chain.mcpFailed": 'فشل خادم MCP "{{name}}". لاحظ أن SynapDome لا يدعم مصادقة MCP بعد.',
+   "error.chain.providerAuthFailed": "فشلت مصادقة الموفر ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed": 'فشل تهيئة الموفر "{{provider}}". تحقق من بيانات الاعتماد والتكوين.',
+   "error.chain.configJsonInvalid": "ملف التكوين في {{path}} ليس JSON(C) صالحًا",
+@@ -505,29 +505,29 @@ export const dict = {
+   "sidebar.workspaces.enable": "تمكين مساحات العمل",
+   "sidebar.workspaces.disable": "تعطيل مساحات العمل",
+   "sidebar.gettingStarted.title": "البدء",
+-  "sidebar.gettingStarted.line1": "يتضمن CyberStrike نماذج مجانية حتى تتمكن من البدء فورًا.",
++  "sidebar.gettingStarted.line1": "يتضمن SynapDome نماذج مجانية حتى تتمكن من البدء فورًا.",
+   "sidebar.gettingStarted.line2": "قم بتوصيل أي موفر لاستخدام النماذج، بما في ذلك Claude و GPT و Gemini وما إلى ذلك.",
+   "sidebar.project.recentSessions": "الجلسات الحديثة",
+   "sidebar.project.viewAllSessions": "عرض جميع الجلسات",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "سطح المكتب",
+   "settings.section.server": "الخادم",
+   "settings.tab.general": "عام",
+   "settings.tab.shortcuts": "اختصارات",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "تكامل WSL",
+-  "settings.desktop.wsl.description": "تشغيل خادم CyberStrike داخل WSL على Windows.",
++  "settings.desktop.wsl.description": "تشغيل خادم SynapDome داخل WSL على Windows.",
+   "settings.general.section.appearance": "المظهر",
+   "settings.general.section.notifications": "إشعارات النظام",
+   "settings.general.section.updates": "التحديثات",
+   "settings.general.section.sounds": "المؤثرات الصوتية",
+   "settings.general.section.display": "شاشة العرض",
+   "settings.general.row.language.title": "اللغة",
+-  "settings.general.row.language.description": "تغيير لغة العرض لـ CyberStrike",
++  "settings.general.row.language.description": "تغيير لغة العرض لـ SynapDome",
+   "settings.general.row.appearance.title": "المظهر",
+-  "settings.general.row.appearance.description": "تخصيص كيفية ظهور CyberStrike على جهازك",
++  "settings.general.row.appearance.description": "تخصيص كيفية ظهور SynapDome على جهازك",
+   "settings.general.row.theme.title": "السمة",
+-  "settings.general.row.theme.description": "تخصيص سمة CyberStrike.",
++  "settings.general.row.theme.description": "تخصيص سمة SynapDome.",
+   "settings.general.row.font.title": "الخط",
+   "settings.general.row.font.description": "تخصيص الخط الأحادي المستخدم في كتل التعليمات البرمجية",
+   "settings.general.row.wayland.title": "استخدام Wayland الأصلي",
+@@ -537,13 +537,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "ملاحظات الإصدار",
+   "settings.general.row.releaseNotes.description": 'عرض نوافذ "ما الجديد" المنبثقة بعد التحديثات',
+   "settings.updates.row.startup.title": "التحقق من التحديثات عند بدء التشغيل",
+-  "settings.updates.row.startup.description": "التحقق تلقائيًا من التحديثات عند تشغيل CyberStrike",
++  "settings.updates.row.startup.description": "التحقق تلقائيًا من التحديثات عند تشغيل SynapDome",
+   "settings.updates.row.check.title": "التحقق من التحديثات",
+   "settings.updates.row.check.description": "التحقق يدويًا من التحديثات وتثبيتها إذا كانت متاحة",
+   "settings.updates.action.checkNow": "تحقق الآن",
+   "settings.updates.action.checking": "جارٍ التحقق...",
+   "settings.updates.toast.latest.title": "أنت على آخر إصدار",
+-  "settings.updates.toast.latest.description": "أنت تستخدم أحدث إصدار من CyberStrike.",
++  "settings.updates.toast.latest.description": "أنت تستخدم أحدث إصدار من SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/br.ts b/packages/app/src/i18n/br.ts
+index 998aa35f..4f49673b 100644
+--- a/packages/app/src/i18n/br.ts
++++ b/packages/app/src/i18n/br.ts
+@@ -100,7 +100,7 @@ export const dict = {
+   "dialog.model.empty": "Nenhum resultado de modelo",
+   "dialog.model.manage": "Gerenciar modelos",
+   "dialog.model.manage.description": "Personalizar quais modelos aparecem no seletor de modelos.",
+-  "dialog.model.unpaid.freeModels.title": "Modelos gratuitos fornecidos pelo CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Modelos gratuitos fornecidos pelo SynapDome",
+   "dialog.model.unpaid.addMore.title": "Adicionar mais modelos de provedores populares",
+   "dialog.provider.viewAll": "Ver mais provedores",
+   "provider.connect.title": "Conectar {{provider}}",
+@@ -111,7 +111,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Aguardando autorização...",
+   "provider.connect.status.failed": "Autorização falhou: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Digite sua chave de API do {{provider}} para conectar sua conta e usar modelos do {{provider}} no CyberStrike.",
++    "Digite sua chave de API do {{provider}} para conectar sua conta e usar modelos do {{provider}} no SynapDome.",
+   "provider.connect.apiKey.label": "Chave de API do {{provider}}",
+   "provider.connect.apiKey.placeholder": "Chave de API",
+   "provider.connect.apiKey.required": "A chave de API é obrigatória",
+@@ -125,7 +125,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Visite ",
+   "provider.connect.oauth.code.visit.link": "este link",
+   "provider.connect.oauth.code.visit.suffix":
+-    " para obter seu código de autorização e conectar sua conta para usar modelos do {{provider}} no CyberStrike.",
++    " para obter seu código de autorização e conectar sua conta para usar modelos do {{provider}} no SynapDome.",
+   "provider.connect.oauth.code.label": "Código de autorização {{method}}",
+   "provider.connect.oauth.code.placeholder": "Código de autorização",
+   "provider.connect.oauth.code.required": "O código de autorização é obrigatório",
+@@ -133,7 +133,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Visite ",
+   "provider.connect.oauth.auto.visit.link": "este link",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " e digite o código abaixo para conectar sua conta e usar modelos do {{provider}} no CyberStrike.",
++    " e digite o código abaixo para conectar sua conta e usar modelos do {{provider}} no SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Código de confirmação",
+   "provider.connect.toast.connected.title": "{{provider}} conectado",
+   "provider.connect.toast.connected.description": "Modelos do {{provider}} agora estão disponíveis para uso.",
+@@ -273,7 +273,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "Buscar pastas",
+   "dialog.directory.empty": "Nenhuma pasta encontrada",
+   "dialog.server.title": "Servidores",
+-  "dialog.server.description": "Trocar para qual servidor CyberStrike este aplicativo se conecta.",
++  "dialog.server.description": "Trocar para qual servidor SynapDome este aplicativo se conecta.",
+   "dialog.server.search.placeholder": "Buscar servidores",
+   "dialog.server.empty": "Nenhum servidor ainda",
+   "dialog.server.add.title": "Adicionar um servidor",
+@@ -392,7 +392,7 @@ export const dict = {
+   "error.page.action.checking": "Verificando...",
+   "error.page.action.checkUpdates": "Verificar atualizações",
+   "error.page.action.updateTo": "Atualizar para {{version}}",
+-  "error.page.report.prefix": "Por favor, reporte este erro para a equipe do CyberStrike",
++  "error.page.report.prefix": "Por favor, reporte este erro para a equipe do SynapDome",
+   "error.page.report.discord": "no Discord",
+   "error.page.version": "Versão: {{version}}",
+   "error.dev.rootNotFound":
+@@ -408,7 +408,7 @@ export const dict = {
+   "error.chain.didYouMean": "Você quis dizer: {{suggestions}}",
+   "error.chain.modelNotFound": "Modelo não encontrado: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Verifique os nomes de provedor/modelo na sua configuração (cyberstrike.json)",
+-  "error.chain.mcpFailed": 'Servidor MCP "{{name}}" falhou. Nota: CyberStrike ainda não suporta autenticação MCP.',
++  "error.chain.mcpFailed": 'Servidor MCP "{{name}}" falhou. Nota: SynapDome ainda não suporta autenticação MCP.',
+   "error.chain.providerAuthFailed": "Autenticação do provedor falhou ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Falha ao inicializar provedor "{{provider}}". Verifique credenciais e configuração.',
+@@ -511,29 +511,29 @@ export const dict = {
+   "sidebar.workspaces.enable": "Habilitar espaços de trabalho",
+   "sidebar.workspaces.disable": "Desabilitar espaços de trabalho",
+   "sidebar.gettingStarted.title": "Começando",
+-  "sidebar.gettingStarted.line1": "CyberStrike inclui modelos gratuitos para você começar imediatamente.",
++  "sidebar.gettingStarted.line1": "SynapDome inclui modelos gratuitos para você começar imediatamente.",
+   "sidebar.gettingStarted.line2": "Conecte qualquer provedor para usar modelos, incluindo Claude, GPT, Gemini etc.",
+   "sidebar.project.recentSessions": "Sessões recentes",
+   "sidebar.project.viewAllSessions": "Ver todas as sessões",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "Desktop",
+   "settings.section.server": "Servidor",
+   "settings.tab.general": "Geral",
+   "settings.tab.shortcuts": "Atalhos",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL integration",
+-  "settings.desktop.wsl.description": "Executar o servidor CyberStrike dentro do WSL no Windows.",
++  "settings.desktop.wsl.description": "Executar o servidor SynapDome dentro do WSL no Windows.",
+   "settings.general.section.appearance": "Aparência",
+   "settings.general.section.notifications": "Notificações do sistema",
+   "settings.general.section.updates": "Atualizações",
+   "settings.general.section.sounds": "Efeitos sonoros",
+   "settings.general.section.display": "Tela",
+   "settings.general.row.language.title": "Idioma",
+-  "settings.general.row.language.description": "Alterar o idioma de exibição do CyberStrike",
++  "settings.general.row.language.description": "Alterar o idioma de exibição do SynapDome",
+   "settings.general.row.appearance.title": "Aparência",
+-  "settings.general.row.appearance.description": "Personalize como o CyberStrike aparece no seu dispositivo",
++  "settings.general.row.appearance.description": "Personalize como o SynapDome aparece no seu dispositivo",
+   "settings.general.row.theme.title": "Tema",
+-  "settings.general.row.theme.description": "Personalize como o CyberStrike é tematizado.",
++  "settings.general.row.theme.description": "Personalize como o SynapDome é tematizado.",
+   "settings.general.row.font.title": "Fonte",
+   "settings.general.row.font.description": "Personalize a fonte monoespaçada usada em blocos de código",
+   "settings.general.row.wayland.title": "Usar Wayland nativo",
+@@ -543,13 +543,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "Notas da versão",
+   "settings.general.row.releaseNotes.description": 'Mostrar pop-ups de "Novidades" após atualizações',
+   "settings.updates.row.startup.title": "Verificar atualizações ao iniciar",
+-  "settings.updates.row.startup.description": "Verificar atualizações automaticamente quando o CyberStrike iniciar",
++  "settings.updates.row.startup.description": "Verificar atualizações automaticamente quando o SynapDome iniciar",
+   "settings.updates.row.check.title": "Verificar atualizações",
+   "settings.updates.row.check.description": "Verificar atualizações manualmente e instalar se houver",
+   "settings.updates.action.checkNow": "Verificar agora",
+   "settings.updates.action.checking": "Verificando...",
+   "settings.updates.toast.latest.title": "Você está atualizado",
+-  "settings.updates.toast.latest.description": "Você está usando a versão mais recente do CyberStrike.",
++  "settings.updates.toast.latest.description": "Você está usando a versão mais recente do SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/bs.ts b/packages/app/src/i18n/bs.ts
+index 3002d5ac..b8a78365 100644
+--- a/packages/app/src/i18n/bs.ts
++++ b/packages/app/src/i18n/bs.ts
+@@ -110,7 +110,7 @@ export const dict = {
+   "dialog.model.manage": "Upravljaj modelima",
+   "dialog.model.manage.description": "Prilagodi koji se modeli prikazuju u izborniku modela.",
+ 
+-  "dialog.model.unpaid.freeModels.title": "Besplatni modeli koje obezbjeđuje CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Besplatni modeli koje obezbjeđuje SynapDome",
+   "dialog.model.unpaid.addMore.title": "Dodaj još modela od popularnih provajdera",
+ 
+   "dialog.provider.viewAll": "Prikaži više provajdera",
+@@ -123,7 +123,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Čekanje na autorizaciju...",
+   "provider.connect.status.failed": "Autorizacija nije uspjela: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Unesi svoj {{provider}} API ključ da povežeš račun i koristiš {{provider}} modele u CyberStrike-u.",
++    "Unesi svoj {{provider}} API ključ da povežeš račun i koristiš {{provider}} modele u SynapDome-u.",
+   "provider.connect.apiKey.label": "{{provider}} API ključ",
+   "provider.connect.apiKey.placeholder": "API ključ",
+   "provider.connect.apiKey.required": "API ključ je obavezan",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Posjeti ",
+   "provider.connect.oauth.code.visit.link": "ovaj link",
+   "provider.connect.oauth.code.visit.suffix":
+-    " da preuzmeš autorizacijski kod i povežeš račun te koristiš {{provider}} modele u CyberStrike-u.",
++    " da preuzmeš autorizacijski kod i povežeš račun te koristiš {{provider}} modele u SynapDome-u.",
+   "provider.connect.oauth.code.label": "{{method}} autorizacijski kod",
+   "provider.connect.oauth.code.placeholder": "Autorizacijski kod",
+   "provider.connect.oauth.code.required": "Autorizacijski kod je obavezan",
+@@ -145,7 +145,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Posjeti ",
+   "provider.connect.oauth.auto.visit.link": "ovaj link",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " i unesi kod ispod da povežeš račun i koristiš {{provider}} modele u CyberStrike-u.",
++    " i unesi kod ispod da povežeš račun i koristiš {{provider}} modele u SynapDome-u.",
+   "provider.connect.oauth.auto.confirmationCode": "Kod za potvrdu",
+   "provider.connect.toast.connected.title": "{{provider}} povezan",
+   "provider.connect.toast.connected.description": "{{provider}} modeli su sada dostupni za korištenje.",
+@@ -300,7 +300,7 @@ export const dict = {
+   "dialog.directory.empty": "Nema pronađenih foldera",
+ 
+   "dialog.server.title": "Serveri",
+-  "dialog.server.description": "Promijeni na koji se CyberStrike server ova aplikacija povezuje.",
++  "dialog.server.description": "Promijeni na koji se SynapDome server ova aplikacija povezuje.",
+   "dialog.server.search.placeholder": "Pretraži servere",
+   "dialog.server.empty": "Još nema servera",
+   "dialog.server.add.title": "Dodaj server",
+@@ -438,7 +438,7 @@ export const dict = {
+   "error.page.action.checking": "Provjera...",
+   "error.page.action.checkUpdates": "Provjeri ažuriranja",
+   "error.page.action.updateTo": "Ažuriraj na {{version}}",
+-  "error.page.report.prefix": "Molimo prijavi ovu grešku CyberStrike timu",
++  "error.page.report.prefix": "Molimo prijavi ovu grešku SynapDome timu",
+   "error.page.report.discord": "na Discordu",
+   "error.page.version": "Verzija: {{version}}",
+ 
+@@ -458,7 +458,7 @@ export const dict = {
+   "error.chain.modelNotFound": "Model nije pronađen: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Provjeri konfiguraciju (cyberstrike.json) provider/model names",
+   "error.chain.mcpFailed":
+-    'MCP server "{{name}}" nije uspio. Napomena: CyberStrike još ne podržava MCP autentifikaciju.',
++    'MCP server "{{name}}" nije uspio. Napomena: SynapDome još ne podržava MCP autentifikaciju.',
+   "error.chain.providerAuthFailed": "Autentifikacija provajdera nije uspjela ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Neuspjelo inicijalizovanje provajdera "{{provider}}". Provjeri kredencijale i konfiguraciju.',
+@@ -573,12 +573,12 @@ export const dict = {
+   "sidebar.workspaces.enable": "Omogući radne prostore",
+   "sidebar.workspaces.disable": "Onemogući radne prostore",
+   "sidebar.gettingStarted.title": "Početak",
+-  "sidebar.gettingStarted.line1": "CyberStrike uključuje besplatne modele, tako da možeš odmah početi.",
++  "sidebar.gettingStarted.line1": "SynapDome uključuje besplatne modele, tako da možeš odmah početi.",
+   "sidebar.gettingStarted.line2": "Poveži bilo kojeg provajdera da koristiš modele, npr. Claude, GPT, Gemini itd.",
+   "sidebar.project.recentSessions": "Nedavne sesije",
+   "sidebar.project.viewAllSessions": "Prikaži sve sesije",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+ 
+   "settings.section.desktop": "Desktop",
+   "settings.section.server": "Server",
+@@ -586,7 +586,7 @@ export const dict = {
+   "settings.tab.shortcuts": "Prečice",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL integracija",
+-  "settings.desktop.wsl.description": "Pokreni CyberStrike server unutar WSL-a na Windowsu.",
++  "settings.desktop.wsl.description": "Pokreni SynapDome server unutar WSL-a na Windowsu.",
+ 
+   "settings.general.section.appearance": "Izgled",
+   "settings.general.section.notifications": "Sistemske obavijesti",
+@@ -595,11 +595,11 @@ export const dict = {
+   "settings.general.section.display": "Prikaz",
+ 
+   "settings.general.row.language.title": "Jezik",
+-  "settings.general.row.language.description": "Promijeni jezik prikaza u CyberStrike-u",
++  "settings.general.row.language.description": "Promijeni jezik prikaza u SynapDome-u",
+   "settings.general.row.appearance.title": "Izgled",
+-  "settings.general.row.appearance.description": "Prilagodi kako CyberStrike izgleda na tvom uređaju",
++  "settings.general.row.appearance.description": "Prilagodi kako SynapDome izgleda na tvom uređaju",
+   "settings.general.row.theme.title": "Tema",
+-  "settings.general.row.theme.description": "Prilagodi temu CyberStrike-a.",
++  "settings.general.row.theme.description": "Prilagodi temu SynapDome-a.",
+   "settings.general.row.font.title": "Font",
+   "settings.general.row.font.description": "Prilagodi monospace font koji se koristi u blokovima koda",
+ 
+@@ -612,13 +612,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": 'Prikaži iskačuće prozore "Šta je novo" nakon ažuriranja',
+ 
+   "settings.updates.row.startup.title": "Provjeri ažuriranja pri pokretanju",
+-  "settings.updates.row.startup.description": "Automatski provjerava ažuriranja kada se CyberStrike pokrene",
++  "settings.updates.row.startup.description": "Automatski provjerava ažuriranja kada se SynapDome pokrene",
+   "settings.updates.row.check.title": "Provjeri ažuriranja",
+   "settings.updates.row.check.description": "Ručno provjeri ažuriranja i instaliraj ako su dostupna",
+   "settings.updates.action.checkNow": "Provjeri sada",
+   "settings.updates.action.checking": "Provjera...",
+   "settings.updates.toast.latest.title": "Sve je ažurno",
+-  "settings.updates.toast.latest.description": "Koristiš najnoviju verziju CyberStrike-a.",
++  "settings.updates.toast.latest.description": "Koristiš najnoviju verziju SynapDome-a.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/da.ts b/packages/app/src/i18n/da.ts
+index e9a7eed2..db9d9c45 100644
+--- a/packages/app/src/i18n/da.ts
++++ b/packages/app/src/i18n/da.ts
+@@ -110,7 +110,7 @@ export const dict = {
+   "dialog.model.manage": "Administrer modeller",
+   "dialog.model.manage.description": "Tilpas hvilke modeller der vises i modelvælgeren.",
+ 
+-  "dialog.model.unpaid.freeModels.title": "Gratis modeller leveret af CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Gratis modeller leveret af SynapDome",
+   "dialog.model.unpaid.addMore.title": "Tilføj flere modeller fra populære udbydere",
+ 
+   "dialog.provider.viewAll": "Vis flere udbydere",
+@@ -123,7 +123,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Venter på godkendelse...",
+   "provider.connect.status.failed": "Godkendelse mislykkedes: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Indtast din {{provider}} API-nøgle for at forbinde din konto og bruge {{provider}} modeller i CyberStrike.",
++    "Indtast din {{provider}} API-nøgle for at forbinde din konto og bruge {{provider}} modeller i SynapDome.",
+   "provider.connect.apiKey.label": "{{provider}} API-nøgle",
+   "provider.connect.apiKey.placeholder": "API-nøgle",
+   "provider.connect.apiKey.required": "API-nøgle er påkrævet",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Besøg ",
+   "provider.connect.oauth.code.visit.link": "dette link",
+   "provider.connect.oauth.code.visit.suffix":
+-    " for at hente din godkendelseskode for at forbinde din konto og bruge {{provider}} modeller i CyberStrike.",
++    " for at hente din godkendelseskode for at forbinde din konto og bruge {{provider}} modeller i SynapDome.",
+   "provider.connect.oauth.code.label": "{{method}} godkendelseskode",
+   "provider.connect.oauth.code.placeholder": "Godkendelseskode",
+   "provider.connect.oauth.code.required": "Godkendelseskode er påkrævet",
+@@ -145,7 +145,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Besøg ",
+   "provider.connect.oauth.auto.visit.link": "dette link",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " og indtast koden nedenfor for at forbinde din konto og bruge {{provider}} modeller i CyberStrike.",
++    " og indtast koden nedenfor for at forbinde din konto og bruge {{provider}} modeller i SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Bekræftelseskode",
+   "provider.connect.toast.connected.title": "{{provider}} forbundet",
+   "provider.connect.toast.connected.description": "{{provider}} modeller er nu tilgængelige.",
+@@ -298,7 +298,7 @@ export const dict = {
+   "dialog.directory.empty": "Ingen mapper fundet",
+ 
+   "dialog.server.title": "Servere",
+-  "dialog.server.description": "Skift hvilken CyberStrike-server denne app forbinder til.",
++  "dialog.server.description": "Skift hvilken SynapDome-server denne app forbinder til.",
+   "dialog.server.search.placeholder": "Søg servere",
+   "dialog.server.empty": "Ingen servere endnu",
+   "dialog.server.add.title": "Tilføj en server",
+@@ -435,7 +435,7 @@ export const dict = {
+   "error.page.action.checking": "Tjekker...",
+   "error.page.action.checkUpdates": "Tjek for opdateringer",
+   "error.page.action.updateTo": "Opdater til {{version}}",
+-  "error.page.report.prefix": "Rapporter venligst denne fejl til CyberStrike-teamet",
++  "error.page.report.prefix": "Rapporter venligst denne fejl til SynapDome-teamet",
+   "error.page.report.discord": "på Discord",
+   "error.page.version": "Version: {{version}}",
+ 
+@@ -455,7 +455,7 @@ export const dict = {
+   "error.chain.modelNotFound": "Model ikke fundet: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Tjek dine konfigurations (cyberstrike.json) udbyder/modelnavne",
+   "error.chain.mcpFailed":
+-    'MCP-server "{{name}}" fejlede. Bemærk, CyberStrike understøtter ikke MCP-godkendelse endnu.',
++    'MCP-server "{{name}}" fejlede. Bemærk, SynapDome understøtter ikke MCP-godkendelse endnu.',
+   "error.chain.providerAuthFailed": "Udbydergodkendelse mislykkedes ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Kunne ikke initialisere udbyder "{{provider}}". Tjek legitimationsoplysninger og konfiguration.',
+@@ -569,19 +569,19 @@ export const dict = {
+   "sidebar.workspaces.enable": "Aktiver arbejdsområder",
+   "sidebar.workspaces.disable": "Deaktiver arbejdsområder",
+   "sidebar.gettingStarted.title": "Kom i gang",
+-  "sidebar.gettingStarted.line1": "CyberStrike inkluderer gratis modeller så du kan starte med det samme.",
++  "sidebar.gettingStarted.line1": "SynapDome inkluderer gratis modeller så du kan starte med det samme.",
+   "sidebar.gettingStarted.line2": "Forbind enhver udbyder for at bruge modeller, inkl. Claude, GPT, Gemini osv.",
+   "sidebar.project.recentSessions": "Seneste sessioner",
+   "sidebar.project.viewAllSessions": "Vis alle sessioner",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "Desktop",
+   "settings.section.server": "Server",
+   "settings.tab.general": "Generelt",
+   "settings.tab.shortcuts": "Genveje",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL integration",
+-  "settings.desktop.wsl.description": "Kør CyberStrike-serveren inde i WSL på Windows.",
++  "settings.desktop.wsl.description": "Kør SynapDome-serveren inde i WSL på Windows.",
+ 
+   "settings.general.section.appearance": "Udseende",
+   "settings.general.section.notifications": "Systemmeddelelser",
+@@ -590,11 +590,11 @@ export const dict = {
+   "settings.general.section.display": "Skærm",
+ 
+   "settings.general.row.language.title": "Sprog",
+-  "settings.general.row.language.description": "Ændr visningssproget for CyberStrike",
++  "settings.general.row.language.description": "Ændr visningssproget for SynapDome",
+   "settings.general.row.appearance.title": "Udseende",
+-  "settings.general.row.appearance.description": "Tilpas hvordan CyberStrike ser ud på din enhed",
++  "settings.general.row.appearance.description": "Tilpas hvordan SynapDome ser ud på din enhed",
+   "settings.general.row.theme.title": "Tema",
+-  "settings.general.row.theme.description": "Tilpas hvordan CyberStrike er temabestemt.",
++  "settings.general.row.theme.description": "Tilpas hvordan SynapDome er temabestemt.",
+   "settings.general.row.font.title": "Skrifttype",
+   "settings.general.row.font.description": "Tilpas mono-skrifttypen brugt i kodeblokke",
+ 
+@@ -607,13 +607,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": 'Vis "Hvad er nyt"-popups efter opdateringer',
+ 
+   "settings.updates.row.startup.title": "Tjek for opdateringer ved opstart",
+-  "settings.updates.row.startup.description": "Tjek automatisk for opdateringer, når CyberStrike starter",
++  "settings.updates.row.startup.description": "Tjek automatisk for opdateringer, når SynapDome starter",
+   "settings.updates.row.check.title": "Tjek for opdateringer",
+   "settings.updates.row.check.description": "Tjek manuelt for opdateringer og installer, hvis tilgængelig",
+   "settings.updates.action.checkNow": "Tjek nu",
+   "settings.updates.action.checking": "Tjekker...",
+   "settings.updates.toast.latest.title": "Du er opdateret",
+-  "settings.updates.toast.latest.description": "Du kører den nyeste version af CyberStrike.",
++  "settings.updates.toast.latest.description": "Du kører den nyeste version af SynapDome.",
+ 
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+diff --git a/packages/app/src/i18n/de.ts b/packages/app/src/i18n/de.ts
+index 0ac48cd6..339016d0 100644
+--- a/packages/app/src/i18n/de.ts
++++ b/packages/app/src/i18n/de.ts
+@@ -104,7 +104,7 @@ export const dict = {
+   "dialog.model.empty": "Keine Modellergebnisse",
+   "dialog.model.manage": "Modelle verwalten",
+   "dialog.model.manage.description": "Anpassen, welche Modelle in der Modellauswahl erscheinen.",
+-  "dialog.model.unpaid.freeModels.title": "Kostenlose Modelle von CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Kostenlose Modelle von SynapDome",
+   "dialog.model.unpaid.addMore.title": "Weitere Modelle von beliebten Anbietern hinzufügen",
+   "dialog.provider.viewAll": "Mehr Anbieter anzeigen",
+   "provider.connect.title": "{{provider}} verbinden",
+@@ -115,7 +115,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Warten auf Autorisierung...",
+   "provider.connect.status.failed": "Autorisierung fehlgeschlagen: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Geben Sie Ihren {{provider}} API-Schlüssel ein, um Ihr Konto zu verbinden und {{provider}} Modelle in CyberStrike zu nutzen.",
++    "Geben Sie Ihren {{provider}} API-Schlüssel ein, um Ihr Konto zu verbinden und {{provider}} Modelle in SynapDome zu nutzen.",
+   "provider.connect.apiKey.label": "{{provider}} API-Schlüssel",
+   "provider.connect.apiKey.placeholder": "API-Schlüssel",
+   "provider.connect.apiKey.required": "API-Schlüssel ist erforderlich",
+@@ -129,7 +129,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Besuchen Sie ",
+   "provider.connect.oauth.code.visit.link": "diesen Link",
+   "provider.connect.oauth.code.visit.suffix":
+-    ", um Ihren Autorisierungscode zu erhalten, Ihr Konto zu verbinden und {{provider}} Modelle in CyberStrike zu nutzen.",
++    ", um Ihren Autorisierungscode zu erhalten, Ihr Konto zu verbinden und {{provider}} Modelle in SynapDome zu nutzen.",
+   "provider.connect.oauth.code.label": "{{method}} Autorisierungscode",
+   "provider.connect.oauth.code.placeholder": "Autorisierungscode",
+   "provider.connect.oauth.code.required": "Autorisierungscode ist erforderlich",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Besuchen Sie ",
+   "provider.connect.oauth.auto.visit.link": "diesen Link",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " und geben Sie den untenstehenden Code ein, um Ihr Konto zu verbinden und {{provider}} Modelle in CyberStrike zu nutzen.",
++    " und geben Sie den untenstehenden Code ein, um Ihr Konto zu verbinden und {{provider}} Modelle in SynapDome zu nutzen.",
+   "provider.connect.oauth.auto.confirmationCode": "Bestätigungscode",
+   "provider.connect.toast.connected.title": "{{provider}} verbunden",
+   "provider.connect.toast.connected.description": "{{provider}} Modelle sind jetzt verfügbar.",
+@@ -279,7 +279,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "Ordner durchsuchen",
+   "dialog.directory.empty": "Keine Ordner gefunden",
+   "dialog.server.title": "Server",
+-  "dialog.server.description": "Wechseln Sie den CyberStrike-Server, mit dem sich diese App verbindet.",
++  "dialog.server.description": "Wechseln Sie den SynapDome-Server, mit dem sich diese App verbindet.",
+   "dialog.server.search.placeholder": "Server durchsuchen",
+   "dialog.server.empty": "Noch keine Server",
+   "dialog.server.add.title": "Server hinzufügen",
+@@ -399,7 +399,7 @@ export const dict = {
+   "error.page.action.checking": "Prüfen...",
+   "error.page.action.checkUpdates": "Nach Updates suchen",
+   "error.page.action.updateTo": "Auf {{version}} aktualisieren",
+-  "error.page.report.prefix": "Bitte melden Sie diesen Fehler dem CyberStrike-Team",
++  "error.page.report.prefix": "Bitte melden Sie diesen Fehler dem SynapDome-Team",
+   "error.page.report.discord": "auf Discord",
+   "error.page.version": "Version: {{version}}",
+   "error.dev.rootNotFound":
+@@ -416,7 +416,7 @@ export const dict = {
+   "error.chain.modelNotFound": "Modell nicht gefunden: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Überprüfen Sie Ihre Konfiguration (cyberstrike.json) auf Anbieter-/Modellnamen",
+   "error.chain.mcpFailed":
+-    'MCP-Server "{{name}}" fehlgeschlagen. Hinweis: CyberStrike unterstützt noch keine MCP-Authentifizierung.',
++    'MCP-Server "{{name}}" fehlgeschlagen. Hinweis: SynapDome unterstützt noch keine MCP-Authentifizierung.',
+   "error.chain.providerAuthFailed": "Anbieter-Authentifizierung fehlgeschlagen ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Anbieter "{{provider}}" konnte nicht initialisiert werden. Überprüfen Sie Anmeldeinformationen und Konfiguration.',
+@@ -519,30 +519,30 @@ export const dict = {
+   "sidebar.workspaces.enable": "Arbeitsbereiche aktivieren",
+   "sidebar.workspaces.disable": "Arbeitsbereiche deaktivieren",
+   "sidebar.gettingStarted.title": "Erste Schritte",
+-  "sidebar.gettingStarted.line1": "CyberStrike enthält kostenlose Modelle, damit Sie sofort loslegen können.",
++  "sidebar.gettingStarted.line1": "SynapDome enthält kostenlose Modelle, damit Sie sofort loslegen können.",
+   "sidebar.gettingStarted.line2":
+     "Verbinden Sie einen beliebigen Anbieter, um Modelle wie Claude, GPT, Gemini usw. zu nutzen.",
+   "sidebar.project.recentSessions": "Letzte Sitzungen",
+   "sidebar.project.viewAllSessions": "Alle Sitzungen anzeigen",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "Desktop",
+   "settings.section.server": "Server",
+   "settings.tab.general": "Allgemein",
+   "settings.tab.shortcuts": "Tastenkombinationen",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL-Integration",
+-  "settings.desktop.wsl.description": "CyberStrike-Server innerhalb von WSL unter Windows ausführen.",
++  "settings.desktop.wsl.description": "SynapDome-Server innerhalb von WSL unter Windows ausführen.",
+   "settings.general.section.appearance": "Erscheinungsbild",
+   "settings.general.section.notifications": "Systembenachrichtigungen",
+   "settings.general.section.updates": "Updates",
+   "settings.general.section.sounds": "Soundeffekte",
+   "settings.general.section.display": "Anzeige",
+   "settings.general.row.language.title": "Sprache",
+-  "settings.general.row.language.description": "Die Anzeigesprache für CyberStrike ändern",
++  "settings.general.row.language.description": "Die Anzeigesprache für SynapDome ändern",
+   "settings.general.row.appearance.title": "Erscheinungsbild",
+-  "settings.general.row.appearance.description": "Anpassen, wie CyberStrike auf Ihrem Gerät aussieht",
++  "settings.general.row.appearance.description": "Anpassen, wie SynapDome auf Ihrem Gerät aussieht",
+   "settings.general.row.theme.title": "Thema",
+-  "settings.general.row.theme.description": "Das Thema von CyberStrike anpassen.",
++  "settings.general.row.theme.description": "Das Thema von SynapDome anpassen.",
+   "settings.general.row.font.title": "Schriftart",
+   "settings.general.row.font.description": "Die in Codeblöcken verwendete Monospace-Schriftart anpassen",
+   "settings.general.row.wayland.title": "Natives Wayland verwenden",
+@@ -552,13 +552,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "Versionshinweise",
+   "settings.general.row.releaseNotes.description": '"Neuigkeiten"-Pop-ups nach Updates anzeigen',
+   "settings.updates.row.startup.title": "Beim Start nach Updates suchen",
+-  "settings.updates.row.startup.description": "Beim Start von CyberStrike automatisch nach Updates suchen",
++  "settings.updates.row.startup.description": "Beim Start von SynapDome automatisch nach Updates suchen",
+   "settings.updates.row.check.title": "Nach Updates suchen",
+   "settings.updates.row.check.description": "Manuell nach Updates suchen und installieren, wenn verfügbar",
+   "settings.updates.action.checkNow": "Jetzt prüfen",
+   "settings.updates.action.checking": "Wird geprüft...",
+   "settings.updates.toast.latest.title": "Du bist auf dem neuesten Stand",
+-  "settings.updates.toast.latest.description": "Du verwendest die aktuelle Version von CyberStrike.",
++  "settings.updates.toast.latest.description": "Du verwendest die aktuelle Version von SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/en.ts b/packages/app/src/i18n/en.ts
+index 15f6c9b3..24207e89 100644
+--- a/packages/app/src/i18n/en.ts
++++ b/packages/app/src/i18n/en.ts
+@@ -140,7 +140,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Waiting for authorization...",
+   "provider.connect.status.failed": "Authorization failed: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Enter your {{provider}} API key to connect your account and use {{provider}} models in CyberStrike.",
++    "Enter your {{provider}} API key to connect your account and use {{provider}} models in SynapDome.",
+   "provider.connect.apiKey.label": "{{provider}} API key",
+   "provider.connect.apiKey.placeholder": "API key",
+   "provider.connect.apiKey.required": "API key is required",
+@@ -154,7 +154,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Visit ",
+   "provider.connect.oauth.code.visit.link": "this link",
+   "provider.connect.oauth.code.visit.suffix":
+-    " to collect your authorization code to connect your account and use {{provider}} models in CyberStrike.",
++    " to collect your authorization code to connect your account and use {{provider}} models in SynapDome.",
+   "provider.connect.oauth.code.label": "{{method}} authorization code",
+   "provider.connect.oauth.code.placeholder": "Authorization code",
+   "provider.connect.oauth.code.required": "Authorization code is required",
+@@ -162,7 +162,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Visit ",
+   "provider.connect.oauth.auto.visit.link": "this link",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " and enter the code below to connect your account and use {{provider}} models in CyberStrike.",
++    " and enter the code below to connect your account and use {{provider}} models in SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Confirmation code",
+   "provider.connect.toast.connected.title": "{{provider}} connected",
+   "provider.connect.toast.connected.description": "{{provider}} models are now available to use.",
+@@ -364,7 +364,7 @@ export const dict = {
+   "dialog.directory.empty": "No folders found",
+ 
+   "dialog.server.title": "Servers",
+-  "dialog.server.description": "Switch which CyberStrike server this app connects to.",
++  "dialog.server.description": "Switch which SynapDome server this app connects to.",
+   "dialog.server.search.placeholder": "Search servers",
+   "dialog.server.empty": "No servers yet",
+   "dialog.server.add.title": "Add a server",
+@@ -394,10 +394,10 @@ export const dict = {
+   "dialog.server.current": "Current Server",
+   "dialog.server.status.default": "Default",
+ 
+-  "hub.connect.title": "Connect to CyberStrike",
+-  "hub.connect.description": "Connect to your local or remote CyberStrike server",
++  "hub.connect.title": "Connect to SynapDome",
++  "hub.connect.description": "Connect to your local or remote SynapDome server",
+   "hub.connect.localhost": "Local Server",
+-  "hub.connect.localhost.description": "Connect to CyberStrike running on localhost:4096",
++  "hub.connect.localhost.description": "Connect to SynapDome running on localhost:4096",
+   "hub.connect.remote": "Remote Server",
+   "hub.connect.remote.description": "Connect via Cloudflare Tunnel or custom URL",
+   "hub.connect.url": "Server URL",
+@@ -541,7 +541,7 @@ export const dict = {
+   "error.chain.didYouMean": "Did you mean: {{suggestions}}",
+   "error.chain.modelNotFound": "Model not found: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Check your config (cyberstrike.json) provider/model names",
+-  "error.chain.mcpFailed": 'MCP server "{{name}}" failed. Note, CyberStrike does not support MCP authentication yet.',
++  "error.chain.mcpFailed": 'MCP server "{{name}}" failed. Note, SynapDome does not support MCP authentication yet.',
+   "error.chain.providerAuthFailed": "Provider authentication failed ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Failed to initialize provider "{{provider}}". Check credentials and configuration.',
+@@ -662,12 +662,12 @@ export const dict = {
+   "sidebar.workspaces.enable": "Enable workspaces",
+   "sidebar.workspaces.disable": "Disable workspaces",
+   "sidebar.gettingStarted.title": "Getting started",
+-  "sidebar.gettingStarted.line1": "CyberStrike includes free models so you can start immediately.",
++  "sidebar.gettingStarted.line1": "SynapDome includes free models so you can start immediately.",
+   "sidebar.gettingStarted.line2": "Connect any provider to use models, inc. Claude, GPT, Gemini etc.",
+   "sidebar.project.recentSessions": "Recent sessions",
+   "sidebar.project.viewAllSessions": "View all sessions",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+ 
+   "settings.section.desktop": "Desktop",
+   "settings.section.server": "Server",
+@@ -675,7 +675,7 @@ export const dict = {
+   "settings.tab.shortcuts": "Shortcuts",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL integration",
+-  "settings.desktop.wsl.description": "Run the CyberStrike server inside WSL on Windows.",
++  "settings.desktop.wsl.description": "Run the SynapDome server inside WSL on Windows.",
+ 
+   "settings.general.section.appearance": "Appearance",
+   "settings.general.section.notifications": "System notifications",
+@@ -684,11 +684,11 @@ export const dict = {
+   "settings.general.section.display": "Display",
+ 
+   "settings.general.row.language.title": "Language",
+-  "settings.general.row.language.description": "Change the display language for CyberStrike",
++  "settings.general.row.language.description": "Change the display language for SynapDome",
+   "settings.general.row.appearance.title": "Appearance",
+-  "settings.general.row.appearance.description": "Customise how CyberStrike looks on your device",
++  "settings.general.row.appearance.description": "Customise how SynapDome looks on your device",
+   "settings.general.row.theme.title": "Theme",
+-  "settings.general.row.theme.description": "Customise how CyberStrike is themed.",
++  "settings.general.row.theme.description": "Customise how SynapDome is themed.",
+   "settings.general.row.font.title": "Font",
+   "settings.general.row.font.description": "Customise the mono font used in code blocks",
+ 
+@@ -701,13 +701,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": "Show What's New popups after updates",
+ 
+   "settings.updates.row.startup.title": "Check for updates on startup",
+-  "settings.updates.row.startup.description": "Automatically check for updates when CyberStrike launches",
++  "settings.updates.row.startup.description": "Automatically check for updates when SynapDome launches",
+   "settings.updates.row.check.title": "Check for updates",
+   "settings.updates.row.check.description": "Manually check for updates and install if available",
+   "settings.updates.action.checkNow": "Check now",
+   "settings.updates.action.checking": "Checking...",
+   "settings.updates.toast.latest.title": "You're up to date",
+-  "settings.updates.toast.latest.description": "You're running the latest version of CyberStrike.",
++  "settings.updates.toast.latest.description": "You're running the latest version of SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/es.ts b/packages/app/src/i18n/es.ts
+index 816a8bc8..11b4b07b 100644
+--- a/packages/app/src/i18n/es.ts
++++ b/packages/app/src/i18n/es.ts
+@@ -110,7 +110,7 @@ export const dict = {
+   "dialog.model.manage": "Gestionar modelos",
+   "dialog.model.manage.description": "Personalizar qué modelos aparecen en el selector de modelos.",
+ 
+-  "dialog.model.unpaid.freeModels.title": "Modelos gratuitos proporcionados por CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Modelos gratuitos proporcionados por SynapDome",
+   "dialog.model.unpaid.addMore.title": "Añadir más modelos de proveedores populares",
+ 
+   "dialog.provider.viewAll": "Ver más proveedores",
+@@ -123,7 +123,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Esperando autorización...",
+   "provider.connect.status.failed": "Autorización fallida: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Introduce tu clave API de {{provider}} para conectar tu cuenta y usar modelos de {{provider}} en CyberStrike.",
++    "Introduce tu clave API de {{provider}} para conectar tu cuenta y usar modelos de {{provider}} en SynapDome.",
+   "provider.connect.apiKey.label": "Clave API de {{provider}}",
+   "provider.connect.apiKey.placeholder": "Clave API",
+   "provider.connect.apiKey.required": "La clave API es obligatoria",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Visita ",
+   "provider.connect.oauth.code.visit.link": "este enlace",
+   "provider.connect.oauth.code.visit.suffix":
+-    " para obtener tu código de autorización para conectar tu cuenta y usar modelos de {{provider}} en CyberStrike.",
++    " para obtener tu código de autorización para conectar tu cuenta y usar modelos de {{provider}} en SynapDome.",
+   "provider.connect.oauth.code.label": "Código de autorización {{method}}",
+   "provider.connect.oauth.code.placeholder": "Código de autorización",
+   "provider.connect.oauth.code.required": "El código de autorización es obligatorio",
+@@ -145,7 +145,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Visita ",
+   "provider.connect.oauth.auto.visit.link": "este enlace",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " e introduce el código a continuación para conectar tu cuenta y usar modelos de {{provider}} en CyberStrike.",
++    " e introduce el código a continuación para conectar tu cuenta y usar modelos de {{provider}} en SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Código de confirmación",
+   "provider.connect.toast.connected.title": "{{provider}} conectado",
+   "provider.connect.toast.connected.description": "Los modelos de {{provider}} ahora están disponibles para usar.",
+@@ -299,7 +299,7 @@ export const dict = {
+   "dialog.directory.empty": "No se encontraron carpetas",
+ 
+   "dialog.server.title": "Servidores",
+-  "dialog.server.description": "Cambiar a qué servidor de CyberStrike se conecta esta app.",
++  "dialog.server.description": "Cambiar a qué servidor de SynapDome se conecta esta app.",
+   "dialog.server.search.placeholder": "Buscar servidores",
+   "dialog.server.empty": "No hay servidores aún",
+   "dialog.server.add.title": "Añadir un servidor",
+@@ -438,7 +438,7 @@ export const dict = {
+   "error.page.action.checking": "Comprobando...",
+   "error.page.action.checkUpdates": "Buscar actualizaciones",
+   "error.page.action.updateTo": "Actualizar a {{version}}",
+-  "error.page.report.prefix": "Por favor reporta este error al equipo de CyberStrike",
++  "error.page.report.prefix": "Por favor reporta este error al equipo de SynapDome",
+   "error.page.report.discord": "en Discord",
+   "error.page.version": "Versión: {{version}}",
+ 
+@@ -457,7 +457,7 @@ export const dict = {
+   "error.chain.didYouMean": "¿Quisiste decir: {{suggestions}}",
+   "error.chain.modelNotFound": "Modelo no encontrado: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Comprueba los nombres de proveedor/modelo en tu configuración (cyberstrike.json)",
+-  "error.chain.mcpFailed": 'El servidor MCP "{{name}}" falló. Nota, CyberStrike no soporta autenticación MCP todavía.',
++  "error.chain.mcpFailed": 'El servidor MCP "{{name}}" falló. Nota, SynapDome no soporta autenticación MCP todavía.',
+   "error.chain.providerAuthFailed": "Autenticación de proveedor fallida ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Fallo al inicializar proveedor "{{provider}}". Comprueba credenciales y configuración.',
+@@ -575,12 +575,12 @@ export const dict = {
+   "sidebar.workspaces.enable": "Habilitar espacios de trabajo",
+   "sidebar.workspaces.disable": "Deshabilitar espacios de trabajo",
+   "sidebar.gettingStarted.title": "Empezando",
+-  "sidebar.gettingStarted.line1": "CyberStrike incluye modelos gratuitos para que puedas empezar inmediatamente.",
++  "sidebar.gettingStarted.line1": "SynapDome incluye modelos gratuitos para que puedas empezar inmediatamente.",
+   "sidebar.gettingStarted.line2": "Conecta cualquier proveedor para usar modelos, inc. Claude, GPT, Gemini etc.",
+   "sidebar.project.recentSessions": "Sesiones recientes",
+   "sidebar.project.viewAllSessions": "Ver todas las sesiones",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+ 
+   "settings.section.desktop": "Escritorio",
+   "settings.section.server": "Servidor",
+@@ -588,7 +588,7 @@ export const dict = {
+   "settings.tab.shortcuts": "Atajos",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "Integración con WSL",
+-  "settings.desktop.wsl.description": "Ejecutar el servidor CyberStrike dentro de WSL en Windows.",
++  "settings.desktop.wsl.description": "Ejecutar el servidor SynapDome dentro de WSL en Windows.",
+ 
+   "settings.general.section.appearance": "Apariencia",
+   "settings.general.section.notifications": "Notificaciones del sistema",
+@@ -597,11 +597,11 @@ export const dict = {
+   "settings.general.section.display": "Pantalla",
+ 
+   "settings.general.row.language.title": "Idioma",
+-  "settings.general.row.language.description": "Cambiar el idioma de visualización para CyberStrike",
++  "settings.general.row.language.description": "Cambiar el idioma de visualización para SynapDome",
+   "settings.general.row.appearance.title": "Apariencia",
+-  "settings.general.row.appearance.description": "Personaliza cómo se ve CyberStrike en tu dispositivo",
++  "settings.general.row.appearance.description": "Personaliza cómo se ve SynapDome en tu dispositivo",
+   "settings.general.row.theme.title": "Tema",
+-  "settings.general.row.theme.description": "Personaliza el tema de CyberStrike.",
++  "settings.general.row.theme.description": "Personaliza el tema de SynapDome.",
+   "settings.general.row.font.title": "Fuente",
+   "settings.general.row.font.description": "Personaliza la fuente monoespaciada usada en bloques de código",
+ 
+@@ -615,13 +615,13 @@ export const dict = {
+     'Mostrar ventanas emergentes de "Novedades" después de las actualizaciones',
+ 
+   "settings.updates.row.startup.title": "Buscar actualizaciones al iniciar",
+-  "settings.updates.row.startup.description": "Buscar actualizaciones automáticamente cuando se inicia CyberStrike",
++  "settings.updates.row.startup.description": "Buscar actualizaciones automáticamente cuando se inicia SynapDome",
+   "settings.updates.row.check.title": "Buscar actualizaciones",
+   "settings.updates.row.check.description": "Buscar actualizaciones manualmente e instalarlas si hay alguna",
+   "settings.updates.action.checkNow": "Buscar ahora",
+   "settings.updates.action.checking": "Buscando...",
+   "settings.updates.toast.latest.title": "Estás al día",
+-  "settings.updates.toast.latest.description": "Estás usando la última versión de CyberStrike.",
++  "settings.updates.toast.latest.description": "Estás usando la última versión de SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/fr.ts b/packages/app/src/i18n/fr.ts
+index 5afde928..8026d6c5 100644
+--- a/packages/app/src/i18n/fr.ts
++++ b/packages/app/src/i18n/fr.ts
+@@ -100,7 +100,7 @@ export const dict = {
+   "dialog.model.empty": "Aucun résultat de modèle",
+   "dialog.model.manage": "Gérer les modèles",
+   "dialog.model.manage.description": "Personnalisez les modèles qui apparaissent dans le sélecteur.",
+-  "dialog.model.unpaid.freeModels.title": "Modèles gratuits fournis par CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Modèles gratuits fournis par SynapDome",
+   "dialog.model.unpaid.addMore.title": "Ajouter plus de modèles de fournisseurs populaires",
+   "dialog.provider.viewAll": "Voir plus de fournisseurs",
+   "provider.connect.title": "Connecter {{provider}}",
+@@ -111,7 +111,7 @@ export const dict = {
+   "provider.connect.status.waiting": "En attente d'autorisation...",
+   "provider.connect.status.failed": "Échec de l'autorisation : {{error}}",
+   "provider.connect.apiKey.description":
+-    "Entrez votre clé API {{provider}} pour connecter votre compte et utiliser les modèles {{provider}} dans CyberStrike.",
++    "Entrez votre clé API {{provider}} pour connecter votre compte et utiliser les modèles {{provider}} dans SynapDome.",
+   "provider.connect.apiKey.label": "Clé API {{provider}}",
+   "provider.connect.apiKey.placeholder": "Clé API",
+   "provider.connect.apiKey.required": "La clé API est requise",
+@@ -125,7 +125,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Visitez ",
+   "provider.connect.oauth.code.visit.link": "ce lien",
+   "provider.connect.oauth.code.visit.suffix":
+-    " pour récupérer votre code d'autorisation afin de connecter votre compte et utiliser les modèles {{provider}} dans CyberStrike.",
++    " pour récupérer votre code d'autorisation afin de connecter votre compte et utiliser les modèles {{provider}} dans SynapDome.",
+   "provider.connect.oauth.code.label": "Code d'autorisation {{method}}",
+   "provider.connect.oauth.code.placeholder": "Code d'autorisation",
+   "provider.connect.oauth.code.required": "Le code d'autorisation est requis",
+@@ -133,7 +133,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Visitez ",
+   "provider.connect.oauth.auto.visit.link": "ce lien",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " et entrez le code ci-dessous pour connecter votre compte et utiliser les modèles {{provider}} dans CyberStrike.",
++    " et entrez le code ci-dessous pour connecter votre compte et utiliser les modèles {{provider}} dans SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Code de confirmation",
+   "provider.connect.toast.connected.title": "{{provider}} connecté",
+   "provider.connect.toast.connected.description": "Les modèles {{provider}} sont maintenant disponibles.",
+@@ -273,7 +273,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "Rechercher des dossiers",
+   "dialog.directory.empty": "Aucun dossier trouvé",
+   "dialog.server.title": "Serveurs",
+-  "dialog.server.description": "Changez le serveur CyberStrike auquel cette application se connecte.",
++  "dialog.server.description": "Changez le serveur SynapDome auquel cette application se connecte.",
+   "dialog.server.search.placeholder": "Rechercher des serveurs",
+   "dialog.server.empty": "Aucun serveur pour l'instant",
+   "dialog.server.add.title": "Ajouter un serveur",
+@@ -386,7 +386,7 @@ export const dict = {
+   "toast.session.listFailed.title": "Échec du chargement des sessions pour {{project}}",
+   "toast.update.title": "Mise à jour disponible",
+   "toast.update.description":
+-    "Une nouvelle version d'CyberStrike ({{version}}) est maintenant disponible pour installation.",
++    "Une nouvelle version d'SynapDome ({{version}}) est maintenant disponible pour installation.",
+   "toast.update.action.installRestart": "Installer et redémarrer",
+   "toast.update.action.notYet": "Pas encore",
+   "error.page.title": "Quelque chose s'est mal passé",
+@@ -396,7 +396,7 @@ export const dict = {
+   "error.page.action.checking": "Vérification...",
+   "error.page.action.checkUpdates": "Vérifier les mises à jour",
+   "error.page.action.updateTo": "Mettre à jour vers {{version}}",
+-  "error.page.report.prefix": "Veuillez signaler cette erreur à l'équipe CyberStrike",
++  "error.page.report.prefix": "Veuillez signaler cette erreur à l'équipe SynapDome",
+   "error.page.report.discord": "sur Discord",
+   "error.page.version": "Version : {{version}}",
+   "error.dev.rootNotFound":
+@@ -414,7 +414,7 @@ export const dict = {
+   "error.chain.modelNotFound": "Modèle introuvable : {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Vérifiez votre configuration (cyberstrike.json) pour les noms de fournisseur/modèle",
+   "error.chain.mcpFailed":
+-    "Le serveur MCP \"{{name}}\" a échoué. Notez qu'CyberStrike ne supporte pas encore l'authentification MCP.",
++    "Le serveur MCP \"{{name}}\" a échoué. Notez qu'SynapDome ne supporte pas encore l'authentification MCP.",
+   "error.chain.providerAuthFailed": "Échec de l'authentification du fournisseur ({{provider}}) : {{message}}",
+   "error.chain.providerInitFailed":
+     'Échec de l\'initialisation du fournisseur "{{provider}}". Vérifiez les identifiants et la configuration.',
+@@ -518,30 +518,30 @@ export const dict = {
+   "sidebar.workspaces.disable": "Désactiver les espaces de travail",
+   "sidebar.gettingStarted.title": "Commencer",
+   "sidebar.gettingStarted.line1":
+-    "CyberStrike inclut des modèles gratuits pour que vous puissiez commencer immédiatement.",
++    "SynapDome inclut des modèles gratuits pour que vous puissiez commencer immédiatement.",
+   "sidebar.gettingStarted.line2":
+     "Connectez n'importe quel fournisseur pour utiliser des modèles, y compris Claude, GPT, Gemini etc.",
+   "sidebar.project.recentSessions": "Sessions récentes",
+   "sidebar.project.viewAllSessions": "Voir toutes les sessions",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "Bureau",
+   "settings.section.server": "Serveur",
+   "settings.tab.general": "Général",
+   "settings.tab.shortcuts": "Raccourcis",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "Intégration WSL",
+-  "settings.desktop.wsl.description": "Exécuter le serveur CyberStrike dans WSL sur Windows.",
++  "settings.desktop.wsl.description": "Exécuter le serveur SynapDome dans WSL sur Windows.",
+   "settings.general.section.appearance": "Apparence",
+   "settings.general.section.notifications": "Notifications système",
+   "settings.general.section.updates": "Mises à jour",
+   "settings.general.section.sounds": "Effets sonores",
+   "settings.general.section.display": "Affichage",
+   "settings.general.row.language.title": "Langue",
+-  "settings.general.row.language.description": "Changer la langue d'affichage pour CyberStrike",
++  "settings.general.row.language.description": "Changer la langue d'affichage pour SynapDome",
+   "settings.general.row.appearance.title": "Apparence",
+-  "settings.general.row.appearance.description": "Personnaliser l'apparence d'CyberStrike sur votre appareil",
++  "settings.general.row.appearance.description": "Personnaliser l'apparence d'SynapDome sur votre appareil",
+   "settings.general.row.theme.title": "Thème",
+-  "settings.general.row.theme.description": "Personnaliser le thème d'CyberStrike.",
++  "settings.general.row.theme.description": "Personnaliser le thème d'SynapDome.",
+   "settings.general.row.font.title": "Police",
+   "settings.general.row.font.description": "Personnaliser la police mono utilisée dans les blocs de code",
+   "settings.general.row.wayland.title": "Utiliser Wayland natif",
+@@ -551,13 +551,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "Notes de version",
+   "settings.general.row.releaseNotes.description": 'Afficher des pop-ups "Quoi de neuf" après les mises à jour',
+   "settings.updates.row.startup.title": "Vérifier les mises à jour au démarrage",
+-  "settings.updates.row.startup.description": "Vérifier automatiquement les mises à jour au lancement d'CyberStrike",
++  "settings.updates.row.startup.description": "Vérifier automatiquement les mises à jour au lancement d'SynapDome",
+   "settings.updates.row.check.title": "Vérifier les mises à jour",
+   "settings.updates.row.check.description": "Vérifier manuellement les mises à jour et installer si disponible",
+   "settings.updates.action.checkNow": "Vérifier maintenant",
+   "settings.updates.action.checking": "Vérification...",
+   "settings.updates.toast.latest.title": "Vous êtes à jour",
+-  "settings.updates.toast.latest.description": "Vous utilisez la dernière version d'CyberStrike.",
++  "settings.updates.toast.latest.description": "Vous utilisez la dernière version d'SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/ja.ts b/packages/app/src/i18n/ja.ts
+index 71b547e9..e22ff706 100644
+--- a/packages/app/src/i18n/ja.ts
++++ b/packages/app/src/i18n/ja.ts
+@@ -100,7 +100,7 @@ export const dict = {
+   "dialog.model.empty": "モデルが見つかりません",
+   "dialog.model.manage": "モデルを管理",
+   "dialog.model.manage.description": "モデルセレクターに表示するモデルをカスタマイズします。",
+-  "dialog.model.unpaid.freeModels.title": "CyberStrikeが提供する無料モデル",
++  "dialog.model.unpaid.freeModels.title": "SynapDomeが提供する無料モデル",
+   "dialog.model.unpaid.addMore.title": "人気のプロバイダーからモデルを追加",
+   "dialog.provider.viewAll": "さらにプロバイダーを表示",
+   "provider.connect.title": "{{provider}}を接続",
+@@ -111,7 +111,7 @@ export const dict = {
+   "provider.connect.status.waiting": "認証を待機中...",
+   "provider.connect.status.failed": "認証に失敗しました: {{error}}",
+   "provider.connect.apiKey.description":
+-    "{{provider}}のAPIキーを入力してアカウントを接続し、CyberStrikeで{{provider}}モデルを使用します。",
++    "{{provider}}のAPIキーを入力してアカウントを接続し、SynapDomeで{{provider}}モデルを使用します。",
+   "provider.connect.apiKey.label": "{{provider}} APIキー",
+   "provider.connect.apiKey.placeholder": "APIキー",
+   "provider.connect.apiKey.required": "APIキーが必要です",
+@@ -124,7 +124,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": " ",
+   "provider.connect.oauth.code.visit.link": "このリンク",
+   "provider.connect.oauth.code.visit.suffix":
+-    " にアクセスして認証コードを取得し、アカウントを接続してCyberStrikeで{{provider}}モデルを使用してください。",
++    " にアクセスして認証コードを取得し、アカウントを接続してSynapDomeで{{provider}}モデルを使用してください。",
+   "provider.connect.oauth.code.label": "{{method}} 認証コード",
+   "provider.connect.oauth.code.placeholder": "認証コード",
+   "provider.connect.oauth.code.required": "認証コードが必要です",
+@@ -132,7 +132,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": " ",
+   "provider.connect.oauth.auto.visit.link": "このリンク",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " にアクセスし、以下のコードを入力してアカウントを接続し、CyberStrikeで{{provider}}モデルを使用してください。",
++    " にアクセスし、以下のコードを入力してアカウントを接続し、SynapDomeで{{provider}}モデルを使用してください。",
+   "provider.connect.oauth.auto.confirmationCode": "確認コード",
+   "provider.connect.toast.connected.title": "{{provider}}が接続されました",
+   "provider.connect.toast.connected.description": "{{provider}}モデルが使用可能になりました。",
+@@ -272,7 +272,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "フォルダを検索",
+   "dialog.directory.empty": "フォルダが見つかりません",
+   "dialog.server.title": "サーバー",
+-  "dialog.server.description": "このアプリが接続するCyberStrikeサーバーを切り替えます。",
++  "dialog.server.description": "このアプリが接続するSynapDomeサーバーを切り替えます。",
+   "dialog.server.search.placeholder": "サーバーを検索",
+   "dialog.server.empty": "サーバーはまだありません",
+   "dialog.server.add.title": "サーバーを追加",
+@@ -391,7 +391,7 @@ export const dict = {
+   "error.page.action.checking": "確認中...",
+   "error.page.action.checkUpdates": "アップデートを確認",
+   "error.page.action.updateTo": "{{version}}にアップデート",
+-  "error.page.report.prefix": "このエラーをCyberStrikeチームに報告してください: ",
++  "error.page.report.prefix": "このエラーをSynapDomeチームに報告してください: ",
+   "error.page.report.discord": "Discord",
+   "error.page.version": "バージョン: {{version}}",
+   "error.dev.rootNotFound":
+@@ -408,7 +408,7 @@ export const dict = {
+   "error.chain.modelNotFound": "モデルが見つかりません: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "config (cyberstrike.json) のプロバイダー/モデル名を確認してください",
+   "error.chain.mcpFailed":
+-    'MCPサーバー "{{name}}" が失敗しました。注意: CyberStrikeはまだMCP認証をサポートしていません。',
++    'MCPサーバー "{{name}}" が失敗しました。注意: SynapDomeはまだMCP認証をサポートしていません。',
+   "error.chain.providerAuthFailed": "プロバイダー認証に失敗しました ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'プロバイダー "{{provider}}" の初期化に失敗しました。認証情報と設定を確認してください。',
+@@ -510,29 +510,29 @@ export const dict = {
+   "sidebar.workspaces.enable": "ワークスペースを有効化",
+   "sidebar.workspaces.disable": "ワークスペースを無効化",
+   "sidebar.gettingStarted.title": "はじめに",
+-  "sidebar.gettingStarted.line1": "CyberStrikeには無料モデルが含まれているため、すぐに開始できます。",
++  "sidebar.gettingStarted.line1": "SynapDomeには無料モデルが含まれているため、すぐに開始できます。",
+   "sidebar.gettingStarted.line2": "プロバイダーを接続して、Claude、GPT、Geminiなどのモデルを使用できます。",
+   "sidebar.project.recentSessions": "最近のセッション",
+   "sidebar.project.viewAllSessions": "すべてのセッションを表示",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "デスクトップ",
+   "settings.section.server": "サーバー",
+   "settings.tab.general": "一般",
+   "settings.tab.shortcuts": "ショートカット",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL統合",
+-  "settings.desktop.wsl.description": "Windows上のWSL内でCyberStrikeサーバーを実行します。",
++  "settings.desktop.wsl.description": "Windows上のWSL内でSynapDomeサーバーを実行します。",
+   "settings.general.section.appearance": "外観",
+   "settings.general.section.notifications": "システム通知",
+   "settings.general.section.updates": "アップデート",
+   "settings.general.section.sounds": "効果音",
+   "settings.general.section.display": "ディスプレイ",
+   "settings.general.row.language.title": "言語",
+-  "settings.general.row.language.description": "CyberStrikeの表示言語を変更します",
++  "settings.general.row.language.description": "SynapDomeの表示言語を変更します",
+   "settings.general.row.appearance.title": "外観",
+-  "settings.general.row.appearance.description": "デバイスでのCyberStrikeの表示をカスタマイズします",
++  "settings.general.row.appearance.description": "デバイスでのSynapDomeの表示をカスタマイズします",
+   "settings.general.row.theme.title": "テーマ",
+-  "settings.general.row.theme.description": "CyberStrikeのテーマをカスタマイズします。",
++  "settings.general.row.theme.description": "SynapDomeのテーマをカスタマイズします。",
+   "settings.general.row.font.title": "フォント",
+   "settings.general.row.font.description": "コードブロックで使用する等幅フォントをカスタマイズします",
+   "settings.general.row.wayland.title": "ネイティブWaylandを使用",
+@@ -542,13 +542,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "リリースノート",
+   "settings.general.row.releaseNotes.description": "アップデート後に「新機能」ポップアップを表示",
+   "settings.updates.row.startup.title": "起動時にアップデートを確認",
+-  "settings.updates.row.startup.description": "CyberStrike の起動時に自動でアップデートを確認します",
++  "settings.updates.row.startup.description": "SynapDome の起動時に自動でアップデートを確認します",
+   "settings.updates.row.check.title": "アップデートを確認",
+   "settings.updates.row.check.description": "手動でアップデートを確認し、利用可能ならインストールします",
+   "settings.updates.action.checkNow": "今すぐ確認",
+   "settings.updates.action.checking": "確認中...",
+   "settings.updates.toast.latest.title": "最新です",
+-  "settings.updates.toast.latest.description": "CyberStrike は最新バージョンです。",
++  "settings.updates.toast.latest.description": "SynapDome は最新バージョンです。",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/ko.ts b/packages/app/src/i18n/ko.ts
+index 5ba8cc91..778766fb 100644
+--- a/packages/app/src/i18n/ko.ts
++++ b/packages/app/src/i18n/ko.ts
+@@ -104,7 +104,7 @@ export const dict = {
+   "dialog.model.empty": "모델 결과 없음",
+   "dialog.model.manage": "모델 관리",
+   "dialog.model.manage.description": "모델 선택기에 표시할 모델 사용자 지정",
+-  "dialog.model.unpaid.freeModels.title": "CyberStrike에서 제공하는 무료 모델",
++  "dialog.model.unpaid.freeModels.title": "SynapDome에서 제공하는 무료 모델",
+   "dialog.model.unpaid.addMore.title": "인기 공급자의 모델 추가",
+   "dialog.provider.viewAll": "더 많은 공급자 보기",
+   "provider.connect.title": "{{provider}} 연결",
+@@ -115,7 +115,7 @@ export const dict = {
+   "provider.connect.status.waiting": "인증 대기 중...",
+   "provider.connect.status.failed": "인증 실패: {{error}}",
+   "provider.connect.apiKey.description":
+-    "{{provider}} API 키를 입력하여 계정을 연결하고 CyberStrike에서 {{provider}} 모델을 사용하세요.",
++    "{{provider}} API 키를 입력하여 계정을 연결하고 SynapDome에서 {{provider}} 모델을 사용하세요.",
+   "provider.connect.apiKey.label": "{{provider}} API 키",
+   "provider.connect.apiKey.placeholder": "API 키",
+   "provider.connect.apiKey.required": "API 키가 필요합니다",
+@@ -129,7 +129,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "다음 ",
+   "provider.connect.oauth.code.visit.link": "이 링크",
+   "provider.connect.oauth.code.visit.suffix":
+-    "를 방문하여 인증 코드를 받아 계정을 연결하고 CyberStrike에서 {{provider}} 모델을 사용하세요.",
++    "를 방문하여 인증 코드를 받아 계정을 연결하고 SynapDome에서 {{provider}} 모델을 사용하세요.",
+   "provider.connect.oauth.code.label": "{{method}} 인증 코드",
+   "provider.connect.oauth.code.placeholder": "인증 코드",
+   "provider.connect.oauth.code.required": "인증 코드가 필요합니다",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "다음 ",
+   "provider.connect.oauth.auto.visit.link": "이 링크",
+   "provider.connect.oauth.auto.visit.suffix":
+-    "를 방문하고 아래 코드를 입력하여 계정을 연결하고 CyberStrike에서 {{provider}} 모델을 사용하세요.",
++    "를 방문하고 아래 코드를 입력하여 계정을 연결하고 SynapDome에서 {{provider}} 모델을 사용하세요.",
+   "provider.connect.oauth.auto.confirmationCode": "확인 코드",
+   "provider.connect.toast.connected.title": "{{provider}} 연결됨",
+   "provider.connect.toast.connected.description": "이제 {{provider}} 모델을 사용할 수 있습니다.",
+@@ -277,7 +277,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "폴더 검색",
+   "dialog.directory.empty": "폴더 없음",
+   "dialog.server.title": "서버",
+-  "dialog.server.description": "이 앱이 연결할 CyberStrike 서버를 전환합니다.",
++  "dialog.server.description": "이 앱이 연결할 SynapDome 서버를 전환합니다.",
+   "dialog.server.search.placeholder": "서버 검색",
+   "dialog.server.empty": "서버 없음",
+   "dialog.server.add.title": "서버 추가",
+@@ -395,7 +395,7 @@ export const dict = {
+   "error.page.action.checking": "확인 중...",
+   "error.page.action.checkUpdates": "업데이트 확인",
+   "error.page.action.updateTo": "{{version}} 버전으로 업데이트",
+-  "error.page.report.prefix": "이 오류를 CyberStrike 팀에 제보해 주세요: ",
++  "error.page.report.prefix": "이 오류를 SynapDome 팀에 제보해 주세요: ",
+   "error.page.report.discord": "Discord",
+   "error.page.version": "버전: {{version}}",
+   "error.dev.rootNotFound":
+@@ -411,7 +411,7 @@ export const dict = {
+   "error.chain.didYouMean": "혹시 {{suggestions}}을(를) 의미하셨나요?",
+   "error.chain.modelNotFound": "모델을 찾을 수 없음: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "구성(cyberstrike.json)의 공급자/모델 이름을 확인하세요",
+-  "error.chain.mcpFailed": 'MCP 서버 "{{name}}" 실패. 참고: CyberStrike는 아직 MCP 인증을 지원하지 않습니다.',
++  "error.chain.mcpFailed": 'MCP 서버 "{{name}}" 실패. 참고: SynapDome는 아직 MCP 인증을 지원하지 않습니다.',
+   "error.chain.providerAuthFailed": "공급자 인증 실패 ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed": '공급자 "{{provider}}" 초기화 실패. 자격 증명과 구성을 확인하세요.',
+   "error.chain.configJsonInvalid": "{{path}}의 구성 파일이 유효한 JSON(C)가 아닙니다",
+@@ -511,29 +511,29 @@ export const dict = {
+   "sidebar.workspaces.enable": "작업 공간 활성화",
+   "sidebar.workspaces.disable": "작업 공간 비활성화",
+   "sidebar.gettingStarted.title": "시작하기",
+-  "sidebar.gettingStarted.line1": "CyberStrike에는 무료 모델이 포함되어 있어 즉시 시작할 수 있습니다.",
++  "sidebar.gettingStarted.line1": "SynapDome에는 무료 모델이 포함되어 있어 즉시 시작할 수 있습니다.",
+   "sidebar.gettingStarted.line2": "Claude, GPT, Gemini 등을 포함한 모델을 사용하려면 공급자를 연결하세요.",
+   "sidebar.project.recentSessions": "최근 세션",
+   "sidebar.project.viewAllSessions": "모든 세션 보기",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "데스크톱",
+   "settings.section.server": "서버",
+   "settings.tab.general": "일반",
+   "settings.tab.shortcuts": "단축키",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL 통합",
+-  "settings.desktop.wsl.description": "Windows의 WSL 내부에서 CyberStrike 서버를 실행합니다.",
++  "settings.desktop.wsl.description": "Windows의 WSL 내부에서 SynapDome 서버를 실행합니다.",
+   "settings.general.section.appearance": "모양",
+   "settings.general.section.notifications": "시스템 알림",
+   "settings.general.section.updates": "업데이트",
+   "settings.general.section.sounds": "효과음",
+   "settings.general.section.display": "디스플레이",
+   "settings.general.row.language.title": "언어",
+-  "settings.general.row.language.description": "CyberStrike 표시 언어 변경",
++  "settings.general.row.language.description": "SynapDome 표시 언어 변경",
+   "settings.general.row.appearance.title": "모양",
+-  "settings.general.row.appearance.description": "기기에서 CyberStrike가 보이는 방식 사용자 지정",
++  "settings.general.row.appearance.description": "기기에서 SynapDome가 보이는 방식 사용자 지정",
+   "settings.general.row.theme.title": "테마",
+-  "settings.general.row.theme.description": "CyberStrike 테마 사용자 지정",
++  "settings.general.row.theme.description": "SynapDome 테마 사용자 지정",
+   "settings.general.row.font.title": "글꼴",
+   "settings.general.row.font.description": "코드 블록에 사용되는 고정폭 글꼴 사용자 지정",
+   "settings.general.row.wayland.title": "네이티브 Wayland 사용",
+@@ -543,13 +543,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "릴리스 노트",
+   "settings.general.row.releaseNotes.description": "업데이트 후 '새 소식' 팝업 표시",
+   "settings.updates.row.startup.title": "시작 시 업데이트 확인",
+-  "settings.updates.row.startup.description": "CyberStrike를 실행할 때 업데이트를 자동으로 확인합니다",
++  "settings.updates.row.startup.description": "SynapDome를 실행할 때 업데이트를 자동으로 확인합니다",
+   "settings.updates.row.check.title": "업데이트 확인",
+   "settings.updates.row.check.description": "업데이트를 수동으로 확인하고, 사용 가능하면 설치합니다",
+   "settings.updates.action.checkNow": "지금 확인",
+   "settings.updates.action.checking": "확인 중...",
+   "settings.updates.toast.latest.title": "최신 상태입니다",
+-  "settings.updates.toast.latest.description": "현재 최신 버전의 CyberStrike를 사용 중입니다.",
++  "settings.updates.toast.latest.description": "현재 최신 버전의 SynapDome를 사용 중입니다.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/no.ts b/packages/app/src/i18n/no.ts
+index 93dd5b87..b569ab5c 100644
+--- a/packages/app/src/i18n/no.ts
++++ b/packages/app/src/i18n/no.ts
+@@ -113,7 +113,7 @@ export const dict = {
+   "dialog.model.manage": "Administrer modeller",
+   "dialog.model.manage.description": "Tilpass hvilke modeller som vises i modellvelgeren.",
+ 
+-  "dialog.model.unpaid.freeModels.title": "Gratis modeller levert av CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Gratis modeller levert av SynapDome",
+   "dialog.model.unpaid.addMore.title": "Legg til flere modeller fra populære leverandører",
+ 
+   "dialog.provider.viewAll": "Vis flere leverandører",
+@@ -126,7 +126,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Venter på autorisering...",
+   "provider.connect.status.failed": "Autorisering mislyktes: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Skriv inn din {{provider}} API-nøkkel for å koble til kontoen din og bruke {{provider}}-modeller i CyberStrike.",
++    "Skriv inn din {{provider}} API-nøkkel for å koble til kontoen din og bruke {{provider}}-modeller i SynapDome.",
+   "provider.connect.apiKey.label": "{{provider}} API-nøkkel",
+   "provider.connect.apiKey.placeholder": "API-nøkkel",
+   "provider.connect.apiKey.required": "API-nøkkel er påkrevd",
+@@ -140,7 +140,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Besøk ",
+   "provider.connect.oauth.code.visit.link": "denne lenken",
+   "provider.connect.oauth.code.visit.suffix":
+-    " for å hente autorisasjonskoden din for å koble til kontoen din og bruke {{provider}}-modeller i CyberStrike.",
++    " for å hente autorisasjonskoden din for å koble til kontoen din og bruke {{provider}}-modeller i SynapDome.",
+   "provider.connect.oauth.code.label": "{{method}} autorisasjonskode",
+   "provider.connect.oauth.code.placeholder": "Autorisasjonskode",
+   "provider.connect.oauth.code.required": "Autorisasjonskode er påkrevd",
+@@ -148,7 +148,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Besøk ",
+   "provider.connect.oauth.auto.visit.link": "denne lenken",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " og skriv inn koden nedenfor for å koble til kontoen din og bruke {{provider}}-modeller i CyberStrike.",
++    " og skriv inn koden nedenfor for å koble til kontoen din og bruke {{provider}}-modeller i SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Bekreftelseskode",
+   "provider.connect.toast.connected.title": "{{provider}} tilkoblet",
+   "provider.connect.toast.connected.description": "{{provider}}-modeller er nå tilgjengelige.",
+@@ -302,7 +302,7 @@ export const dict = {
+   "dialog.directory.empty": "Ingen mapper funnet",
+ 
+   "dialog.server.title": "Servere",
+-  "dialog.server.description": "Bytt hvilken CyberStrike-server denne appen kobler til.",
++  "dialog.server.description": "Bytt hvilken SynapDome-server denne appen kobler til.",
+   "dialog.server.search.placeholder": "Søk etter servere",
+   "dialog.server.empty": "Ingen servere ennå",
+   "dialog.server.add.title": "Legg til en server",
+@@ -439,7 +439,7 @@ export const dict = {
+   "error.page.action.checking": "Sjekker...",
+   "error.page.action.checkUpdates": "Se etter oppdateringer",
+   "error.page.action.updateTo": "Oppdater til {{version}}",
+-  "error.page.report.prefix": "Vennligst rapporter denne feilen til CyberStrike-teamet",
++  "error.page.report.prefix": "Vennligst rapporter denne feilen til SynapDome-teamet",
+   "error.page.report.discord": "på Discord",
+   "error.page.version": "Versjon: {{version}}",
+ 
+@@ -458,7 +458,7 @@ export const dict = {
+   "error.chain.didYouMean": "Mente du: {{suggestions}}",
+   "error.chain.modelNotFound": "Modell ikke funnet: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Sjekk leverandør-/modellnavnene i konfigurasjonen din (cyberstrike.json)",
+-  "error.chain.mcpFailed": 'MCP-server "{{name}}" mislyktes. Merk at CyberStrike ikke støtter MCP-autentisering ennå.',
++  "error.chain.mcpFailed": 'MCP-server "{{name}}" mislyktes. Merk at SynapDome ikke støtter MCP-autentisering ennå.',
+   "error.chain.providerAuthFailed": "Leverandørautentisering mislyktes ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Kunne ikke initialisere leverandør "{{provider}}". Sjekk legitimasjon og konfigurasjon.',
+@@ -575,12 +575,12 @@ export const dict = {
+   "sidebar.workspaces.enable": "Aktiver arbeidsområder",
+   "sidebar.workspaces.disable": "Deaktiver arbeidsområder",
+   "sidebar.gettingStarted.title": "Kom i gang",
+-  "sidebar.gettingStarted.line1": "CyberStrike inkluderer gratis modeller så du kan starte umiddelbart.",
++  "sidebar.gettingStarted.line1": "SynapDome inkluderer gratis modeller så du kan starte umiddelbart.",
+   "sidebar.gettingStarted.line2": "Koble til en leverandør for å bruke modeller, inkl. Claude, GPT, Gemini osv.",
+   "sidebar.project.recentSessions": "Nylige sesjoner",
+   "sidebar.project.viewAllSessions": "Vis alle sesjoner",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+ 
+   "settings.section.desktop": "Skrivebord",
+   "settings.section.server": "Server",
+@@ -588,7 +588,7 @@ export const dict = {
+   "settings.tab.shortcuts": "Snarveier",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL-integrasjon",
+-  "settings.desktop.wsl.description": "Kjør CyberStrike-serveren i WSL på Windows.",
++  "settings.desktop.wsl.description": "Kjør SynapDome-serveren i WSL på Windows.",
+ 
+   "settings.general.section.appearance": "Utseende",
+   "settings.general.section.notifications": "Systemvarsler",
+@@ -597,11 +597,11 @@ export const dict = {
+   "settings.general.section.display": "Skjerm",
+ 
+   "settings.general.row.language.title": "Språk",
+-  "settings.general.row.language.description": "Endre visningsspråket for CyberStrike",
++  "settings.general.row.language.description": "Endre visningsspråket for SynapDome",
+   "settings.general.row.appearance.title": "Utseende",
+-  "settings.general.row.appearance.description": "Tilpass hvordan CyberStrike ser ut på enheten din",
++  "settings.general.row.appearance.description": "Tilpass hvordan SynapDome ser ut på enheten din",
+   "settings.general.row.theme.title": "Tema",
+-  "settings.general.row.theme.description": "Tilpass hvordan CyberStrike er tematisert.",
++  "settings.general.row.theme.description": "Tilpass hvordan SynapDome er tematisert.",
+   "settings.general.row.font.title": "Skrift",
+   "settings.general.row.font.description": "Tilpass mono-skriften som brukes i kodeblokker",
+ 
+@@ -614,13 +614,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": 'Vis "Hva er nytt"-vinduer etter oppdateringer',
+ 
+   "settings.updates.row.startup.title": "Se etter oppdateringer ved oppstart",
+-  "settings.updates.row.startup.description": "Se automatisk etter oppdateringer når CyberStrike starter",
++  "settings.updates.row.startup.description": "Se automatisk etter oppdateringer når SynapDome starter",
+   "settings.updates.row.check.title": "Se etter oppdateringer",
+   "settings.updates.row.check.description": "Se etter oppdateringer manuelt og installer hvis tilgjengelig",
+   "settings.updates.action.checkNow": "Sjekk nå",
+   "settings.updates.action.checking": "Sjekker...",
+   "settings.updates.toast.latest.title": "Du er oppdatert",
+-  "settings.updates.toast.latest.description": "Du bruker den nyeste versjonen av CyberStrike.",
++  "settings.updates.toast.latest.description": "Du bruker den nyeste versjonen av SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/pl.ts b/packages/app/src/i18n/pl.ts
+index c9bb6cf5..6bc02898 100644
+--- a/packages/app/src/i18n/pl.ts
++++ b/packages/app/src/i18n/pl.ts
+@@ -100,7 +100,7 @@ export const dict = {
+   "dialog.model.empty": "Brak wyników modelu",
+   "dialog.model.manage": "Zarządzaj modelami",
+   "dialog.model.manage.description": "Dostosuj, które modele pojawiają się w wyborze modelu.",
+-  "dialog.model.unpaid.freeModels.title": "Darmowe modele dostarczane przez CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Darmowe modele dostarczane przez SynapDome",
+   "dialog.model.unpaid.addMore.title": "Dodaj więcej modeli od popularnych dostawców",
+   "dialog.provider.viewAll": "Zobacz więcej dostawców",
+   "provider.connect.title": "Połącz {{provider}}",
+@@ -111,7 +111,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Oczekiwanie na autoryzację...",
+   "provider.connect.status.failed": "Autoryzacja nie powiodła się: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Wprowadź swój klucz API {{provider}}, aby połączyć konto i używać modeli {{provider}} w CyberStrike.",
++    "Wprowadź swój klucz API {{provider}}, aby połączyć konto i używać modeli {{provider}} w SynapDome.",
+   "provider.connect.apiKey.label": "Klucz API {{provider}}",
+   "provider.connect.apiKey.placeholder": "Klucz API",
+   "provider.connect.apiKey.required": "Klucz API jest wymagany",
+@@ -125,7 +125,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Odwiedź ",
+   "provider.connect.oauth.code.visit.link": "ten link",
+   "provider.connect.oauth.code.visit.suffix":
+-    ", aby odebrać kod autoryzacyjny, połączyć konto i używać modeli {{provider}} w CyberStrike.",
++    ", aby odebrać kod autoryzacyjny, połączyć konto i używać modeli {{provider}} w SynapDome.",
+   "provider.connect.oauth.code.label": "Kod autoryzacyjny {{method}}",
+   "provider.connect.oauth.code.placeholder": "Kod autoryzacyjny",
+   "provider.connect.oauth.code.required": "Kod autoryzacyjny jest wymagany",
+@@ -133,7 +133,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Odwiedź ",
+   "provider.connect.oauth.auto.visit.link": "ten link",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " i wprowadź poniższy kod, aby połączyć konto i używać modeli {{provider}} w CyberStrike.",
++    " i wprowadź poniższy kod, aby połączyć konto i używać modeli {{provider}} w SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Kod potwierdzający",
+   "provider.connect.toast.connected.title": "Połączono {{provider}}",
+   "provider.connect.toast.connected.description": "Modele {{provider}} są teraz dostępne do użycia.",
+@@ -274,7 +274,7 @@ export const dict = {
+   "dialog.directory.search.placeholder": "Szukaj folderów",
+   "dialog.directory.empty": "Nie znaleziono folderów",
+   "dialog.server.title": "Serwery",
+-  "dialog.server.description": "Przełącz serwer CyberStrike, z którym łączy się ta aplikacja.",
++  "dialog.server.description": "Przełącz serwer SynapDome, z którym łączy się ta aplikacja.",
+   "dialog.server.search.placeholder": "Szukaj serwerów",
+   "dialog.server.empty": "Brak serwerów",
+   "dialog.server.add.title": "Dodaj serwer",
+@@ -392,7 +392,7 @@ export const dict = {
+   "error.page.action.checking": "Sprawdzanie...",
+   "error.page.action.checkUpdates": "Sprawdź aktualizacje",
+   "error.page.action.updateTo": "Zaktualizuj do {{version}}",
+-  "error.page.report.prefix": "Proszę zgłosić ten błąd do zespołu CyberStrike",
++  "error.page.report.prefix": "Proszę zgłosić ten błąd do zespołu SynapDome",
+   "error.page.report.discord": "na Discordzie",
+   "error.page.version": "Wersja: {{version}}",
+   "error.dev.rootNotFound":
+@@ -408,7 +408,7 @@ export const dict = {
+   "error.chain.didYouMean": "Czy miałeś na myśli: {{suggestions}}",
+   "error.chain.modelNotFound": "Model nie znaleziony: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Sprawdź swoją konfigurację (cyberstrike.json) nazwy dostawców/modeli",
+-  "error.chain.mcpFailed": 'MCP server "{{name}}" failed. Note, CyberStrike does not support MCP authentication yet.',
++  "error.chain.mcpFailed": 'MCP server "{{name}}" failed. Note, SynapDome does not support MCP authentication yet.',
+   "error.chain.providerAuthFailed": "Uwierzytelnianie dostawcy nie powiodło się ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Nie udało się zainicjować dostawcy "{{provider}}". Sprawdź poświadczenia i konfigurację.',
+@@ -510,29 +510,29 @@ export const dict = {
+   "sidebar.workspaces.enable": "Włącz przestrzenie robocze",
+   "sidebar.workspaces.disable": "Wyłącz przestrzenie robocze",
+   "sidebar.gettingStarted.title": "Pierwsze kroki",
+-  "sidebar.gettingStarted.line1": "CyberStrike zawiera darmowe modele, więc możesz zacząć od razu.",
++  "sidebar.gettingStarted.line1": "SynapDome zawiera darmowe modele, więc możesz zacząć od razu.",
+   "sidebar.gettingStarted.line2": "Połącz dowolnego dostawcę, aby używać modeli, w tym Claude, GPT, Gemini itp.",
+   "sidebar.project.recentSessions": "Ostatnie sesje",
+   "sidebar.project.viewAllSessions": "Zobacz wszystkie sesje",
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "Pulpit",
+   "settings.section.server": "Serwer",
+   "settings.tab.general": "Ogólne",
+   "settings.tab.shortcuts": "Skróty",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL integration",
+-  "settings.desktop.wsl.description": "Run the CyberStrike server inside WSL on Windows.",
++  "settings.desktop.wsl.description": "Run the SynapDome server inside WSL on Windows.",
+   "settings.general.section.appearance": "Wygląd",
+   "settings.general.section.notifications": "Powiadomienia systemowe",
+   "settings.general.section.updates": "Aktualizacje",
+   "settings.general.section.sounds": "Efekty dźwiękowe",
+   "settings.general.section.display": "Ekran",
+   "settings.general.row.language.title": "Język",
+-  "settings.general.row.language.description": "Zmień język wyświetlania dla CyberStrike",
++  "settings.general.row.language.description": "Zmień język wyświetlania dla SynapDome",
+   "settings.general.row.appearance.title": "Wygląd",
+-  "settings.general.row.appearance.description": "Dostosuj wygląd CyberStrike na swoim urządzeniu",
++  "settings.general.row.appearance.description": "Dostosuj wygląd SynapDome na swoim urządzeniu",
+   "settings.general.row.theme.title": "Motyw",
+-  "settings.general.row.theme.description": "Dostosuj motyw CyberStrike.",
++  "settings.general.row.theme.description": "Dostosuj motyw SynapDome.",
+   "settings.general.row.font.title": "Czcionka",
+   "settings.general.row.font.description": "Dostosuj czcionkę mono używaną w blokach kodu",
+   "settings.general.row.wayland.title": "Użyj natywnego Wayland",
+@@ -542,13 +542,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.title": "Informacje o wydaniu",
+   "settings.general.row.releaseNotes.description": 'Pokazuj wyskakujące okna "Co nowego" po aktualizacjach',
+   "settings.updates.row.startup.title": "Sprawdzaj aktualizacje przy uruchomieniu",
+-  "settings.updates.row.startup.description": "Automatycznie sprawdzaj aktualizacje podczas uruchamiania CyberStrike",
++  "settings.updates.row.startup.description": "Automatycznie sprawdzaj aktualizacje podczas uruchamiania SynapDome",
+   "settings.updates.row.check.title": "Sprawdź aktualizacje",
+   "settings.updates.row.check.description": "Ręcznie sprawdź aktualizacje i zainstaluj, jeśli są dostępne",
+   "settings.updates.action.checkNow": "Sprawdź teraz",
+   "settings.updates.action.checking": "Sprawdzanie...",
+   "settings.updates.toast.latest.title": "Masz najnowszą wersję",
+-  "settings.updates.toast.latest.description": "Korzystasz z najnowszej wersji CyberStrike.",
++  "settings.updates.toast.latest.description": "Korzystasz z najnowszej wersji SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/ru.ts b/packages/app/src/i18n/ru.ts
+index d6433de9..f9b12049 100644
+--- a/packages/app/src/i18n/ru.ts
++++ b/packages/app/src/i18n/ru.ts
+@@ -110,7 +110,7 @@ export const dict = {
+   "dialog.model.manage": "Управление моделями",
+   "dialog.model.manage.description": "Настройте какие модели появляются в выборе модели",
+ 
+-  "dialog.model.unpaid.freeModels.title": "Бесплатные модели от CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "Бесплатные модели от SynapDome",
+   "dialog.model.unpaid.addMore.title": "Добавьте больше моделей от популярных провайдеров",
+ 
+   "dialog.provider.viewAll": "Показать больше провайдеров",
+@@ -123,7 +123,7 @@ export const dict = {
+   "provider.connect.status.waiting": "Ожидание авторизации...",
+   "provider.connect.status.failed": "Ошибка авторизации: {{error}}",
+   "provider.connect.apiKey.description":
+-    "Введите ваш API ключ {{provider}} для подключения аккаунта и использования моделей {{provider}} в CyberStrike.",
++    "Введите ваш API ключ {{provider}} для подключения аккаунта и использования моделей {{provider}} в SynapDome.",
+   "provider.connect.apiKey.label": "{{provider}} API ключ",
+   "provider.connect.apiKey.placeholder": "API ключ",
+   "provider.connect.apiKey.required": "API ключ обязателен",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "Посетите ",
+   "provider.connect.oauth.code.visit.link": "эту ссылку",
+   "provider.connect.oauth.code.visit.suffix":
+-    " чтобы получить код авторизации для подключения аккаунта и использования моделей {{provider}} в CyberStrike.",
++    " чтобы получить код авторизации для подключения аккаунта и использования моделей {{provider}} в SynapDome.",
+   "provider.connect.oauth.code.label": "{{method}} код авторизации",
+   "provider.connect.oauth.code.placeholder": "Код авторизации",
+   "provider.connect.oauth.code.required": "Код авторизации обязателен",
+@@ -145,7 +145,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "Посетите ",
+   "provider.connect.oauth.auto.visit.link": "эту ссылку",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " и введите код ниже для подключения аккаунта и использования моделей {{provider}} в CyberStrike.",
++    " и введите код ниже для подключения аккаунта и использования моделей {{provider}} в SynapDome.",
+   "provider.connect.oauth.auto.confirmationCode": "Код подтверждения",
+   "provider.connect.toast.connected.title": "{{provider}} подключён",
+   "provider.connect.toast.connected.description": "Модели {{provider}} теперь доступны.",
+@@ -299,7 +299,7 @@ export const dict = {
+   "dialog.directory.empty": "Папки не найдены",
+ 
+   "dialog.server.title": "Серверы",
+-  "dialog.server.description": "Переключите сервер CyberStrike к которому подключается приложение.",
++  "dialog.server.description": "Переключите сервер SynapDome к которому подключается приложение.",
+   "dialog.server.search.placeholder": "Поиск серверов",
+   "dialog.server.empty": "Серверов пока нет",
+   "dialog.server.add.title": "Добавить сервер",
+@@ -437,7 +437,7 @@ export const dict = {
+   "error.page.action.checking": "Проверка...",
+   "error.page.action.checkUpdates": "Проверить обновления",
+   "error.page.action.updateTo": "Обновить до {{version}}",
+-  "error.page.report.prefix": "Пожалуйста, сообщите об этой ошибке команде CyberStrike",
++  "error.page.report.prefix": "Пожалуйста, сообщите об этой ошибке команде SynapDome",
+   "error.page.report.discord": "в Discord",
+   "error.page.version": "Версия: {{version}}",
+ 
+@@ -457,7 +457,7 @@ export const dict = {
+   "error.chain.modelNotFound": "Модель не найдена: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "Проверьте названия провайдера/модели в конфиге (cyberstrike.json)",
+   "error.chain.mcpFailed":
+-    'MCP сервер "{{name}}" завершился с ошибкой. Обратите внимание, что CyberStrike пока не поддерживает MCP авторизацию.',
++    'MCP сервер "{{name}}" завершился с ошибкой. Обратите внимание, что SynapDome пока не поддерживает MCP авторизацию.',
+   "error.chain.providerAuthFailed": "Ошибка аутентификации провайдера ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed":
+     'Не удалось инициализировать провайдера "{{provider}}". Проверьте учётные данные и конфигурацию.',
+@@ -573,20 +573,20 @@ export const dict = {
+   "sidebar.workspaces.enable": "Включить рабочие пространства",
+   "sidebar.workspaces.disable": "Отключить рабочие пространства",
+   "sidebar.gettingStarted.title": "Начало работы",
+-  "sidebar.gettingStarted.line1": "CyberStrike включает бесплатные модели, чтобы вы могли начать сразу.",
++  "sidebar.gettingStarted.line1": "SynapDome включает бесплатные модели, чтобы вы могли начать сразу.",
+   "sidebar.gettingStarted.line2":
+     "Подключите любого провайдера для использования моделей, включая Claude, GPT, Gemini и др.",
+   "sidebar.project.recentSessions": "Недавние сессии",
+   "sidebar.project.viewAllSessions": "Посмотреть все сессии",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "Приложение",
+   "settings.section.server": "Сервер",
+   "settings.tab.general": "Основные",
+   "settings.tab.shortcuts": "Горячие клавиши",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "Интеграция с WSL",
+-  "settings.desktop.wsl.description": "Запускать сервер CyberStrike внутри WSL на Windows.",
++  "settings.desktop.wsl.description": "Запускать сервер SynapDome внутри WSL на Windows.",
+ 
+   "settings.general.section.appearance": "Внешний вид",
+   "settings.general.section.notifications": "Системные уведомления",
+@@ -595,11 +595,11 @@ export const dict = {
+   "settings.general.section.display": "Дисплей",
+ 
+   "settings.general.row.language.title": "Язык",
+-  "settings.general.row.language.description": "Изменить язык отображения CyberStrike",
++  "settings.general.row.language.description": "Изменить язык отображения SynapDome",
+   "settings.general.row.appearance.title": "Внешний вид",
+-  "settings.general.row.appearance.description": "Настройте как CyberStrike выглядит на вашем устройстве",
++  "settings.general.row.appearance.description": "Настройте как SynapDome выглядит на вашем устройстве",
+   "settings.general.row.theme.title": "Тема",
+-  "settings.general.row.theme.description": "Настройте оформление CyberStrike.",
++  "settings.general.row.theme.description": "Настройте оформление SynapDome.",
+   "settings.general.row.font.title": "Шрифт",
+   "settings.general.row.font.description": "Настройте моноширинный шрифт для блоков кода",
+ 
+@@ -612,13 +612,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": 'Показывать всплывающие окна "Что нового" после обновлений',
+ 
+   "settings.updates.row.startup.title": "Проверять обновления при запуске",
+-  "settings.updates.row.startup.description": "Автоматически проверять обновления при запуске CyberStrike",
++  "settings.updates.row.startup.description": "Автоматически проверять обновления при запуске SynapDome",
+   "settings.updates.row.check.title": "Проверить обновления",
+   "settings.updates.row.check.description": "Проверить обновления вручную и установить, если доступны",
+   "settings.updates.action.checkNow": "Проверить сейчас",
+   "settings.updates.action.checking": "Проверка...",
+   "settings.updates.toast.latest.title": "У вас последняя версия",
+-  "settings.updates.toast.latest.description": "Вы используете последнюю версию CyberStrike.",
++  "settings.updates.toast.latest.description": "Вы используете последнюю версию SynapDome.",
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+   "font.option.firaCode": "Fira Code",
+diff --git a/packages/app/src/i18n/th.ts b/packages/app/src/i18n/th.ts
+index 041955b0..d7472d12 100644
+--- a/packages/app/src/i18n/th.ts
++++ b/packages/app/src/i18n/th.ts
+@@ -110,7 +110,7 @@ export const dict = {
+   "dialog.model.manage": "จัดการโมเดล",
+   "dialog.model.manage.description": "ปรับแต่งโมเดลที่จะปรากฏในตัวเลือกโมเดล",
+ 
+-  "dialog.model.unpaid.freeModels.title": "โมเดลฟรีที่จัดหาให้โดย CyberStrike",
++  "dialog.model.unpaid.freeModels.title": "โมเดลฟรีที่จัดหาให้โดย SynapDome",
+   "dialog.model.unpaid.addMore.title": "เพิ่มโมเดลเพิ่มเติมจากผู้ให้บริการยอดนิยม",
+ 
+   "dialog.provider.viewAll": "แสดงผู้ให้บริการเพิ่มเติม",
+@@ -123,7 +123,7 @@ export const dict = {
+   "provider.connect.status.waiting": "รอการอนุญาต...",
+   "provider.connect.status.failed": "การอนุญาตล้มเหลว: {{error}}",
+   "provider.connect.apiKey.description":
+-    "ป้อนคีย์ API ของ {{provider}} เพื่อเชื่อมต่อบัญชีและใช้โมเดล {{provider}} ใน CyberStrike",
++    "ป้อนคีย์ API ของ {{provider}} เพื่อเชื่อมต่อบัญชีและใช้โมเดล {{provider}} ใน SynapDome",
+   "provider.connect.apiKey.label": "คีย์ API ของ {{provider}}",
+   "provider.connect.apiKey.placeholder": "คีย์ API",
+   "provider.connect.apiKey.required": "ต้องใช้คีย์ API",
+@@ -137,7 +137,7 @@ export const dict = {
+   "provider.connect.oauth.code.visit.prefix": "เยี่ยมชม ",
+   "provider.connect.oauth.code.visit.link": "ลิงก์นี้",
+   "provider.connect.oauth.code.visit.suffix":
+-    " เพื่อรวบรวมรหัสการอนุญาตของคุณเพื่อเชื่อมต่อบัญชีและใช้โมเดล {{provider}} ใน CyberStrike",
++    " เพื่อรวบรวมรหัสการอนุญาตของคุณเพื่อเชื่อมต่อบัญชีและใช้โมเดล {{provider}} ใน SynapDome",
+   "provider.connect.oauth.code.label": "รหัสการอนุญาต {{method}}",
+   "provider.connect.oauth.code.placeholder": "รหัสการอนุญาต",
+   "provider.connect.oauth.code.required": "ต้องใช้รหัสการอนุญาต",
+@@ -145,7 +145,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "เยี่ยมชม ",
+   "provider.connect.oauth.auto.visit.link": "ลิงก์นี้",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " และป้อนรหัสด้านล่างเพื่อเชื่อมต่อบัญชีและใช้โมเดล {{provider}} ใน CyberStrike",
++    " และป้อนรหัสด้านล่างเพื่อเชื่อมต่อบัญชีและใช้โมเดล {{provider}} ใน SynapDome",
+   "provider.connect.oauth.auto.confirmationCode": "รหัสยืนยัน",
+   "provider.connect.toast.connected.title": "{{provider}} ที่เชื่อมต่อแล้ว",
+   "provider.connect.toast.connected.description": "โมเดล {{provider}} พร้อมใช้งานแล้ว",
+@@ -299,7 +299,7 @@ export const dict = {
+   "dialog.directory.empty": "ไม่พบโฟลเดอร์",
+ 
+   "dialog.server.title": "เซิร์ฟเวอร์",
+-  "dialog.server.description": "สลับเซิร์ฟเวอร์ CyberStrike ที่แอปนี้เชื่อมต่อด้วย",
++  "dialog.server.description": "สลับเซิร์ฟเวอร์ SynapDome ที่แอปนี้เชื่อมต่อด้วย",
+   "dialog.server.search.placeholder": "ค้นหาเซิร์ฟเวอร์",
+   "dialog.server.empty": "ยังไม่มีเซิร์ฟเวอร์",
+   "dialog.server.add.title": "เพิ่มเซิร์ฟเวอร์",
+@@ -436,7 +436,7 @@ export const dict = {
+   "error.page.action.checking": "กำลังตรวจสอบ...",
+   "error.page.action.checkUpdates": "ตรวจสอบการอัปเดต",
+   "error.page.action.updateTo": "อัปเดตเป็น {{version}}",
+-  "error.page.report.prefix": "โปรดรายงานข้อผิดพลาดนี้ให้ทีม CyberStrike",
++  "error.page.report.prefix": "โปรดรายงานข้อผิดพลาดนี้ให้ทีม SynapDome",
+   "error.page.report.discord": "บน Discord",
+   "error.page.version": "เวอร์ชัน: {{version}}",
+ 
+@@ -455,7 +455,7 @@ export const dict = {
+   "error.chain.modelNotFound": "ไม่พบโมเดล: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "ตรวจสอบการกำหนดค่าของคุณ (cyberstrike.json) ชื่อผู้ให้บริการ/โมเดล",
+   "error.chain.mcpFailed":
+-    'เซิร์ฟเวอร์ MCP "{{name}}" ล้มเหลว โปรดทราบว่า CyberStrike ยังไม่รองรับการตรวจสอบสิทธิ์ MCP',
++    'เซิร์ฟเวอร์ MCP "{{name}}" ล้มเหลว โปรดทราบว่า SynapDome ยังไม่รองรับการตรวจสอบสิทธิ์ MCP',
+   "error.chain.providerAuthFailed": "การตรวจสอบสิทธิ์ผู้ให้บริการล้มเหลว ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed": 'ไม่สามารถเริ่มต้นผู้ให้บริการ "{{provider}}" ตรวจสอบข้อมูลรับรองและการกำหนดค่า',
+   "error.chain.configJsonInvalid": "ไฟล์กำหนดค่าที่ {{path}} ไม่ใช่ JSON(C) ที่ถูกต้อง",
+@@ -568,12 +568,12 @@ export const dict = {
+   "sidebar.workspaces.enable": "เปิดใช้งานพื้นที่ทำงาน",
+   "sidebar.workspaces.disable": "ปิดใช้งานพื้นที่ทำงาน",
+   "sidebar.gettingStarted.title": "เริ่มต้นใช้งาน",
+-  "sidebar.gettingStarted.line1": "CyberStrike รวมถึงโมเดลฟรีเพื่อให้คุณเริ่มต้นได้ทันที",
++  "sidebar.gettingStarted.line1": "SynapDome รวมถึงโมเดลฟรีเพื่อให้คุณเริ่มต้นได้ทันที",
+   "sidebar.gettingStarted.line2": "เชื่อมต่อผู้ให้บริการใด ๆ เพื่อใช้โมเดล รวมถึง Claude, GPT, Gemini ฯลฯ",
+   "sidebar.project.recentSessions": "เซสชันล่าสุด",
+   "sidebar.project.viewAllSessions": "ดูเซสชันทั้งหมด",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+ 
+   "settings.section.desktop": "เดสก์ท็อป",
+   "settings.section.server": "เซิร์ฟเวอร์",
+@@ -581,7 +581,7 @@ export const dict = {
+   "settings.tab.shortcuts": "ทางลัด",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "การรวม WSL",
+-  "settings.desktop.wsl.description": "เรียกใช้เซิร์ฟเวอร์ CyberStrike ภายใน WSL บน Windows",
++  "settings.desktop.wsl.description": "เรียกใช้เซิร์ฟเวอร์ SynapDome ภายใน WSL บน Windows",
+ 
+   "settings.general.section.appearance": "รูปลักษณ์",
+   "settings.general.section.notifications": "การแจ้งเตือนระบบ",
+@@ -590,11 +590,11 @@ export const dict = {
+   "settings.general.section.display": "การแสดงผล",
+ 
+   "settings.general.row.language.title": "ภาษา",
+-  "settings.general.row.language.description": "เปลี่ยนภาษาที่แสดงสำหรับ CyberStrike",
++  "settings.general.row.language.description": "เปลี่ยนภาษาที่แสดงสำหรับ SynapDome",
+   "settings.general.row.appearance.title": "รูปลักษณ์",
+-  "settings.general.row.appearance.description": "ปรับแต่งวิธีการที่ CyberStrike มีลักษณะบนอุปกรณ์ของคุณ",
++  "settings.general.row.appearance.description": "ปรับแต่งวิธีการที่ SynapDome มีลักษณะบนอุปกรณ์ของคุณ",
+   "settings.general.row.theme.title": "ธีม",
+-  "settings.general.row.theme.description": "ปรับแต่งวิธีการที่ CyberStrike มีธีม",
++  "settings.general.row.theme.description": "ปรับแต่งวิธีการที่ SynapDome มีธีม",
+   "settings.general.row.font.title": "ฟอนต์",
+   "settings.general.row.font.description": "ปรับแต่งฟอนต์โมโนที่ใช้ในบล็อกโค้ด",
+ 
+@@ -606,13 +606,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": "แสดงป๊อปอัพ What's New หลังจากอัปเดต",
+ 
+   "settings.updates.row.startup.title": "ตรวจสอบการอัปเดตเมื่อเริ่มต้น",
+-  "settings.updates.row.startup.description": "ตรวจสอบการอัปเดตโดยอัตโนมัติเมื่อ CyberStrike เปิดใช้งาน",
++  "settings.updates.row.startup.description": "ตรวจสอบการอัปเดตโดยอัตโนมัติเมื่อ SynapDome เปิดใช้งาน",
+   "settings.updates.row.check.title": "ตรวจสอบการอัปเดต",
+   "settings.updates.row.check.description": "ตรวจสอบการอัปเดตด้วยตนเองและติดตั้งหากมี",
+   "settings.updates.action.checkNow": "ตรวจสอบทันที",
+   "settings.updates.action.checking": "กำลังตรวจสอบ...",
+   "settings.updates.toast.latest.title": "คุณเป็นเวอร์ชันล่าสุดแล้ว",
+-  "settings.updates.toast.latest.description": "คุณกำลังใช้งาน CyberStrike เวอร์ชันล่าสุด",
++  "settings.updates.toast.latest.description": "คุณกำลังใช้งาน SynapDome เวอร์ชันล่าสุด",
+ 
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+diff --git a/packages/app/src/i18n/zh.ts b/packages/app/src/i18n/zh.ts
+index 1eee007d..8a8eabae 100644
+--- a/packages/app/src/i18n/zh.ts
++++ b/packages/app/src/i18n/zh.ts
+@@ -135,7 +135,7 @@ export const dict = {
+   "dialog.model.empty": "未找到模型",
+   "dialog.model.manage": "管理模型",
+   "dialog.model.manage.description": "自定义模型选择器中显示的模型。",
+-  "dialog.model.unpaid.freeModels.title": "CyberStrike 提供的免费模型",
++  "dialog.model.unpaid.freeModels.title": "SynapDome 提供的免费模型",
+   "dialog.model.unpaid.addMore.title": "从热门提供商添加更多模型",
+ 
+   "dialog.provider.viewAll": "查看更多提供商",
+@@ -148,7 +148,7 @@ export const dict = {
+   "provider.connect.status.waiting": "等待授权...",
+   "provider.connect.status.failed": "授权失败：{{error}}",
+   "provider.connect.apiKey.description":
+-    "输入你的 {{provider}} API 密钥以连接帐户，并在 CyberStrike 中使用 {{provider}} 模型。",
++    "输入你的 {{provider}} API 密钥以连接帐户，并在 SynapDome 中使用 {{provider}} 模型。",
+   "provider.connect.apiKey.label": "{{provider}} API 密钥",
+   "provider.connect.apiKey.placeholder": "API 密钥",
+   "provider.connect.apiKey.required": "API 密钥为必填项",
+@@ -159,7 +159,7 @@ export const dict = {
+   "provider.connect.cyberstrikeZen.visit.suffix": " 获取你的 API 密钥。",
+   "provider.connect.oauth.code.visit.prefix": "访问 ",
+   "provider.connect.oauth.code.visit.link": "此链接",
+-  "provider.connect.oauth.code.visit.suffix": " 获取授权码，以连接你的帐户并在 CyberStrike 中使用 {{provider}} 模型。",
++  "provider.connect.oauth.code.visit.suffix": " 获取授权码，以连接你的帐户并在 SynapDome 中使用 {{provider}} 模型。",
+   "provider.connect.oauth.code.label": "{{method}} 授权码",
+   "provider.connect.oauth.code.placeholder": "授权码",
+   "provider.connect.oauth.code.required": "授权码为必填项",
+@@ -167,7 +167,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "访问 ",
+   "provider.connect.oauth.auto.visit.link": "此链接",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " 并输入以下代码，以连接你的帐户并在 CyberStrike 中使用 {{provider}} 模型。",
++    " 并输入以下代码，以连接你的帐户并在 SynapDome 中使用 {{provider}} 模型。",
+   "provider.connect.oauth.auto.confirmationCode": "确认码",
+   "provider.connect.toast.connected.title": "{{provider}} 已连接",
+   "provider.connect.toast.connected.description": "现在可以使用 {{provider}} 模型了。",
+@@ -319,7 +319,7 @@ export const dict = {
+   "dialog.directory.empty": "未找到文件夹",
+ 
+   "dialog.server.title": "服务器",
+-  "dialog.server.description": "切换此应用连接的 CyberStrike 服务器。",
++  "dialog.server.description": "切换此应用连接的 SynapDome 服务器。",
+   "dialog.server.search.placeholder": "搜索服务器",
+   "dialog.server.empty": "暂无服务器",
+   "dialog.server.add.title": "添加服务器",
+@@ -447,7 +447,7 @@ export const dict = {
+   "error.page.action.checking": "检查中...",
+   "error.page.action.checkUpdates": "检查更新",
+   "error.page.action.updateTo": "更新到 {{version}}",
+-  "error.page.report.prefix": "请将此错误报告给 CyberStrike 团队",
++  "error.page.report.prefix": "请将此错误报告给 SynapDome 团队",
+   "error.page.report.discord": "在 Discord 上",
+   "error.page.version": "版本：{{version}}",
+   "error.dev.rootNotFound": "未找到根元素。你是不是忘了把它添加到 index.html？或者 id 属性拼写错了？",
+@@ -464,7 +464,7 @@ export const dict = {
+   "error.chain.didYouMean": "你是不是想输入：{{suggestions}}",
+   "error.chain.modelNotFound": "未找到模型：{{provider}}/{{model}}",
+   "error.chain.checkConfig": "请检查你的配置 (cyberstrike.json) 中的 provider/model 名称",
+-  "error.chain.mcpFailed": 'MCP 服务器 "{{name}}" 启动失败。注意: CyberStrike 暂不支持 MCP 认证。',
++  "error.chain.mcpFailed": 'MCP 服务器 "{{name}}" 启动失败。注意: SynapDome 暂不支持 MCP 认证。',
+   "error.chain.providerAuthFailed": "提供商认证失败（{{provider}}）：{{message}}",
+   "error.chain.providerInitFailed": '无法初始化提供商 "{{provider}}"。请检查凭据和配置。',
+   "error.chain.configJsonInvalid": "配置文件 {{path}} 不是有效的 JSON(C)",
+@@ -572,12 +572,12 @@ export const dict = {
+   "sidebar.workspaces.enable": "启用工作区",
+   "sidebar.workspaces.disable": "禁用工作区",
+   "sidebar.gettingStarted.title": "入门",
+-  "sidebar.gettingStarted.line1": "CyberStrike 提供免费模型，你可以立即开始使用。",
++  "sidebar.gettingStarted.line1": "SynapDome 提供免费模型，你可以立即开始使用。",
+   "sidebar.gettingStarted.line2": "连接任意提供商即可使用更多模型，如 Claude、GPT、Gemini 等。",
+   "sidebar.project.recentSessions": "最近会话",
+   "sidebar.project.viewAllSessions": "查看全部会话",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+ 
+   "settings.section.desktop": "桌面",
+   "settings.section.server": "服务器",
+@@ -587,7 +587,7 @@ export const dict = {
+ 
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL 集成",
+-  "settings.desktop.wsl.description": "在 Windows 的 WSL 环境中运行 CyberStrike 服务器。",
++  "settings.desktop.wsl.description": "在 Windows 的 WSL 环境中运行 SynapDome 服务器。",
+ 
+   "settings.general.section.appearance": "外观",
+   "settings.general.section.notifications": "系统通知",
+@@ -595,11 +595,11 @@ export const dict = {
+   "settings.general.section.sounds": "音效",
+   "settings.general.section.display": "显示",
+   "settings.general.row.language.title": "语言",
+-  "settings.general.row.language.description": "更改 CyberStrike 的显示语言",
++  "settings.general.row.language.description": "更改 SynapDome 的显示语言",
+   "settings.general.row.appearance.title": "外观",
+-  "settings.general.row.appearance.description": "自定义 CyberStrike 在你的设备上的外观",
++  "settings.general.row.appearance.description": "自定义 SynapDome 在你的设备上的外观",
+   "settings.general.row.theme.title": "主题",
+-  "settings.general.row.theme.description": "自定义 CyberStrike 的主题。",
++  "settings.general.row.theme.description": "自定义 SynapDome 的主题。",
+   "settings.general.row.font.title": "字体",
+   "settings.general.row.font.description": "自定义代码块使用的等宽字体",
+   "settings.general.row.wayland.title": "使用原生 Wayland",
+@@ -609,13 +609,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": "更新后显示“新功能”弹窗",
+ 
+   "settings.updates.row.startup.title": "启动时检查更新",
+-  "settings.updates.row.startup.description": "在 CyberStrike 启动时自动检查更新",
++  "settings.updates.row.startup.description": "在 SynapDome 启动时自动检查更新",
+   "settings.updates.row.check.title": "检查更新",
+   "settings.updates.row.check.description": "手动检查更新并在有更新时安装",
+   "settings.updates.action.checkNow": "立即检查",
+   "settings.updates.action.checking": "正在检查...",
+   "settings.updates.toast.latest.title": "已是最新版本",
+-  "settings.updates.toast.latest.description": "你正在使用最新版本的 CyberStrike。",
++  "settings.updates.toast.latest.description": "你正在使用最新版本的 SynapDome。",
+ 
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+diff --git a/packages/app/src/i18n/zht.ts b/packages/app/src/i18n/zht.ts
+index f3fff4f5..1fdd9c42 100644
+--- a/packages/app/src/i18n/zht.ts
++++ b/packages/app/src/i18n/zht.ts
+@@ -114,7 +114,7 @@ export const dict = {
+   "dialog.model.manage": "管理模型",
+   "dialog.model.manage.description": "自訂模型選擇器中顯示的模型。",
+ 
+-  "dialog.model.unpaid.freeModels.title": "CyberStrike 提供的免費模型",
++  "dialog.model.unpaid.freeModels.title": "SynapDome 提供的免費模型",
+   "dialog.model.unpaid.addMore.title": "從熱門提供者新增更多模型",
+ 
+   "dialog.provider.viewAll": "查看更多提供者",
+@@ -127,7 +127,7 @@ export const dict = {
+   "provider.connect.status.waiting": "等待授權...",
+   "provider.connect.status.failed": "授權失敗: {{error}}",
+   "provider.connect.apiKey.description":
+-    "輸入你的 {{provider}} API 金鑰以連線帳戶，並在 CyberStrike 中使用 {{provider}} 模型。",
++    "輸入你的 {{provider}} API 金鑰以連線帳戶，並在 SynapDome 中使用 {{provider}} 模型。",
+   "provider.connect.apiKey.label": "{{provider}} API 金鑰",
+   "provider.connect.apiKey.placeholder": "API 金鑰",
+   "provider.connect.apiKey.required": "API 金鑰為必填",
+@@ -138,7 +138,7 @@ export const dict = {
+   "provider.connect.cyberstrikeZen.visit.suffix": " 取得你的 API 金鑰。",
+   "provider.connect.oauth.code.visit.prefix": "造訪 ",
+   "provider.connect.oauth.code.visit.link": "此連結",
+-  "provider.connect.oauth.code.visit.suffix": " 取得授權碼，以連線你的帳戶並在 CyberStrike 中使用 {{provider}} 模型。",
++  "provider.connect.oauth.code.visit.suffix": " 取得授權碼，以連線你的帳戶並在 SynapDome 中使用 {{provider}} 模型。",
+   "provider.connect.oauth.code.label": "{{method}} 授權碼",
+   "provider.connect.oauth.code.placeholder": "授權碼",
+   "provider.connect.oauth.code.required": "授權碼為必填",
+@@ -146,7 +146,7 @@ export const dict = {
+   "provider.connect.oauth.auto.visit.prefix": "造訪 ",
+   "provider.connect.oauth.auto.visit.link": "此連結",
+   "provider.connect.oauth.auto.visit.suffix":
+-    " 並輸入以下程式碼，以連線你的帳戶並在 CyberStrike 中使用 {{provider}} 模型。",
++    " 並輸入以下程式碼，以連線你的帳戶並在 SynapDome 中使用 {{provider}} 模型。",
+   "provider.connect.oauth.auto.confirmationCode": "確認碼",
+   "provider.connect.toast.connected.title": "{{provider}} 已連線",
+   "provider.connect.toast.connected.description": "現在可以使用 {{provider}} 模型了。",
+@@ -299,7 +299,7 @@ export const dict = {
+   "dialog.directory.empty": "找不到資料夾",
+ 
+   "dialog.server.title": "伺服器",
+-  "dialog.server.description": "切換此應用程式連線的 CyberStrike 伺服器。",
++  "dialog.server.description": "切換此應用程式連線的 SynapDome 伺服器。",
+   "dialog.server.search.placeholder": "搜尋伺服器",
+   "dialog.server.empty": "暫無伺服器",
+   "dialog.server.add.title": "新增伺服器",
+@@ -434,7 +434,7 @@ export const dict = {
+   "error.page.action.checking": "檢查中...",
+   "error.page.action.checkUpdates": "檢查更新",
+   "error.page.action.updateTo": "更新到 {{version}}",
+-  "error.page.report.prefix": "請將此錯誤回報給 CyberStrike 團隊",
++  "error.page.report.prefix": "請將此錯誤回報給 SynapDome 團隊",
+   "error.page.report.discord": "在 Discord 上",
+   "error.page.version": "版本: {{version}}",
+ 
+@@ -452,7 +452,7 @@ export const dict = {
+   "error.chain.didYouMean": "你是不是想輸入: {{suggestions}}",
+   "error.chain.modelNotFound": "找不到模型: {{provider}}/{{model}}",
+   "error.chain.checkConfig": "請檢查你的設定 (cyberstrike.json) 中的 provider/model 名稱",
+-  "error.chain.mcpFailed": 'MCP 伺服器 "{{name}}" 啟動失敗。注意: CyberStrike 暫不支援 MCP 認證。',
++  "error.chain.mcpFailed": 'MCP 伺服器 "{{name}}" 啟動失敗。注意: SynapDome 暫不支援 MCP 認證。',
+   "error.chain.providerAuthFailed": "提供者認證失敗 ({{provider}}): {{message}}",
+   "error.chain.providerInitFailed": '無法初始化提供者 "{{provider}}"。請檢查憑證和設定。',
+   "error.chain.configJsonInvalid": "設定檔 {{path}} 不是有效的 JSON(C)",
+@@ -563,19 +563,19 @@ export const dict = {
+   "sidebar.workspaces.enable": "啟用工作區",
+   "sidebar.workspaces.disable": "停用工作區",
+   "sidebar.gettingStarted.title": "開始使用",
+-  "sidebar.gettingStarted.line1": "CyberStrike 提供免費模型，你可以立即開始使用。",
++  "sidebar.gettingStarted.line1": "SynapDome 提供免費模型，你可以立即開始使用。",
+   "sidebar.gettingStarted.line2": "連線任意提供者即可使用更多模型，如 Claude、GPT、Gemini 等。",
+   "sidebar.project.recentSessions": "最近工作階段",
+   "sidebar.project.viewAllSessions": "查看全部工作階段",
+ 
+-  "app.name.desktop": "CyberStrike Desktop",
++  "app.name.desktop": "SynapDome Desktop",
+   "settings.section.desktop": "桌面",
+   "settings.section.server": "伺服器",
+   "settings.tab.general": "一般",
+   "settings.tab.shortcuts": "快速鍵",
+   "settings.desktop.section.wsl": "WSL",
+   "settings.desktop.wsl.title": "WSL integration",
+-  "settings.desktop.wsl.description": "Run the CyberStrike server inside WSL on Windows.",
++  "settings.desktop.wsl.description": "Run the SynapDome server inside WSL on Windows.",
+ 
+   "settings.general.section.appearance": "外觀",
+   "settings.general.section.notifications": "系統通知",
+@@ -584,11 +584,11 @@ export const dict = {
+   "settings.general.section.display": "顯示",
+ 
+   "settings.general.row.language.title": "語言",
+-  "settings.general.row.language.description": "變更 CyberStrike 的顯示語言",
++  "settings.general.row.language.description": "變更 SynapDome 的顯示語言",
+   "settings.general.row.appearance.title": "外觀",
+-  "settings.general.row.appearance.description": "自訂 CyberStrike 在你的裝置上的外觀",
++  "settings.general.row.appearance.description": "自訂 SynapDome 在你的裝置上的外觀",
+   "settings.general.row.theme.title": "主題",
+-  "settings.general.row.theme.description": "自訂 CyberStrike 的主題。",
++  "settings.general.row.theme.description": "自訂 SynapDome 的主題。",
+   "settings.general.row.font.title": "字型",
+   "settings.general.row.font.description": "自訂程式碼區塊使用的等寬字型",
+ 
+@@ -600,13 +600,13 @@ export const dict = {
+   "settings.general.row.releaseNotes.description": "更新後顯示「新功能」彈出視窗",
+ 
+   "settings.updates.row.startup.title": "啟動時檢查更新",
+-  "settings.updates.row.startup.description": "在 CyberStrike 啟動時自動檢查更新",
++  "settings.updates.row.startup.description": "在 SynapDome 啟動時自動檢查更新",
+   "settings.updates.row.check.title": "檢查更新",
+   "settings.updates.row.check.description": "手動檢查更新並在有更新時安裝",
+   "settings.updates.action.checkNow": "立即檢查",
+   "settings.updates.action.checking": "檢查中...",
+   "settings.updates.toast.latest.title": "已是最新版本",
+-  "settings.updates.toast.latest.description": "你正在使用最新版本的 CyberStrike。",
++  "settings.updates.toast.latest.description": "你正在使用最新版本的 SynapDome。",
+ 
+   "font.option.ibmPlexMono": "IBM Plex Mono",
+   "font.option.cascadiaCode": "Cascadia Code",
+diff --git a/packages/app/src/pages/home.tsx b/packages/app/src/pages/home.tsx
+index b73f56d6..0327a078 100644
+--- a/packages/app/src/pages/home.tsx
++++ b/packages/app/src/pages/home.tsx
+@@ -70,7 +70,7 @@ export default function Home() {
+ 
+   return (
+     <div class="mx-auto mt-55 w-full md:w-auto px-4">
+-      <Logo class="md:w-xl opacity-12" />
++      <Logo class="w-full max-w-md mx-auto" />
+       <Button
+         size="large"
+         variant="ghost"
+diff --git a/packages/cyberstrike/src/session/llm.ts b/packages/cyberstrike/src/session/llm.ts
+index 157cf1d8..49e7081e 100644
+--- a/packages/cyberstrike/src/session/llm.ts
++++ b/packages/cyberstrike/src/session/llm.ts
+@@ -233,7 +233,6 @@ export namespace LLM {
+             content: x,
+           }),
+         ),
+-        ...getFewShotMessages(input),
+         ...input.messages,
+       ],
+       model: wrapLanguageModel({
+diff --git a/packages/ui/src/assets/favicon/site.webmanifest b/packages/ui/src/assets/favicon/site.webmanifest
+index 8c2c0377..68019782 100644
+--- a/packages/ui/src/assets/favicon/site.webmanifest
++++ b/packages/ui/src/assets/favicon/site.webmanifest
+@@ -1,19 +1,14 @@
+ {
+-  "name": "CyberStrike",
+-  "short_name": "CyberStrike",
++  "name": "SynapDome",
++  "short_name": "SynapDome",
+   "icons": [
+     {
+-      "src": "/web-app-manifest-192x192.png",
+-      "sizes": "192x192",
+-      "type": "image/png"
+-    },
+-    {
+-      "src": "/web-app-manifest-512x512.png",
+-      "sizes": "512x512",
++      "src": "/synapdome-logo.png",
++      "sizes": "1254x1254",
+       "type": "image/png"
+     }
+   ],
+-  "theme_color": "#000000",
+-  "background_color": "#000000",
++  "theme_color": "#10b981",
++  "background_color": "#020617",
+   "display": "standalone"
+ }
+diff --git a/packages/ui/src/components/logo.css b/packages/ui/src/components/logo.css
+index a909782b..c1cd05d7 100644
+--- a/packages/ui/src/components/logo.css
++++ b/packages/ui/src/components/logo.css
+@@ -1,4 +1,4 @@
+ [data-component="logo-mark"] {
+-  width: 16px;
+-  aspect-ratio: 4/5;
++  width: 20px;
++  aspect-ratio: 1;
+ }
+diff --git a/packages/ui/src/components/logo.tsx b/packages/ui/src/components/logo.tsx
+index 0a0ff611..348b51f5 100644
+--- a/packages/ui/src/components/logo.tsx
++++ b/packages/ui/src/components/logo.tsx
+@@ -1,82 +1,18 @@
+ import { ComponentProps } from "solid-js"
+ 
+-export const Mark = (props: { class?: string }) => {
+-  return (
+-    <svg
+-      data-component="logo-mark"
+-      classList={{ [props.class ?? ""]: !!props.class }}
+-      viewBox="0 0 512 512"
+-      fill="var(--icon-strong-base)"
+-      xmlns="http://www.w3.org/2000/svg"
+-    >
+-      <g transform="translate(0,512) scale(0.1,-0.1)">
+-        <path d="M2395 4070 c-174 -21 -369 -78 -513 -152 -158 -80 -258 -154 -392 -288 -172 -172 -276 -331 -355 -545 -41 -111 -89 -305 -77 -317 6 -6 182 15 216 25 4 2 19 44 32 94 106 409 420 752 819 896 142 51 257 69 430 69 170 1 249 -11 400 -58 307 -96 591 -337 750 -637 155 -290 188 -664 88 -980 -125 -398 -454 -726 -852 -851 -377 -118 -780 -58 -1111 167 -167 114 -368 350 -449 528 -36 81 -79 206 -87 259 -4 22 -12 44 -18 47 -19 12 -217 40 -222 32 -7 -13 36 -197 68 -288 112 -318 313 -578 593 -766 600 -402 1373 -333 1894 170 57 55 132 138 167 185 132 177 247 447 281 664 9 55 19 104 22 107 3 4 25 10 48 14 l42 7 43 -66 c24 -36 48 -66 53 -66 9 0 655 230 664 237 9 6 -11 14 -229 93 -124 45 -273 99 -333 120 l-107 39 -46 -68 c-35 -54 -52 -70 -76 -75 -64 -13 -65 -12 -72 70 -9 99 -55 276 -101 392 -133 331 -395 618 -716 782 -120 61 -301 123 -424 145 -108 19 -333 27 -430 15z" />
+-        <path d="M3135 3140 c-510 -177 -1046 -295 -1895 -419 -80 -12 -174 -26 -210 -32 -150 -23 -458 -69 -638 -95 -106 -15 -187 -31 -180 -35 7 -4 49 -12 93 -18 132 -17 1317 -189 1499 -216 93 -14 172 -22 176 -18 96 112 210 254 210 260 0 4 -9 19 -20 33 -11 14 -20 30 -20 36 0 6 61 23 135 38 74 16 174 38 223 51 48 13 89 21 91 19 3 -2 -5 -14 -16 -27 -18 -20 -432 -504 -641 -750 -46 -54 -82 -100 -79 -103 2 -2 76 23 163 57 374 143 730 248 1194 353 155 35 418 88 497 101 23 4 46 12 52 19 14 16 27 201 15 209 -29 17 -744 -132 -1073 -224 -79 -22 -146 -38 -148 -35 -3 3 82 108 190 233 313 365 492 577 500 591 11 16 9 16 -118 -28z" />
+-      </g>
+-    </svg>
+-  )
+-}
++export const Mark = (props: { class?: string }) => (
++  <svg data-component="logo-mark" class={props.class} viewBox="250 220 750 780" role="img" aria-label="SynapDome">
++    <image href="/synapdome-logo.png" width="1254" height="1254" />
++  </svg>
++)
+ 
+-export const Splash = (props: Pick<ComponentProps<"svg">, "ref" | "class">) => {
+-  return (
+-    <svg
+-      ref={props.ref}
+-      data-component="logo-splash"
+-      classList={{ [props.class ?? ""]: !!props.class }}
+-      viewBox="0 0 400 120"
+-      fill="none"
+-      xmlns="http://www.w3.org/2000/svg"
+-    >
+-      <g transform="translate(163, 2) scale(0.145)" fill="var(--icon-strong-base)">
+-        <path
+-          opacity="1"
+-          d="m243.55 92c-0.3 0.55-2.69 1-5.3 1-2.61 0-8.8 0.72-13.75 1.59-4.95 0.88-12.82 2.69-17.5 4.03-4.68 1.35-10.3 3.3-12.5 4.33-2.2 1.04-7.38 3.34-11.5 5.1-4.13 1.77-7.95 3.77-8.5 4.45-0.55 0.69-2.58 1.91-4.5 2.73-1.93 0.82-7.55 4.61-12.5 8.42-4.95 3.82-10.76 8.5-12.91 10.4-2.16 1.9-5.08 4.63-6.5 6.08-1.43 1.45-4.51 4.82-6.85 7.5-2.34 2.68-6.59 8.02-9.44 11.87-2.85 3.85-6.17 9.03-7.38 11.5-1.21 2.47-2.86 5.18-3.67 6-0.81 0.82-2.25 3.3-3.21 5.5-0.95 2.2-3.75 8.95-6.22 15-2.7 6.62-5.45 15.78-6.9 23-1.33 6.6-2.3 12.08-2.17 12.18 0.14 0.1 4.75-0.46 10.25-1.23 5.5-0.78 10.56-1.42 11.25-1.43 0.69-0.01 1.54-1.48 1.89-3.27 0.35-1.79 1.01-3.93 1.47-4.75 0.46-0.82 1.76-5.1 2.88-9.5 1.13-4.4 4.65-13.18 7.82-19.5 3.17-6.32 7.73-14.2 10.14-17.5 2.4-3.3 6.89-8.9 9.96-12.44 3.07-3.54 7.61-8.34 10.09-10.66 2.47-2.32 7.87-6.88 12-10.13 4.12-3.26 12.22-8.43 18-11.49 5.77-3.07 14.32-6.79 19-8.28 4.67-1.48 9.4-3.06 10.5-3.51 1.1-0.44 2.9-1.1 4-1.45 1.1-0.35 6.39-1.29 11.75-2.09 5.36-0.8 15.26-1.44 22-1.43 6.74 0.01 16.3 0.68 21.25 1.5 4.95 0.82 9.9 1.74 11 2.04 1.1 0.31 2.9 0.95 4 1.41 1.1 0.47 6.05 2.08 11 3.57 4.95 1.5 11.02 3.86 13.5 5.24 2.48 1.39 6.98 3.84 10 5.45 3.02 1.62 8.65 5.3 12.5 8.18 3.85 2.88 11.14 9.48 16.21 14.67 5.06 5.18 11.27 12.12 13.79 15.42 2.52 3.3 4.55 6.45 4.52 7-0.03 0.55 0.77 1.9 1.78 3 1.02 1.1 4.16 6.72 6.98 12.5 2.82 5.78 6.02 13.2 7.1 16.5 1.09 3.3 2.94 10.5 4.13 16 1.18 5.5 2.57 13.6 3.07 18 0.5 4.4 0.63 12.95 0.29 19-0.34 6.05-0.95 11.45-1.36 12-0.4 0.55-1.04 3.02-1.42 5.5-0.38 2.48-1.62 8.32-2.75 13-1.14 4.68-3.82 12.21-5.95 16.75-2.14 4.54-3.88 8.59-3.87 9 0.01 0.41-2.91 5.14-6.5 10.5-3.59 5.36-6.51 9.86-6.49 10 0.02 0.14-1.45 1.99-3.25 4.12-1.8 2.14-6.74 7.31-10.96 11.5-4.23 4.2-10.08 9.49-13 11.76-2.93 2.27-8.47 6.17-12.32 8.67-3.85 2.49-10.38 5.93-14.5 7.65-4.13 1.71-8.4 3.61-9.5 4.22-1.1 0.61-4.02 1.72-6.5 2.45-2.48 0.74-9.23 2.34-15 3.56-8.75 1.85-13.59 2.22-29 2.18-15.3-0.04-20.23-0.43-28.5-2.26-5.5-1.22-11.57-2.7-13.5-3.28-1.93-0.59-5.3-1.87-7.5-2.84-2.2-0.97-7.15-3.19-11-4.93-3.85-1.74-9.36-4.72-12.25-6.61-2.89-1.89-5.59-3.43-6-3.41-0.41 0.02-2.33-1.47-4.25-3.31-1.93-1.83-4.25-3.76-5.16-4.28-0.91-0.52-4.51-3.68-8-7.03-3.49-3.35-8.03-7.97-10.09-10.25-2.06-2.29-6.13-7.65-9.04-11.91-2.91-4.26-6.29-9.44-7.5-11.5-1.22-2.06-2.21-4.2-2.21-4.75 0-0.55-1.09-2.69-2.43-4.75-1.33-2.06-3.85-8.25-5.59-13.75-1.75-5.5-3.52-10.9-3.94-12-0.43-1.1-1.18-3.35-1.68-5-0.83-2.76-1.41-3.08-7.38-4.06-3.56-0.58-7.16-1.33-7.98-1.67-0.83-0.34-2.96-0.77-4.74-0.95-2.09-0.21-3.24 0.12-3.25 0.93-0.01 0.69 0.92 5.64 2.05 11 1.13 5.36 2.53 11.32 3.12 13.25 0.58 1.93 1.64 4.85 2.36 6.5 0.72 1.65 3.02 7.05 5.11 12 2.09 4.95 6.27 13.05 9.3 18 3.03 4.95 6.53 10.13 7.78 11.5 1.25 1.37 2.28 3.06 2.27 3.75 0 0.69 4.61 6.04 10.25 11.9 5.64 5.86 12.65 12.5 15.59 14.75 2.93 2.26 9.01 6.7 13.5 9.89 4.49 3.18 11.53 7.4 15.66 9.37 4.12 1.97 7.72 3.93 8 4.34 0.27 0.42 7.25 3.02 15.5 5.77 8.25 2.75 19.27 5.73 24.5 6.62 5.22 0.89 12.09 1.62 15.25 1.62 3.17-0.01 5.75 0.44 5.75 0.99 0 0.56 2.83 1 6.5 1 3.57 0 6.73-0.45 7-1 0.27-0.55 3.09-1 6.25-1 3.16 0 9.8-0.7 14.75-1.57 4.95-0.86 9.9-1.94 11-2.4 1.1-0.46 6.73-2.27 12.5-4.02 5.77-1.76 15.34-5.63 21.25-8.6 5.91-2.98 13.9-7.66 17.75-10.41 3.85-2.75 7.23-5 7.5-5 0.27 0 2.64-2.03 5.25-4.51 2.61-2.47 5.09-4.5 5.5-4.5 0.41 0.01 3.89-3.25 7.72-7.24 3.84-3.99 8-8.39 9.25-9.79 1.26-1.4 5.26-6.8 8.89-12 3.64-5.2 7.86-11.94 9.39-14.96 1.52-3.02 3.09-5.73 3.48-6 0.39-0.27 2.08-4.1 3.75-8.5 1.66-4.4 3.59-9.8 4.28-12 0.69-2.2 1.61-4.45 2.05-5 0.44-0.55 1.54-4.6 2.45-9 0.91-4.4 2.21-11.82 2.88-16.5l1.21-8.5 11.9-0.56c9.41 12.48 10.3 13.19 12.5 12.6 1.37-0.36 4.3-1.51 6.5-2.56 2.2-1.04 9.62-3.73 16.5-5.96 6.87-2.23 13.62-4.65 15-5.38 1.37-0.74 7.67-3.06 14-5.16 6.32-2.1 12.4-4.35 13.5-4.98 1.84-1.07 1.69-1.26-2-2.44-2.2-0.71-5.8-2.12-8-3.14-2.2-1.03-9.63-3.73-16.5-6-6.88-2.28-12.95-4.48-13.5-4.9-0.55-0.41-6.85-2.68-14-5.03-7.15-2.36-13.45-4.46-14-4.68-0.55-0.22-1.6 0.86-2.34 2.4-0.74 1.53-2.01 3.47-2.82 4.29-0.82 0.82-2.27 2.85-3.23 4.5-1.5 2.57-2.52 3.09-7.18 3.64-2.99 0.35-5.77 0.46-6.18 0.25-0.41-0.22-0.75-2.42-0.75-4.89 0-2.47-1.13-10.35-2.5-17.5-1.38-7.15-2.95-13.79-3.5-14.75-0.55-0.96-2.51-6.03-4.35-11.25-1.85-5.22-5.37-13.1-7.84-17.5-2.46-4.4-4.72-8.68-5.02-9.5-0.3-0.82-3.38-5.32-6.85-10-3.47-4.68-10.61-12.94-15.87-18.37-5.26-5.43-13.17-12.62-17.57-15.98-4.4-3.36-12.73-8.86-18.5-12.22-5.77-3.36-11.63-6.46-13-6.89-1.38-0.43-4.75-1.81-7.5-3.07-2.75-1.26-7.25-3.05-10-3.96-2.75-0.92-9.05-2.54-14-3.61-4.95-1.06-12.75-2.22-17.33-2.57-4.58-0.34-8.3-1.01-8.25-1.48 0.04-0.47-4.85-0.85-10.87-0.85-6.27 0-11.19 0.43-11.5 1z"
+-        />
+-        <path
+-          opacity="1"
+-          d="m326.5 190.55c-1.65 0.85-9.3 3.41-17 5.69-7.7 2.29-14.23 4.44-14.5 4.79-0.27 0.35-2.3 1.12-4.5 1.7-2.2 0.58-9.4 2.47-16 4.19-6.6 1.73-13.8 3.79-16 4.58-2.2 0.79-10.75 2.83-19 4.53-8.25 1.7-15.68 3.45-16.5 3.89-0.82 0.45-7.8 2-15.5 3.45-7.7 1.44-19.18 3.55-25.5 4.68-6.32 1.13-15.1 2.7-19.5 3.48-4.4 0.79-18.35 2.81-31 4.5-12.65 1.68-23.9 3.44-25 3.91-1.1 0.47-6.05 1.37-11 2-4.95 0.63-15.53 2.03-23.5 3.11-7.97 1.08-18.55 2.45-23.5 3.05-4.95 0.6-9.9 1.47-11 1.94-1.1 0.47-6.72 1.52-12.5 2.34-5.78 0.82-13.2 1.83-16.5 2.24l-6 0.74c6.2 1.19 10.47 1.99 13.5 2.54 3.02 0.56 12.7 1.94 21.5 3.08 8.8 1.14 21.17 2.76 27.5 3.59 6.33 0.84 12.4 1.91 13.5 2.4 1.1 0.48 4.47 1.11 7.5 1.39 3.03 0.28 16.3 1.93 29.5 3.67 13.2 1.74 26.47 3.56 29.5 4.05 3.03 0.49 12.7 2 21.5 3.35 8.8 1.36 17.87 2.6 20.17 2.77l4.16 0.3 22.9-27c-3.65-6.2-4.71-8.56-4.72-9.25 0-0.69 1.68-1.51 3.74-1.83 2.06-0.32 10.72-1.93 19.25-3.57 8.53-1.65 15.95-3.36 16.5-3.81 0.55-0.44 3.36-1.31 6.25-1.92 2.89-0.62 5.48-1.12 5.75-1.12 0.27 0 0.5 0.45 0.5 1 0 0.55-3.26 4.76-7.25 9.36-3.99 4.59-12.78 14.83-19.54 22.75-6.76 7.91-13.51 15.73-15 17.37-1.49 1.64-3.39 3.95-4.21 5.14-0.82 1.19-6.91 8.4-13.52 16.02-6.62 7.62-14.27 16.47-17 19.67l-4.98 5.8c9.3-3.33 12.45-4.66 13-5.1 0.55-0.45 6.62-2.73 13.5-5.08 6.87-2.35 12.72-4.56 13-4.91 0.28-0.35 7.03-2.59 15-4.97 7.97-2.39 15.4-4.79 16.5-5.35 1.1-0.55 9.2-2.98 18-5.39 8.8-2.42 20.27-5.47 25.5-6.79 5.23-1.31 13.55-3.33 18.5-4.49 4.95-1.16 12.82-3 17.5-4.09 4.68-1.09 14.8-3.11 22.5-4.5 7.7-1.39 14.9-2.91 16-3.39 1.1-0.48 5.37-1.39 9.5-2.02 4.12-0.64 7.73-1.39 8-1.67 0.27-0.29 0.61-5.21 0.75-10.94 0.19-7.81-0.06-10.42-1-10.41-0.69 0-10.93 1.59-22.75 3.53-11.82 1.93-22.4 3.93-23.5 4.44-1.1 0.52-11.45 2.81-23 5.1-11.55 2.29-21.68 4.55-22.5 5.01-0.82 0.46-6.23 2.04-12 3.5-5.77 1.47-12.3 3.03-14.5 3.48-2.2 0.44-5.35 1.47-7 2.29-1.65 0.81-3.85 1.63-4.9 1.81-1.04 0.18-2.05-0.23-2.25-0.92-0.19-0.69 2.91-4.97 6.9-9.51 3.99-4.54 11.32-12.98 16.29-18.75 4.97-5.77 10.82-12.7 13-15.41 2.18-2.7 5.08-6.19 6.46-7.74 1.37-1.56 3.92-4.52 5.66-6.59 1.74-2.06 8.83-10.39 15.75-18.5 6.91-8.11 12.47-14.75 12.33-14.74-0.13 0-1.59 0.7-3.24 1.54z"
+-        />
+-      </g>
+-      <text
+-        x="200"
+-        y="100"
+-        text-anchor="middle"
+-        font-family="'Space Grotesk Variable', system-ui, sans-serif"
+-        font-size="36"
+-        font-weight="700"
+-        letter-spacing="-0.5"
+-        fill="var(--icon-strong-base)"
+-      >
+-        CyberStrike
+-      </text>
++export const Splash = (props: Pick<ComponentProps<"svg">, "ref" | "class">) => (
++  <svg ref={props.ref} data-component="logo-splash" class={props.class} viewBox="0 0 400 160" role="img" aria-label="SynapDome">
++    <svg x="150" y="0" width="100" height="105" viewBox="250 220 750 780">
++      <image href="/synapdome-logo.png" width="1254" height="1254" />
+     </svg>
+-  )
+-}
++    <text x="200" y="145" text-anchor="middle" font-family="system-ui, sans-serif" font-size="36" font-weight="700" letter-spacing="-1" fill="var(--text-strong)">SynapDome</text>
++  </svg>
++)
+ 
+-export const Logo = (props: { class?: string }) => {
+-  return (
+-    <svg
+-      xmlns="http://www.w3.org/2000/svg"
+-      viewBox="0 0 400 160"
+-      fill="none"
+-      classList={{ [props.class ?? ""]: !!props.class }}
+-    >
+-      <g transform="translate(163, 5) scale(0.145)" fill="var(--icon-strong-base)">
+-        <path d="m243.55 92c-0.3 0.55-2.69 1-5.3 1-2.61 0-8.8 0.72-13.75 1.59-4.95 0.88-12.82 2.69-17.5 4.03-4.68 1.35-10.3 3.3-12.5 4.33-2.2 1.04-7.38 3.34-11.5 5.1-4.13 1.77-7.95 3.77-8.5 4.45-0.55 0.69-2.58 1.91-4.5 2.73-1.93 0.82-7.55 4.61-12.5 8.42-4.95 3.82-10.76 8.5-12.91 10.4-2.16 1.9-5.08 4.63-6.5 6.08-1.43 1.45-4.51 4.82-6.85 7.5-2.34 2.68-6.59 8.02-9.44 11.87-2.85 3.85-6.17 9.03-7.38 11.5-1.21 2.47-2.86 5.18-3.67 6-0.81 0.82-2.25 3.3-3.21 5.5-0.95 2.2-3.75 8.95-6.22 15-2.7 6.62-5.45 15.78-6.9 23-1.33 6.6-2.3 12.08-2.17 12.18 0.14 0.1 4.75-0.46 10.25-1.23 5.5-0.78 10.56-1.42 11.25-1.43 0.69-0.01 1.54-1.48 1.89-3.27 0.35-1.79 1.01-3.93 1.47-4.75 0.46-0.82 1.76-5.1 2.88-9.5 1.13-4.4 4.65-13.18 7.82-19.5 3.17-6.32 7.73-14.2 10.14-17.5 2.4-3.3 6.89-8.9 9.96-12.44 3.07-3.54 7.61-8.34 10.09-10.66 2.47-2.32 7.87-6.88 12-10.13 4.12-3.26 12.22-8.43 18-11.49 5.77-3.07 14.32-6.79 19-8.28 4.67-1.48 9.4-3.06 10.5-3.51 1.1-0.44 2.9-1.1 4-1.45 1.1-0.35 6.39-1.29 11.75-2.09 5.36-0.8 15.26-1.44 22-1.43 6.74 0.01 16.3 0.68 21.25 1.5 4.95 0.82 9.9 1.74 11 2.04 1.1 0.31 2.9 0.95 4 1.41 1.1 0.47 6.05 2.08 11 3.57 4.95 1.5 11.02 3.86 13.5 5.24 2.48 1.39 6.98 3.84 10 5.45 3.02 1.62 8.65 5.3 12.5 8.18 3.85 2.88 11.14 9.48 16.21 14.67 5.06 5.18 11.27 12.12 13.79 15.42 2.52 3.3 4.55 6.45 4.52 7-0.03 0.55 0.77 1.9 1.78 3 1.02 1.1 4.16 6.72 6.98 12.5 2.82 5.78 6.02 13.2 7.1 16.5 1.09 3.3 2.94 10.5 4.13 16 1.18 5.5 2.57 13.6 3.07 18 0.5 4.4 0.63 12.95 0.29 19-0.34 6.05-0.95 11.45-1.36 12-0.4 0.55-1.04 3.02-1.42 5.5-0.38 2.48-1.62 8.32-2.75 13-1.14 4.68-3.82 12.21-5.95 16.75-2.14 4.54-3.88 8.59-3.87 9 0.01 0.41-2.91 5.14-6.5 10.5-3.59 5.36-6.51 9.86-6.49 10 0.02 0.14-1.45 1.99-3.25 4.12-1.8 2.14-6.74 7.31-10.96 11.5-4.23 4.2-10.08 9.49-13 11.76-2.93 2.27-8.47 6.17-12.32 8.67-3.85 2.49-10.38 5.93-14.5 7.65-4.13 1.71-8.4 3.61-9.5 4.22-1.1 0.61-4.02 1.72-6.5 2.45-2.48 0.74-9.23 2.34-15 3.56-8.75 1.85-13.59 2.22-29 2.18-15.3-0.04-20.23-0.43-28.5-2.26-5.5-1.22-11.57-2.7-13.5-3.28-1.93-0.59-5.3-1.87-7.5-2.84-2.2-0.97-7.15-3.19-11-4.93-3.85-1.74-9.36-4.72-12.25-6.61-2.89-1.89-5.59-3.43-6-3.41-0.41 0.02-2.33-1.47-4.25-3.31-1.93-1.83-4.25-3.76-5.16-4.28-0.91-0.52-4.51-3.68-8-7.03-3.49-3.35-8.03-7.97-10.09-10.25-2.06-2.29-6.13-7.65-9.04-11.91-2.91-4.26-6.29-9.44-7.5-11.5-1.22-2.06-2.21-4.2-2.21-4.75 0-0.55-1.09-2.69-2.43-4.75-1.33-2.06-3.85-8.25-5.59-13.75-1.75-5.5-3.52-10.9-3.94-12-0.43-1.1-1.18-3.35-1.68-5-0.83-2.76-1.41-3.08-7.38-4.06-3.56-0.58-7.16-1.33-7.98-1.67-0.83-0.34-2.96-0.77-4.74-0.95-2.09-0.21-3.24 0.12-3.25 0.93-0.01 0.69 0.92 5.64 2.05 11 1.13 5.36 2.53 11.32 3.12 13.25 0.58 1.93 1.64 4.85 2.36 6.5 0.72 1.65 3.02 7.05 5.11 12 2.09 4.95 6.27 13.05 9.3 18 3.03 4.95 6.53 10.13 7.78 11.5 1.25 1.37 2.28 3.06 2.27 3.75 0 0.69 4.61 6.04 10.25 11.9 5.64 5.86 12.65 12.5 15.59 14.75 2.93 2.26 9.01 6.7 13.5 9.89 4.49 3.18 11.53 7.4 15.66 9.37 4.12 1.97 7.72 3.93 8 4.34 0.27 0.42 7.25 3.02 15.5 5.77 8.25 2.75 19.27 5.73 24.5 6.62 5.22 0.89 12.09 1.62 15.25 1.62 3.17-0.01 5.75 0.44 5.75 0.99 0 0.56 2.83 1 6.5 1 3.57 0 6.73-0.45 7-1 0.27-0.55 3.09-1 6.25-1 3.16 0 9.8-0.7 14.75-1.57 4.95-0.86 9.9-1.94 11-2.4 1.1-0.46 6.73-2.27 12.5-4.02 5.77-1.76 15.34-5.63 21.25-8.6 5.91-2.98 13.9-7.66 17.75-10.41 3.85-2.75 7.23-5 7.5-5 0.27 0 2.64-2.03 5.25-4.51 2.61-2.47 5.09-4.5 5.5-4.5 0.41 0.01 3.89-3.25 7.72-7.24 3.84-3.99 8-8.39 9.25-9.79 1.26-1.4 5.26-6.8 8.89-12 3.64-5.2 7.86-11.94 9.39-14.96 1.52-3.02 3.09-5.73 3.48-6 0.39-0.27 2.08-4.1 3.75-8.5 1.66-4.4 3.59-9.8 4.28-12 0.69-2.2 1.61-4.45 2.05-5 0.44-0.55 1.54-4.6 2.45-9 0.91-4.4 2.21-11.82 2.88-16.5l1.21-8.5 11.9-0.56c9.41 12.48 10.3 13.19 12.5 12.6 1.37-0.36 4.3-1.51 6.5-2.56 2.2-1.04 9.62-3.73 16.5-5.96 6.87-2.23 13.62-4.65 15-5.38 1.37-0.74 7.67-3.06 14-5.16 6.32-2.1 12.4-4.35 13.5-4.98 1.84-1.07 1.69-1.26-2-2.44-2.2-0.71-5.8-2.12-8-3.14-2.2-1.03-9.63-3.73-16.5-6-6.88-2.28-12.95-4.48-13.5-4.9-0.55-0.41-6.85-2.68-14-5.03-7.15-2.36-13.45-4.46-14-4.68-0.55-0.22-1.6 0.86-2.34 2.4-0.74 1.53-2.01 3.47-2.82 4.29-0.82 0.82-2.27 2.85-3.23 4.5-1.5 2.57-2.52 3.09-7.18 3.64-2.99 0.35-5.77 0.46-6.18 0.25-0.41-0.22-0.75-2.42-0.75-4.89 0-2.47-1.13-10.35-2.5-17.5-1.38-7.15-2.95-13.79-3.5-14.75-0.55-0.96-2.51-6.03-4.35-11.25-1.85-5.22-5.37-13.1-7.84-17.5-2.46-4.4-4.72-8.68-5.02-9.5-0.3-0.82-3.38-5.32-6.85-10-3.47-4.68-10.61-12.94-15.87-18.37-5.26-5.43-13.17-12.62-17.57-15.98-4.4-3.36-12.73-8.86-18.5-12.22-5.77-3.36-11.63-6.46-13-6.89-1.38-0.43-4.75-1.81-7.5-3.07-2.75-1.26-7.25-3.05-10-3.96-2.75-0.92-9.05-2.54-14-3.61-4.95-1.06-12.75-2.22-17.33-2.57-4.58-0.34-8.3-1.01-8.25-1.48 0.04-0.47-4.85-0.85-10.87-0.85-6.27 0-11.19 0.43-11.5 1z" />
+-        <path d="m326.5 190.55c-1.65 0.85-9.3 3.41-17 5.69-7.7 2.29-14.23 4.44-14.5 4.79-0.27 0.35-2.3 1.12-4.5 1.7-2.2 0.58-9.4 2.47-16 4.19-6.6 1.73-13.8 3.79-16 4.58-2.2 0.79-10.75 2.83-19 4.53-8.25 1.7-15.68 3.45-16.5 3.89-0.82 0.45-7.8 2-15.5 3.45-7.7 1.44-19.18 3.55-25.5 4.68-6.32 1.13-15.1 2.7-19.5 3.48-4.4 0.79-18.35 2.81-31 4.5-12.65 1.68-23.9 3.44-25 3.91-1.1 0.47-6.05 1.37-11 2-4.95 0.63-15.53 2.03-23.5 3.11-7.97 1.08-18.55 2.45-23.5 3.05-4.95 0.6-9.9 1.47-11 1.94-1.1 0.47-6.72 1.52-12.5 2.34-5.78 0.82-13.2 1.83-16.5 2.24l-6 0.74c6.2 1.19 10.47 1.99 13.5 2.54 3.02 0.56 12.7 1.94 21.5 3.08 8.8 1.14 21.17 2.76 27.5 3.59 6.33 0.84 12.4 1.91 13.5 2.4 1.1 0.48 4.47 1.11 7.5 1.39 3.03 0.28 16.3 1.93 29.5 3.67 13.2 1.74 26.47 3.56 29.5 4.05 3.03 0.49 12.7 2 21.5 3.35 8.8 1.36 17.87 2.6 20.17 2.77l4.16 0.3 22.9-27c-3.65-6.2-4.71-8.56-4.72-9.25 0-0.69 1.68-1.51 3.74-1.83 2.06-0.32 10.72-1.93 19.25-3.57 8.53-1.65 15.95-3.36 16.5-3.81 0.55-0.44 3.36-1.31 6.25-1.92 2.89-0.62 5.48-1.12 5.75-1.12 0.27 0 0.5 0.45 0.5 1 0 0.55-3.26 4.76-7.25 9.36-3.99 4.59-12.78 14.83-19.54 22.75-6.76 7.91-13.51 15.73-15 17.37-1.49 1.64-3.39 3.95-4.21 5.14-0.82 1.19-6.91 8.4-13.52 16.02-6.62 7.62-14.27 16.47-17 19.67l-4.98 5.8c9.3-3.33 12.45-4.66 13-5.1 0.55-0.45 6.62-2.73 13.5-5.08 6.87-2.35 12.72-4.56 13-4.91 0.28-0.35 7.03-2.59 15-4.97 7.97-2.39 15.4-4.79 16.5-5.35 1.1-0.55 9.2-2.98 18-5.39 8.8-2.42 20.27-5.47 25.5-6.79 5.23-1.31 13.55-3.33 18.5-4.49 4.95-1.16 12.82-3 17.5-4.09 4.68-1.09 14.8-3.11 22.5-4.5 7.7-1.39 14.9-2.91 16-3.39 1.1-0.48 5.37-1.39 9.5-2.02 4.12-0.64 7.73-1.39 8-1.67 0.27-0.29 0.61-5.21 0.75-10.94 0.19-7.81-0.06-10.42-1-10.41-0.69 0-10.93 1.59-22.75 3.53-11.82 1.93-22.4 3.93-23.5 4.44-1.1 0.52-11.45 2.81-23 5.1-11.55 2.29-21.68 4.55-22.5 5.01-0.82 0.46-6.23 2.04-12 3.5-5.77 1.47-12.3 3.03-14.5 3.48-2.2 0.44-5.35 1.47-7 2.29-1.65 0.81-3.85 1.63-4.9 1.81-1.04 0.18-2.05-0.23-2.25-0.92-0.19-0.69 2.91-4.97 6.9-9.51 3.99-4.54 11.32-12.98 16.29-18.75 4.97-5.77 10.82-12.7 13-15.41 2.18-2.7 5.08-6.19 6.46-7.74 1.37-1.56 3.92-4.52 5.66-6.59 1.74-2.06 8.83-10.39 15.75-18.5 6.91-8.11 12.47-14.75 12.33-14.74-0.13 0-1.59 0.7-3.24 1.54z" />
+-      </g>
+-      <text
+-        x="200"
+-        y="140"
+-        text-anchor="middle"
+-        font-family="'Space Grotesk Variable', system-ui, sans-serif"
+-        font-size="36"
+-        font-weight="700"
+-        letter-spacing="-0.5"
+-        fill="var(--icon-strong-base)"
+-      >
+-        CyberStrike
+-      </text>
+-    </svg>
+-  )
+-}
++export const Logo = (props: { class?: string }) => <Splash class={props.class} />
+diff --git a/packages/ui/src/theme/context.tsx b/packages/ui/src/theme/context.tsx
+index c3ddcf3d..16861962 100644
+--- a/packages/ui/src/theme/context.tsx
++++ b/packages/ui/src/theme/context.tsx
+@@ -71,7 +71,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
+   init: (props: { defaultTheme?: string }) => {
+     const [store, setStore] = createStore({
+       themes: DEFAULT_THEMES as Record<string, DesktopTheme>,
+-      themeId: props.defaultTheme ?? "cs-1",
++      themeId: props.defaultTheme ?? "synapdome",
+       colorScheme: "system" as ColorScheme,
+       mode: getSystemMode(),
+       previewThemeId: null as string | null,
+@@ -90,7 +90,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
+ 
+       const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME_ID)
+       const savedScheme = localStorage.getItem(STORAGE_KEYS.COLOR_SCHEME) as ColorScheme | null
+-      if (savedTheme && store.themes[savedTheme]) {
++      if (savedTheme && savedTheme !== "cs-1" && store.themes[savedTheme]) {
+         setStore("themeId", savedTheme)
+       }
+       if (savedScheme) {
+diff --git a/packages/ui/src/theme/default-themes.ts b/packages/ui/src/theme/default-themes.ts
+index 315ec22a..8ea22b72 100644
+--- a/packages/ui/src/theme/default-themes.ts
++++ b/packages/ui/src/theme/default-themes.ts
+@@ -1,3 +1,4 @@
++import synapdomeThemeJson from "./themes/synapdome.json"
+ import type { DesktopTheme } from "./types"
+ import cs1ThemeJson from "./themes/cs-1.json"
+ import tokyoThemeJson from "./themes/tokyonight.json"
+@@ -32,6 +33,7 @@ export const gruvboxTheme = gruvboxThemeJson as DesktopTheme
+ export const auraTheme = auraThemeJson as DesktopTheme
+ 
+ export const DEFAULT_THEMES: Record<string, DesktopTheme> = {
++  synapdome: synapdomeThemeJson as DesktopTheme,
+   "cs-1": cs1Theme,
+   aura: auraTheme,
+   ayu: ayuTheme,

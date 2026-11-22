@@ -1,0 +1,83 @@
+{
+  "$schema": "https://cyberstrike.io/desktop-theme.json",
+  "name": "SynapDome",
+  "id": "synapdome",
+  "light": {
+    "seeds": {
+      "neutral": "#64748b",
+      "primary": "#10b981",
+      "success": "#12c905",
+      "warning": "#ffdc17",
+      "error": "#fc533a",
+      "info": "#a753ae",
+      "interactive": "#047857",
+      "diffAdd": "#9ff29a",
+      "diffDelete": "#fc533a"
+    },
+    "overrides": {
+      "background-base": "#f5faf9",
+      "background-weak": "#ffffff",
+      "background-strong": "#ffffff",
+      "background-stronger": "#ffffff",
+      "text-base": "#0f172a",
+      "text-strong": "#0f172a",
+      "text-weak": "#526575",
+      "surface-brand-base": "#10b981",
+      "surface-brand-hover": "#34d399",
+      "text-on-brand-base": "#022c22",
+      "text-on-brand-strong": "#022c22",
+      "icon-on-brand-base": "#022c22",
+      "icon-on-brand-hover": "#022c22",
+      "icon-on-brand-selected": "#022c22",
+      "text-interactive-base": "#047857",
+      "icon-interactive-base": "#047857",
+      "border-interactive-focus": "#047857",
+      "border-interactive-selected": "#047857",
+      "surface-raised-strong": "#ffffff",
+      "surface-raised-stronger": "#ffffff",
+      "surface-inset-base": "#f5faf9",
+      "markdown-link": "#047857",
+      "markdown-link-text": "#047857",
+      "markdown-heading": "#0f172a"
+    }
+  },
+  "dark": {
+    "seeds": {
+      "neutral": "#64748b",
+      "primary": "#10b981",
+      "success": "#12c905",
+      "warning": "#fcd53a",
+      "error": "#fc533a",
+      "info": "#edb2f1",
+      "interactive": "#34d399",
+      "diffAdd": "#c8ffc4",
+      "diffDelete": "#fc533a"
+    },
+    "overrides": {
+      "background-base": "#020617",
+      "background-weak": "#0f172a",
+      "background-strong": "#0f172a",
+      "background-stronger": "#0f172a",
+      "text-base": "#f8fafc",
+      "text-strong": "#f8fafc",
+      "text-weak": "#94a3b8",
+      "surface-brand-base": "#10b981",
+      "surface-brand-hover": "#34d399",
+      "text-on-brand-base": "#022c22",
+      "text-on-brand-strong": "#022c22",
+      "icon-on-brand-base": "#022c22",
+      "icon-on-brand-hover": "#022c22",
+      "icon-on-brand-selected": "#022c22",
+      "text-interactive-base": "#34d399",
+      "icon-interactive-base": "#34d399",
+      "border-interactive-focus": "#34d399",
+      "border-interactive-selected": "#34d399",
+      "surface-raised-strong": "#0f172a",
+      "surface-raised-stronger": "#0f172a",
+      "surface-inset-base": "#020617",
+      "markdown-link": "#34d399",
+      "markdown-link-text": "#34d399",
+      "markdown-heading": "#f8fafc"
+    }
+  }
+}

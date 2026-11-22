@@ -1,0 +1,22 @@
+[Unit]
+Description=SynapDome red-team workspace
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+User=synapdome-ui
+Group=synapdome-ui
+WorkingDirectory=/opt/synapdome-ui/current/packages/cyberstrike
+EnvironmentFile=/etc/synapdome-ui/runtime.env
+Environment=XDG_DATA_HOME=/var/lib/synapdome-ui/data
+Environment=XDG_CONFIG_HOME=/var/lib/synapdome-ui/config
+Environment=XDG_STATE_HOME=/var/lib/synapdome-ui/state
+Environment=XDG_CACHE_HOME=/var/lib/synapdome-ui/cache
+ExecStart=/usr/local/bin/bun run --conditions=browser src/index.ts web --hostname 127.0.0.1 --port 4096
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target

@@ -7,11 +7,34 @@ The Linux Frida client connects through a loopback ADB forward. No Mac, reverse 
 
 ## Verified state: 26 November 2026
 
-- AT systemd service is active on the restored Linux server.
-- Linux platform-tools and the Frida virtual environment exist under `/opt/synapdome-tools`.
-- The host reports AMD EPYC 7R32 under a KVM hypervisor, but exposes no `/dev/kvm`; `modprobe kvm_amd` fails with `Operation not supported`. Being a KVM guest does not mean nested virtualization is available.
-- A Linux emulator and server-local Frida process enumeration have **not** been validated. The previous Mac tunnel is not fulfillment of this deployment.
-- Internet gateway authentication, Android screen access and reboot recovery still require acceptance. An active workspace service alone does not establish these.
+- After the instance change and enabling nested virtualization, KVM is installed and usable. Linux has 16 GB RAM.
+- Android API 35 Google APIs x86_64 revision 9 boots successfully (`sys.boot_completed=1`). Installed Linux emulator: 37.3.10; platform-tools: 37.0.3. All runtime clients use the same ADB binary.
+- Frida client/server 17.8.2 successfully enumerate Android processes from AT's own session shell, under the AT service account. Frida-tools: 14.6.0.
+- The live Android home screen was verified through authenticated HTTPS/noVNC. Anonymous HTTP requests to the viewer return 401; authenticated requests return 200. ADB, emulator console, VNC and websockify listen only on loopback.
+- This is a fresh device: no customer APK or app login has been transferred. App compatibility and application-specific testing remain outstanding.
+- Services are enabled at startup, with a timer to restore Frida. A full host reboot recovery test has not yet been performed.
+- Main SynapDome SSO and a UI-level manual/automated control lock are not implemented. The viewer currently uses the same temporary operator authentication as AT.
+
+## Reproduce the server installation
+
+On an Ubuntu 24.04 x86_64 server with the AT service account already installed and KVM enabled, review the Android licenses, then run from the repository:
+
+```sh
+sudo env ACCEPT_ANDROID_LICENSES=yes bash deploy/synapdome-ui/mobile/linux/install.sh
+sudo python3 deploy/synapdome-ui/mobile/linux/configure-services.py
+sudo install -m 755 deploy/synapdome-ui/mobile/provision-frida.sh /opt/synapdome-tools/provision-frida.sh
+sudo python3 deploy/synapdome-ui/mobile/linux/configure-gateway.py
+```
+
+The gateway script extends the existing `/etc/nginx/sites-available/synapdome-ip` gateway and requires its origin maps and `/etc/nginx/synapdome-operators` password file. It is not a standalone SSO installer. Protect `/mobile/` with the same server-side SynapDome session validation when replacing temporary authentication.
+
+Install `mobile/linux/AGENTS.md.example` as `/var/lib/synapdome-ui/config/cyberstrike/AGENTS.md` to describe the local tools to AT. Preserve any existing operator instructions when merging this file.
+
+Services: `synapdome-android-display`, `synapdome-android`, `synapdome-android-vnc`, `synapdome-android-web`; periodic connection check: `synapdome-frida.timer`. Inspect logs with `journalctl -u SERVICE`. Device data lives under `/var/lib/synapdome-ui/.android/avd`; do not wipe it during routine restarts.
+
+Open `/mobile/vnc.html?autoconnect=true&resize=scale&path=mobile/websockify` on the AT HTTPS site. This opens the live screen in a separate tab; it is not yet an embedded AT panel. The upstream emulator warns about nested virtualization: initial boot and Frida checks pass, but sustained app performance still requires testing.
+
+The bootstrap downloads official current SDK packages and records installed versions; it is not a complete immutable SDK archive. The versions above describe the validated deployment. Review revision changes before reproducing on another host.
 
 ## Host prerequisite
 
@@ -34,7 +57,7 @@ Use systemd to supervise the emulator under the runtime account after the foregr
 
 ## Frida provisioning and connection
 
-Install matching Linux clients with `mobile/install-server-client.sh` using official Linux platform-tools 37.0.1. It installs Frida 17.8.2 and frida-tools 14.6.0. After Android reports boot completion, run as the runtime user:
+Install Frida 17.8.2 and frida-tools 14.6.0 into `/opt/synapdome-tools/frida` and link its CLI tools into `/opt/synapdome-tools/bin`. The existing server client installer can bootstrap this, but the Linux service configurator then points ADB at the emulator SDK platform-tools so the client and daemon versions agree. After Android reports boot completion, run as the runtime user:
 
 ```sh
 export ANDROID_SDK_ROOT=/opt/android-sdk

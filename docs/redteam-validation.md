@@ -14,3 +14,9 @@ Checks completed for this handoff:
 Changes include consolidated architecture and runbook, scanner inventory/helper, corrected Agent API header in the directory guide, historical deployment notices and Redis binding restricted to loopback.
 
 Not executed: fresh cloud deployment, real SSO/login integration, live scanner matrix, CodeQL install, Docker pulls, live SMTP, authenticated customer workflows or remote emulator tunnel. These remain acceptance steps in the deployment guide. Existing laptop functionality and older handoffs must not be represented as new server certification.
+
+## Linux mobile deployment follow-up
+
+Live checks on 26 November: KVM usable; Android API35 x86_64 boots; Frida 17.8.2 process enumeration succeeds through an AT mobile session shell; DeepSeek responds to the verification session. Authenticated noVNC browser view shows the Android home screen. Anonymous viewer requests return 401. The viewer, ADB and emulator listeners are loopback-only behind HTTPS. Service startup and a recurring Frida check are configured; full host reboot and customer APK testing remain unverified. The earlier “not executed” list describes the initial handoff, not these later checks.
+
+The web-service installer now gives the service user ownership of its writable `data/cyberstrike` directory; its previous root ownership caused a restart loop. Linux scripts pass shell/Python syntax checks. No main SynapDome SSO integration or automatic UI control-lock is claimed.

@@ -4,7 +4,7 @@
 
 ## 1. Choose topology and preserve data
 
-Use a dedicated Ubuntu/Debian Linux scanner host, a separate AT workspace service, and a Linux-local Android/Frida runtime. The current host needs virtualization support before the mobile runtime can be accepted. They can communicate privately across providers; AWS is not required. Keep customer access behind the main SynapDome backend. Separate execution hosts/workspaces per tenant before offering direct customer execution.
+Use a dedicated Ubuntu/Debian Linux scanner host, a separate AT workspace service, and a Linux-local Android/Frida runtime. KVM, Android boot and AT-to-Frida process enumeration are verified; app-specific acceptance remains. They can communicate privately across providers; AWS is not required. Keep customer access behind the main SynapDome backend. Separate execution hosts/workspaces per tenant before offering direct customer execution.
 
 Inventory existing databases, artifact storage, DNS, model provider and identity provider before cutover. Restore approved backups if available. The Git repo contains code, not the AWS data or laptop sessions.
 
@@ -116,7 +116,7 @@ The health route checks the engine only. Validate the real authenticated browser
 
 ## 4. Android emulator, ADB and Frida
 
-**Required deployment:** Android, ADB, Frida client and Frida server run on Linux, independently of the laptop. Follow [Linux mobile deployment](linux-mobile-deployment.md). Current host validation is blocked by missing KVM; the Mac instructions below are legacy reference only.
+**Required deployment:** Android, ADB, Frida client and Frida server run on Linux, independently of the laptop. Follow [Linux mobile deployment](linux-mobile-deployment.md). Linux runtime connectivity is verified; the Mac instructions below are legacy reference only.
 
 ### Legacy Mac reference (not the requested server deployment)
 

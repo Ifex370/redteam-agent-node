@@ -28,7 +28,7 @@ flowchart TB
 
 Solid edges represent implemented component behavior or the supplied deployment topology; dotted edges need deployment configuration or application integration. The main SynapDome login/backend is external to this repo. This diagram does not claim those external connections are live.
 
-The required mobile topology is entirely server-local, without a Mac tunnel. It is not yet operational on the current host; see [Linux mobile deployment](linux-mobile-deployment.md).
+The required mobile topology is entirely server-local, without a Mac tunnel. Linux boot and AT-to-Frida process enumeration are now verified; see [Linux mobile deployment](linux-mobile-deployment.md).
 
 ## Modules and boundaries
 
@@ -36,7 +36,7 @@ The required mobile topology is entirely server-local, without a Mac tunnel. It 
 |---|---|---|
 | Scanner API and worker | `src/api`, `src/worker`, `src/agent` | Queued deterministic scans; normalized findings, callbacks, SSE and artifact retrieval |
 | SynapDome AT | `deploy/synapdome-ui` | Branded CyberStrike-derived operator workspace, reconstructed using pinned source + patch; independent engine/session store |
-| Mobile dynamic lab | `deploy/synapdome-ui/mobile` | Required topology: Linux-local emulator, ADB and Frida; current host lacks KVM. Mac scripts retained as legacy reference; not a BullMQ dynamic adapter |
+| Mobile dynamic lab | `deploy/synapdome-ui/mobile` | Required topology: Linux-local emulator, ADB and Frida; KVM and AT-to-Frida connection verified; app-specific testing pending. Mac scripts retained as legacy reference; not a BullMQ dynamic adapter |
 | Mobile static service | `src/tools/mobsf.ts`, Compose | MobSF APK/package analysis; Android and iOS package acceptance does not imply an iOS emulator |
 | Marketing / onboarding | `Synap AT/public`, `src/onboarding` | PDF scope preview, private records and email review; no automatic scan kickoff |
 

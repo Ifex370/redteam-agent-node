@@ -21,7 +21,7 @@ fi
 chmod -R a+rX "$RELEASE"
 ln -sfn "$RELEASE" /opt/synapdome-ui/current
 # The engine checks XDG_DATA_HOME/cyberstrike/web before source-relative dist.
-install -d -m 0755 /var/lib/synapdome-ui/data/cyberstrike
+install -d -m 0755 -o synapdome-ui -g synapdome-ui /var/lib/synapdome-ui/data/cyberstrike
 ln -sfn "$RELEASE/packages/app/dist" /var/lib/synapdome-ui/data/cyberstrike/web
 install -m 0644 "$ROOT/systemd/synapdome-ui.service" /etc/systemd/system/synapdome-ui.service
 systemctl daemon-reload

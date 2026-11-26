@@ -7,6 +7,12 @@ SERIAL="${ADB_SERIAL:-emulator-5554}"
 DIR="${FRIDA_CACHE:-$HOME/.cache/synapdome-frida}"
 mkdir -p "$DIR"
 "$ADB" -s "$SERIAL" get-state
+# Starting Frida before Android framework readiness can break process enumeration.
+for attempt in $(seq 1 90); do
+  [ "$("$ADB" -s "$SERIAL" shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break
+  sleep 2
+done
+[ "$("$ADB" -s "$SERIAL" shell getprop sys.boot_completed | tr -d '\r')" = 1 ] || { echo 'Android boot is incomplete.' >&2; exit 1; }
 ABI="$("$ADB" -s "$SERIAL" shell getprop ro.product.cpu.abi | tr -d '\r')"
 case "$ABI" in
   arm64-v8a) FRIDA_ARCH=arm64 ;;

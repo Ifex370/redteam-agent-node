@@ -22,7 +22,6 @@ flowchart TB
   LabClient --> Tunnel[Private SSH reverse tunnel]
   Tunnel --> Mac[Dedicated Apple Silicon Mac runner]
   Mac --> Android[API 35 ARM64 emulator + Frida]
-  Extensions[Burp / browser capture extensions] -. backend endpoints required .-> Backend
   Prospect[Prospect] --> Intake[Marketing + Node onboarding :4174]
   Intake --> PrivatePDF[Private draft PDFs and records]
   Intake --> SMTP[Resend SMTP / staff review]
@@ -38,7 +37,6 @@ Solid edges represent implemented component behavior or the supplied deployment 
 | SynapDome AT | `deploy/synapdome-ui` | Branded CyberStrike-derived operator workspace, reconstructed using pinned source + patch; independent engine/session store |
 | Mobile dynamic lab | `deploy/synapdome-ui/mobile` | Existing Mac emulator baseline, ADB, Frida and remote connection scripts; not a BullMQ `mobile-scan` dynamic adapter |
 | Mobile static service | `src/tools/mobsf.ts`, Compose | MobSF APK/package analysis; Android and iOS package acceptance does not imply an iOS emulator |
-| Capture clients | `plugins/legacy`, `release-packages` | Burp selected messages and browser metadata; main backend must provide authenticated upload endpoints |
 | Marketing / onboarding | `Synap AT/public`, `src/onboarding` | PDF scope preview, private records and email review; no automatic scan kickoff |
 
 **Naming:** the existing `Synap AT/` directory is the marketing site, not the CyberStrike-derived workspace. Keep legacy folder names, `cyberstrike` config directories and service names for compatibility; the product name is SynapDome AT.
@@ -72,7 +70,7 @@ Back up Redis volume, `ARTIFACT_ROOT`, tool caches as appropriate, MobSF volume,
 
 - Restore/select hosting; validate actual OS, capacity, architecture, DNS and TLS.
 - Connect real SSO/session verification and enforce tenant isolation before customer AT access.
-- Complete AT-to-scanner bridge and capture upload integration in the main backend.
+- Complete AT-to-scanner bridge in the main backend.
 - Validate scanner execution and model connectivity on the chosen host; pin floating image digests and CodeQL bundle.
 - Validate runner tunnel, reconnect behavior and app navigation. Linux/cloud emulator equivalence remains unverified.
 - Cloud, identity, network recon, Drozer, Objection and dedicated API/GraphQL workflows are not implemented Agent Node adapters in this checkout. GCP account provisioning is not a GCP scanner implementation.

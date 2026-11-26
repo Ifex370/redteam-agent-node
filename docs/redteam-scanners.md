@@ -14,7 +14,6 @@ Source of truth: `src/agent/planner.ts`, `src/tools/*.ts`, `src/domain/schemas.t
 | Web DAST | `web-dast` / `nuclei`, `zap` | `projectdiscovery/nuclei:v3.3.8`, `ghcr.io/zaproxy/zaproxy:stable` | `web-url-scan.engagement.json` |
 | Directory discovery | `directory-enumeration` / `feroxbuster`, `ffuf` | `epi052/feroxbuster:latest`, `parrotsec/ffuf:latest` | `directory-enumeration.engagement.json` |
 | Mobile dynamic | Operator workflow, not queued adapter | Android API 35 ARM64, ADB 37.0.1, Frida 17.8.2 | Mobile package instructions |
-| Capture | Client extensions, not headless Burp scanner | Version 0.1.0 JAR/ZIP in `release-packages/` | Legacy plugin guide |
 
 `web-scan` is a DAST alias; `container-image` is a container template alias. MobSF accepts `.apk`, `.aab`, `.apks`, `.xapk`, `.ipa` in the planner; validate actual analysis support against the installed service. ZAP uses its baseline workflow, not a complete authenticated active/API-spec assessment.
 
@@ -31,10 +30,6 @@ Trivy and Grype need vulnerability database downloads/cache refresh; Checkov, Te
 MobSF needs its separate service, a private shared API key, persistent volume and sufficient startup time. Compose currently reserves up to 5 GB RAM and 3 CPUs for MobSF. An initial combined worker host sizing assumption is 8 vCPU / 16 GB RAM with concurrency 1; measure actual jobs before increasing concurrency. This is a planning estimate, not a benchmark.
 
 For each template, use an owned test fixture, check terminal status, expected seeded findings, raw artifacts and normalized export. Replace signed URLs and example target domains before submitting. Do not run the entire examples directory against public targets as a smoke test.
-
-## Evidence clients
-
-Install the Burp JAR and unpacked browser ZIP following [the plugin guide](legacy-plugin-installation.md). They expect main-backend `/api/redteam/artifacts/burp` and `/api/redteam/artifacts/browser` endpoints with user tokens. Those routes are not supplied by the Agent Node API. Browser capture is metadata only; Burp uploads selected message previews. Authentication replay remains separate integration work.
 
 ## Detailed contracts
 

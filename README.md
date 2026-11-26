@@ -9,7 +9,6 @@ Consolidated 26 November 2026. SynapDome AT is the operator workspace formerly c
 - [SynapDome AT workspace package](deploy/synapdome-ui/README.md)
 - [Mobile runner package](deploy/synapdome-ui/mobile/)
 - [Scope/PDF/email onboarding](Synap%20AT/ONBOARDING.md)
-- [Burp and browser extension installation](docs/legacy-plugin-installation.md)
 
 This is a consolidated source/deployment handoff, not confirmation of production availability. AWS is suspended/unavailable at handoff. Historical IPs and “server ready” statements in older documents are not current deployment evidence. Start with the guides above.
 

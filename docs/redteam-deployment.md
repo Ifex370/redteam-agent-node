@@ -168,9 +168,7 @@ pm2 save
 
 Proxy all site/static, `/api/onboarding/*` and `/pdfjs/*` routes over HTTPS. Verify both staff and customer messages with owned mailboxes. This is manual review/signing: no automatic payment, signature or assessment start. Review draft commercial terms before customer use. Persist and back up the private records outside the public web root.
 
-## 6. Burp/browser clients and main backend
-
-Use [legacy-plugin-installation.md](legacy-plugin-installation.md). Install the versioned JAR/ZIP in `release-packages/`. Configure the main application's URL and a user-scoped token, not the Agent Node secret. The dev team must supply authenticated capture-upload endpoints, private evidence storage and tenant checks; these endpoints are not implemented by the scanner API.
+## 6. Main backend integration
 
 Use [architecture](redteam-architecture.md) for scan dispatch and callback contracts. All Agent Node protected routes use `X-Internal-Secret`. The older directory guide's Bearer header is superseded by this actual implementation.
 
@@ -180,7 +178,7 @@ Use [architecture](redteam-architecture.md) for scan dispatch and callback contr
 - Submit an owned fixture for each enabled scanner, inspect expected findings and raw/normalized outputs. Confirm callbacks and paused-run resumption in the main backend.
 - AT: unauthenticated/expired/unauthorized users denied; valid internal operator can load UI, use its model and reconnect streams. Test tenant boundaries before customer access.
 - Mobile: boot property `1`, visible Android window, Frida process enumeration, approved app navigation and reconnect after runner/tunnel restart.
-- Onboarding: PDF preview, private persistence and actual email delivery. Capture clients: uploads associated with the correct tenant/engagement.
+- Onboarding: PDF preview, private persistence and actual email delivery.
 - Confirm backups restore on the new host. Do not claim AWS recovery based solely on a fresh code deployment.
 
 Preserve the prior code revision and private data backup. Roll back the Node build from that revision and restart the API/worker; restore data only using a reviewed recovery plan. AT rollback uses the previous release/web symlinks as described in its package. Never delete emulator userdata to fix a missing window.

@@ -47,7 +47,7 @@ Endpoint:
 
 ```http
 POST /runs
-Authorization: Bearer <REDTEAM_AGENT_SECRET>
+X-Internal-Secret: <REDTEAM_AGENT_SECRET>
 Content-Type: application/json
 ```
 

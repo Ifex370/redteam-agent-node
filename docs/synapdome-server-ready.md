@@ -1,3 +1,5 @@
+> Historical handoff: use [the consolidated deployment guide](redteam-deployment.md) for current setup and status. Old server IPs and live/ready claims below are not current availability evidence.
+
 # Red Team Agent Node Is Ready
 
 Our Red Team Agent Node server is deployed and reachable.

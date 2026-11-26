@@ -1,4 +1,6 @@
-# SynapDome workspace deployment handoff
+# SynapDome AT workspace deployment handoff
+
+Product name: **SynapDome AT** (formerly CyberStrike). Existing package, service and engine configuration identifiers are preserved. See the [consolidated deployment guide](../../docs/redteam-deployment.md) and [architecture](../../docs/redteam-architecture.md).
 
 ## Delivery status
 

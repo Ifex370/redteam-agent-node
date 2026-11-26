@@ -1,3 +1,5 @@
+> Historical handoff: use [the consolidated deployment guide](redteam-deployment.md) for current setup and status. Old server IPs and live/ready claims below are not current availability evidence.
+
 # SynapDome Red Team Agent: Applications Web + Legacy Plugins Handoff
 
 This handoff describes the CyberStrikeAI-inspired integration added to the SynapDome Red Team Agent Node.

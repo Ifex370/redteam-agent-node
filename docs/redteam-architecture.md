@@ -17,11 +17,10 @@ flowchart TB
   API -->|SSE / polling / artifact downloads| Backend
   Main -. authenticated workspace navigation .-> Gateway[TLS gateway :443 + session verifier]
   Gateway --> AT[SynapDome AT workspace :4096]
-  AT --> Model[Configured model provider]
+  AT --> Model[DeepSeek API]
   AT -. configured tools; separate runtime .-> LabClient[ADB and Frida clients]
-  LabClient --> Tunnel[Private SSH reverse tunnel]
-  Tunnel --> Mac[Dedicated Apple Silicon Mac runner]
-  Mac --> Android[API 35 ARM64 emulator + Frida]
+  LabClient -. local ADB on Linux host .-> Android[Linux Android emulator + matching Frida server]
+  Android -. requires available KVM .-> KVM[Host virtualization support]
   Prospect[Prospect] --> Intake[Marketing + Node onboarding :4174]
   Intake --> PrivatePDF[Private draft PDFs and records]
   Intake --> SMTP[Resend SMTP / staff review]
@@ -29,13 +28,15 @@ flowchart TB
 
 Solid edges represent implemented component behavior or the supplied deployment topology; dotted edges need deployment configuration or application integration. The main SynapDome login/backend is external to this repo. This diagram does not claim those external connections are live.
 
+The required mobile topology is entirely server-local, without a Mac tunnel. It is not yet operational on the current host; see [Linux mobile deployment](linux-mobile-deployment.md).
+
 ## Modules and boundaries
 
 | Module | Source | Responsibility / current state |
 |---|---|---|
 | Scanner API and worker | `src/api`, `src/worker`, `src/agent` | Queued deterministic scans; normalized findings, callbacks, SSE and artifact retrieval |
 | SynapDome AT | `deploy/synapdome-ui` | Branded CyberStrike-derived operator workspace, reconstructed using pinned source + patch; independent engine/session store |
-| Mobile dynamic lab | `deploy/synapdome-ui/mobile` | Existing Mac emulator baseline, ADB, Frida and remote connection scripts; not a BullMQ `mobile-scan` dynamic adapter |
+| Mobile dynamic lab | `deploy/synapdome-ui/mobile` | Required topology: Linux-local emulator, ADB and Frida; current host lacks KVM. Mac scripts retained as legacy reference; not a BullMQ dynamic adapter |
 | Mobile static service | `src/tools/mobsf.ts`, Compose | MobSF APK/package analysis; Android and iOS package acceptance does not imply an iOS emulator |
 | Marketing / onboarding | `Synap AT/public`, `src/onboarding` | PDF scope preview, private records and email review; no automatic scan kickoff |
 

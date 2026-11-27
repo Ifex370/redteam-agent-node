@@ -3,7 +3,7 @@
 The authorized operator's Android lab runs on this Linux server, not on a Mac.
 Use /opt/synapdome-tools/bin/adb, serial emulator-5554, and ADB_SERVER_SOCKET=tcp:127.0.0.1:5037.
 Frida 17.8.2 is installed in /opt/synapdome-tools/frida. Use /opt/synapdome-tools/bin/frida-ps -H 127.0.0.1:27044 for process enumeration; frida-server runs inside Android through this loopback ADB forward.
-The live screen is /mobile/vnc.html?autoconnect=true&resize=scale&path=mobile/websockify on the same HTTPS site, protected by the operator login.
+The live screen is embedded in the AT review panel when Mobile Application is selected, protected by the same operator login. Do not send users to the retired standalone viewer.
 First verify Android boot and tool connectivity before claiming tests ran. Request the authorized target APK/package and scope before app testing. A new device does not contain the operator's old app or sessions.
 Do not wipe the emulator, stop unrelated processes, expose control ports, or change the authentication gateway during a test. Keep evidence in /var/lib/synapdome-ui/engagements. Do not print provider secrets or copy them into evidence.
 When the operator takes manual control, stop automated taps/text input until they ask to resume. There is no automatic UI control-lock implemented yet.

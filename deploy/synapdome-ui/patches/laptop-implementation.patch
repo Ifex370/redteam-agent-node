@@ -2038,6 +2038,56 @@ index b73f56d6..0327a078 100644
        <Button
          size="large"
          variant="ghost"
+diff --git a/packages/app/src/pages/session.tsx b/packages/app/src/pages/session.tsx
+index 0038c393..28145e5e 100644
+--- a/packages/app/src/pages/session.tsx
++++ b/packages/app/src/pages/session.tsx
+@@ -232,6 +232,8 @@ export default function Page() {
+     })
+   }
+ 
++  const android = createMemo(() => local.agent.current()?.name === "mobile-application")
++
+   const isDesktop = createMediaQuery("(min-width: 1024px)")
+   const desktopReviewOpen = createMemo(() => isDesktop() && view().reviewPanel.opened())
+   const desktopFileTreeOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
+@@ -264,6 +266,12 @@ export default function Page() {
+     if (!view().reviewPanel.opened()) view().reviewPanel.open()
+   }
+ 
++  createEffect(on(() => [android(), params.id] as const, ([mobile]) => {
++    if (!mobile) return
++    openReviewPanel()
++    tabs().setActive("review")
++  }))
++
+   const openTab = (value: string) => {
+     const next = normalizeTab(value)
+     tabs().open(next)
+@@ -1057,6 +1065,7 @@ export default function Page() {
+ 
+   const reviewPanel = () => (
+     <div class="flex flex-col h-full overflow-hidden bg-background-stronger contain-strict">
++      <Show when={android()} fallback={
+       <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+         {reviewContent({
+           diffStyle: layout.review.diffStyle(),
+@@ -1065,6 +1074,15 @@ export default function Page() {
+           emptyClass: "h-full pb-30 flex flex-col items-center justify-center text-center gap-6",
+         })}
+       </div>
++      }>
++        <div class="px-4 py-3 text-14-medium border-b border-border-weak">Android · Mobile application</div>
++        <iframe
++          title="Live Android emulator"
++          src="/mobile/embed.html"
++          class="w-full flex-1 min-h-0 border-0"
++          allow="clipboard-read; clipboard-write"
++        />
++      </Show>
+     </div>
+   )
+ 
 diff --git a/packages/cyberstrike/src/session/llm.ts b/packages/cyberstrike/src/session/llm.ts
 index 157cf1d8..49e7081e 100644
 --- a/packages/cyberstrike/src/session/llm.ts

@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SynapDome Android</title><style>html,body{margin:0;height:100%;background:#0f172a;color:#e2e8f0;font:14px system-ui}body{display:flex;flex-direction:column}header{padding:10px 16px;display:flex;align-items:center;gap:12px}button{background:#183d42;color:#e2e8f0;border:1px solid #2dd4bf;border-radius:6px;padding:6px 12px;cursor:pointer}#screen{flex:1;min-height:0;overflow:hidden}#status{flex:1}</style></head><body><header><span id="status" role="status">Starting Android…</span><button id="retry">Reconnect</button></header><div id="screen"></div><script type="module">
+import RFB from './core/rfb.js';
+const status=document.querySelector('#status');
+let rfb, timer, generation=0;
+async function connect(){
+ const current=++generation; clearTimeout(timer); if(rfb)rfb.disconnect();
+ status.textContent='Starting Android…';
+ try{
+  const start=await fetch('/mobile/runtime/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  if(!start.ok)throw Error('Unable to start Android. Please retry.');
+  for(let n=0;n<120;n++){
+   if(current!==generation)return;
+   const response=await fetch('/mobile/runtime/status'); if(!response.ok)throw Error('Unable to check Android status.');
+   const state=await response.json();
+   if(state.ready)break;
+   status.textContent='Android is booting…';
+   if(n===119)throw Error('Android is taking longer than expected. Reconnect to check again.');
+   await new Promise(resolve=>timer=setTimeout(resolve,2000));
+  }
+  if(current!==generation)return;
+  status.textContent='Connecting screen…';
+  rfb=new RFB(document.querySelector('#screen'),`${location.protocol==='https:'?'wss':'ws'}://${location.host}/mobile/websockify`);
+  rfb.scaleViewport=true;rfb.resizeSession=false;
+  rfb.addEventListener('connect',()=>{if(current===generation)status.textContent='Live Android · Click or type to interact';});
+  rfb.addEventListener('disconnect',()=>{if(current===generation)status.textContent='Screen disconnected. Click Reconnect.';});
+ }catch(error){if(current===generation)status.textContent=error.message;}
+}
+document.querySelector('#retry').onclick=connect;
+if(window.top===window.self){location.replace('/');}else{connect();}
+</script></body></html>

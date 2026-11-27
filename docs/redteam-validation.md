@@ -20,3 +20,9 @@ Not executed: fresh cloud deployment, real SSO/login integration, live scanner m
 Live checks on 26 November: KVM usable; Android API35 x86_64 boots; Frida 17.8.2 process enumeration succeeds through an AT mobile session shell; DeepSeek responds to the verification session. Authenticated noVNC browser view shows the Android home screen. Anonymous viewer requests return 401. The viewer, ADB and emulator listeners are loopback-only behind HTTPS. Service startup and a recurring Frida check are configured; full host reboot and customer APK testing remain unverified. The earlier “not executed” list describes the initial handoff, not these later checks.
 
 The web-service installer now gives the service user ownership of its writable `data/cyberstrike` directory; its previous root ownership caused a restart loop. Linux scripts pass shell/Python syntax checks. No main SynapDome SSO integration or automatic UI control-lock is claimed.
+
+## Embedded Android UI — 27 November 2026
+
+Mobile Application selection opens an Android iframe in the desktop Review panel alongside chat. UI typecheck and production build passed. Browser verification showed the live Android home screen and reconnect control. The former standalone viewer redirects to AT. App-specific and multi-tenant isolation testing remain outside these checks.
+
+Additional live checks: selecting Mobile Application and creating a new session automatically showed the live embedded device. Startup endpoint returned 202 with the authenticated same-origin request; foreign Origin returned 403; anonymous status returned 401; authenticated status returned ready=true. Old standalone viewer returned 302 to AT.

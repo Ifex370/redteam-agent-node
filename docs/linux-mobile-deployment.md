@@ -24,6 +24,7 @@ sudo env ACCEPT_ANDROID_LICENSES=yes bash deploy/synapdome-ui/mobile/linux/insta
 sudo python3 deploy/synapdome-ui/mobile/linux/configure-services.py
 sudo install -m 755 deploy/synapdome-ui/mobile/provision-frida.sh /opt/synapdome-tools/provision-frida.sh
 sudo python3 deploy/synapdome-ui/mobile/linux/configure-gateway.py
+sudo python3 deploy/synapdome-ui/mobile/linux/install-embedded.py
 ```
 
 The gateway script extends the existing `/etc/nginx/sites-available/synapdome-ip` gateway and requires its origin maps and `/etc/nginx/synapdome-operators` password file. It is not a standalone SSO installer. Protect `/mobile/` with the same server-side SynapDome session validation when replacing temporary authentication.
@@ -32,7 +33,7 @@ Install `mobile/linux/AGENTS.md.example` as `/var/lib/synapdome-ui/config/cybers
 
 Services: `synapdome-android-display`, `synapdome-android`, `synapdome-android-vnc`, `synapdome-android-web`; periodic connection check: `synapdome-frida.timer`. Inspect logs with `journalctl -u SERVICE`. Device data lives under `/var/lib/synapdome-ui/.android/avd`; do not wipe it during routine restarts.
 
-Open `/mobile/vnc.html?autoconnect=true&resize=scale&path=mobile/websockify` on the AT HTTPS site. This opens the live screen in a separate tab; it is not yet an embedded AT panel. The upstream emulator warns about nested virtualization: initial boot and Frida checks pass, but sustained app performance still requires testing.
+Select **Mobile Application** in AT. The right-hand Review panel now embeds the live Android screen beside chat and requests startup automatically. Reconnect retries startup and the stream. The previous `/mobile/vnc.html` and `/mobile/vnc_lite.html` pages redirect to AT. `/mobile/embed.html` is an internal same-origin frame, not a standalone dashboard. The loopback controller on port 6090 exposes only fixed start/status operations behind gateway authentication and origin checks. Protect those routes with main SynapDome SSO when integrating the product. This is one shared operator device, not isolated devices per session or tenant. The upstream emulator warns about nested virtualization: initial boot and Frida checks pass, but sustained app performance still requires testing.
 
 The bootstrap downloads official current SDK packages and records installed versions; it is not a complete immutable SDK archive. The versions above describe the validated deployment. Review revision changes before reproducing on another host.
 

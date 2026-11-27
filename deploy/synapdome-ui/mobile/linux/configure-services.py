@@ -5,7 +5,7 @@ units={
 Description=SynapDome Android virtual display
 [Service]
 User=synapdome-ui
-ExecStart=/usr/bin/Xvfb :99 -screen 0 1280x1100x24 -nolisten tcp -ac
+ExecStart=/usr/bin/Xvfb :99 -screen 0 1280x1100x24 -s 0 -nolisten tcp -ac
 Restart=always
 [Install]
 WantedBy=multi-user.target
@@ -37,7 +37,7 @@ Requires=synapdome-android-display.service
 After=synapdome-android-display.service
 [Service]
 User=synapdome-ui
-ExecStart=/usr/bin/x11vnc -display :99 -localhost -rfbport 5900 -nopw -forever -shared -noxdamage
+ExecStart=/usr/bin/x11vnc -display :99 -clip 500x1000+80+70 -localhost -rfbport 5900 -nopw -forever -shared -noxdamage
 Restart=always
 RestartSec=3
 [Install]

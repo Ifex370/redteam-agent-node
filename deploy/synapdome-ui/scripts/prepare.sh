@@ -9,6 +9,8 @@ git clone --no-checkout https://github.com/CyberStrikeus/CyberStrike.git "$DEST"
 git -C "$DEST" checkout --detach 2bda675b68c8f81412267a5b331b74539e2d4e19
 git -C "$DEST" apply --check "$ROOT/patches/laptop-implementation.patch"
 git -C "$DEST" apply "$ROOT/patches/laptop-implementation.patch"
+git -C "$DEST" apply --check "$ROOT/patches/session-storage.patch"
+git -C "$DEST" apply "$ROOT/patches/session-storage.patch"
 cp "$ROOT/assets/synapdome-logo.png" "$DEST/packages/app/public/"
 cp "$ROOT/assets/synapdome.json" "$DEST/packages/ui/src/theme/themes/"
 cd "$DEST"

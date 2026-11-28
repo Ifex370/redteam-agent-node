@@ -75,3 +75,7 @@ Back up Redis volume, `ARTIFACT_ROOT`, tool caches as appropriate, MobSF volume,
 - Validate scanner execution and model connectivity on the chosen host; pin floating image digests and CodeQL bundle.
 - Validate runner tunnel, reconnect behavior and app navigation. Linux/cloud emulator equivalence remains unverified.
 - Cloud, identity, network recon, Drozer, Objection and dedicated API/GraphQL workflows are not implemented Agent Node adapters in this checkout. GCP account provisioning is not a GCP scanner implementation.
+
+## Fixed session storage
+
+See [session storage and lifecycle](session-storage.md) for named folders, archive/delete semantics, migration and rollback. This storage update preserves the existing Linux Android interface.

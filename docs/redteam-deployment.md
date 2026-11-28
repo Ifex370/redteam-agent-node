@@ -188,3 +188,7 @@ Use [architecture](redteam-architecture.md) for scan dispatch and callback contr
 Preserve the prior code revision and private data backup. Roll back the Node build from that revision and restart the API/worker; restore data only using a reviewed recovery plan. AT rollback uses the previous release/web symlinks as described in its package. Never delete emulator userdata to fix a missing window.
 
 Upstream licenses and attribution remain in force; preserve the CyberStrike AGPL notices/source obligations. Rebranding does not remove them.
+
+## Fixed session storage
+
+See [session storage and lifecycle](session-storage.md) for named folders, archive/delete semantics, migration and rollback. This storage update preserves the existing Linux Android interface.

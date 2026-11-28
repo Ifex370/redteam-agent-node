@@ -1,0 +1,764 @@
+--- a/packages/app/src/components/dialog-fork.tsx
++++ b/packages/app/src/components/dialog-fork.tsx
+@@ -75,7 +75,7 @@
+           return
+         }
+         dialog.close()
+-        navigate(`/${base64Encode(sdk.directory)}/session/${forked.data.id}`)
++        navigate(`/${base64Encode(forked.data.directory)}/session/${forked.data.id}`)
+         requestAnimationFrame(() => {
+           prompt.set(restored)
+         })
+--- /dev/null
++++ b/packages/app/src/components/dialog-new-session.tsx
+@@ -0,0 +1,53 @@
++import { createStore } from "solid-js/store"
++import { Show } from "solid-js"
++import { Dialog } from "@cyberstrike-io/ui/dialog"
++import { Button } from "@cyberstrike-io/ui/button"
++import { TextField } from "@cyberstrike-io/ui/text-field"
++import { useDialog } from "@cyberstrike-io/ui/context/dialog"
++import { useGlobalSDK } from "@/context/global-sdk"
++import { useGlobalSync } from "@/context/global-sync"
++import type { Session } from "@cyberstrike-io/sdk/v2/client"
++
++export function DialogNewSession(props: { directory: string; onCreated: (session: Session) => void }) {
++  const dialog = useDialog()
++  const sdk = useGlobalSDK()
++  const sync = useGlobalSync()
++  const [state, setState] = createStore({ name: "", busy: false, error: "" })
++  async function submit(event: SubmitEvent) {
++    event.preventDefault()
++    if (state.busy) return
++    const name = state.name.trim()
++    if (!/^[a-zA-Z0-9][a-zA-Z0-9 ._-]{0,79}$/.test(name) || name.endsWith(".")) {
++      setState("error", "Enter 1–80 letters, numbers, spaces, dots, underscores or hyphens. Start with a letter or number.")
++      return
++    }
++    setState({ busy: true, error: "" })
++    try {
++      const workspace = await sdk.fetch("/workspace").then((r) => r.json())
++      if (workspace.locked && !workspace.namedFolders) throw new Error("Restart the local SynapDome backend to enable named session folders.")
++      const directory = workspace.locked ? workspace.directory : props.directory
++      const response = await sdk.fetch(`/session?directory=${encodeURIComponent(directory)}`, {
++        method: "POST", headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ title: name, folderName: name }),
++      })
++      if (!response.ok) {
++        const text = await response.text()
++        throw new Error(text.includes("EEXIST") ? "That folder already exists. Choose another name." : "Could not create the session. Please try again.")
++      }
++      const session: Session = await response.json()
++      await sync.project.loadSessions(directory)
++      dialog.close()
++      props.onCreated(session)
++    } catch (error) {
++      setState("error", error instanceof Error ? error.message : "Could not create session")
++    } finally { setState("busy", false) }
++  }
++  return <Dialog title="New session">
++    <form class="flex flex-col gap-4 p-6" onSubmit={submit}>
++      <TextField label="Session folder name" value={state.name} onChange={(name) => setState("name", name)} autofocus />
++      <p>Files will be saved in a new folder inside your configured Sessions directory.</p>
++      <Show when={state.error}><p role="alert">{state.error}</p></Show>
++      <Button type="submit" disabled={state.busy}>{state.busy ? "Creating…" : "Create session"}</Button>
++    </form>
++  </Dialog>
++}
+--- a/packages/app/src/components/prompt-input/submit.ts
++++ b/packages/app/src/components/prompt-input/submit.ts
+@@ -183,7 +183,7 @@
+ 
+     let session = input.info()
+     if (!session && isNewSession) {
+-      session = await client.session
++      const created = await client.session
+         .create()
+         .then((x) => x.data ?? undefined)
+         .catch((err) => {
+@@ -193,9 +193,13 @@
+           })
+           return undefined
+         })
+-      if (session) {
+-        layout.handoff.setTabs(base64Encode(sessionDirectory), session.id)
+-        navigate(`/${base64Encode(sessionDirectory)}/session/${session.id}`)
++      session = created
++      if (created) {
++        sessionDirectory = created.directory
++        client = sdk.createClient({ directory: sessionDirectory, throwOnError: true })
++        globalSync.child(sessionDirectory)
++        layout.handoff.setTabs(base64Encode(sessionDirectory), created.id)
++        navigate(`/${base64Encode(sessionDirectory)}/session/${created.id}`)
+       }
+     }
+     if (!session) {
+--- a/packages/app/src/context/global-sync.tsx
++++ b/packages/app/src/context/global-sync.tsx
+@@ -271,6 +271,16 @@
+       return
+     }
+ 
++    if (event.type === "session.created" || event.type === "session.updated" || event.type === "session.deleted") {
++      const info = event.properties.info
++      for (const [key, value] of Object.entries(children.children)) {
++        if (key === directory || !value) continue
++        const [store, setStore] = value
++        if (!store.session.some((session) => session.id === info.id) && key !== info.directory.slice(0, info.directory.lastIndexOf("/"))) continue
++        applyDirectoryEvent({ event, directory: key, store, setStore,
++          push: queue.push, vcsCache: children.vcsCache.get(key), loadLsp: () => {} })
++      }
++    }
+     const existing = children.children[directory]
+     if (!existing) return
+     children.mark(directory)
+@@ -347,6 +357,14 @@
+     get error() {
+       return globalStore.error
+     },
++    removeSession(sessionID: string) {
++      for (const value of Object.values(children.children)) {
++        if (!value) continue
++        const [store, setStore] = value
++        if (!store.session.some((session) => session.id === sessionID)) continue
++        setStore("session", store.session.filter((session) => session.id !== sessionID))
++      }
++    },
+     child: children.child,
+     bootstrap,
+     updateConfig,
+--- a/packages/app/src/context/global-sync/event-reducer.ts
++++ b/packages/app/src/context/global-sync/event-reducer.ts
+@@ -49,11 +49,11 @@
+     store.permission[sessionID] !== undefined ||
+     store.question[sessionID] !== undefined ||
+     store.session_status[sessionID] !== undefined ||
+-    store.request[sessionID] !== undefined ||
+-    store.web_credential[sessionID] !== undefined ||
+-    store.web_role[sessionID] !== undefined ||
+-    store.web_object[sessionID] !== undefined ||
+-    store.web_function[sessionID] !== undefined
++    store.request?.[sessionID] !== undefined ||
++    store.web_credential?.[sessionID] !== undefined ||
++    store.web_role?.[sessionID] !== undefined ||
++    store.web_object?.[sessionID] !== undefined ||
++    store.web_function?.[sessionID] !== undefined
+   if (!hasAny) return
+   setStore(
+     produce((draft) => {
+@@ -71,11 +71,11 @@
+       delete draft.permission[sessionID]
+       delete draft.question[sessionID]
+       delete draft.session_status[sessionID]
+-      delete draft.request[sessionID]
+-      delete draft.web_credential[sessionID]
+-      delete draft.web_role[sessionID]
+-      delete draft.web_object[sessionID]
+-      delete draft.web_function[sessionID]
++      if (draft.request) delete draft.request[sessionID]
++      if (draft.web_credential) delete draft.web_credential[sessionID]
++      if (draft.web_role) delete draft.web_role[sessionID]
++      if (draft.web_object) delete draft.web_object[sessionID]
++      if (draft.web_function) delete draft.web_function[sessionID]
+     }),
+   )
+ }
+--- a/packages/app/src/pages/home.tsx
++++ b/packages/app/src/pages/home.tsx
+@@ -1,3 +1,4 @@
++import { useGlobalSDK } from "@/context/global-sdk"
+ import { createMemo, For, Match, Switch } from "solid-js"
+ import { Button } from "@cyberstrike-io/ui/button"
+ import { Logo } from "@cyberstrike-io/ui/logo"
+@@ -15,6 +16,7 @@
+ import { useLanguage } from "@/context/language"
+ 
+ export default function Home() {
++  const globalSDK = useGlobalSDK()
+   const sync = useGlobalSync()
+   const layout = useLayout()
+   const platform = usePlatform()
+@@ -44,6 +46,11 @@
+   }
+ 
+   async function chooseProject() {
++    const workspace = await globalSDK.fetch("/workspace").then((r) => r.ok ? r.json() : undefined)
++    if (workspace?.locked) {
++      openProject(workspace.directory)
++      return
++    }
+     function resolve(result: string | string[] | null) {
+       if (Array.isArray(result)) {
+         for (const directory of result) {
+--- a/packages/app/src/pages/layout.tsx
++++ b/packages/app/src/pages/layout.tsx
+@@ -1,3 +1,4 @@
++import { DialogNewSession } from "@/components/dialog-new-session"
+ import {
+   batch,
+   createEffect,
+@@ -113,6 +114,18 @@
+   const command = useCommand()
+   const theme = useTheme()
+   const language = useLanguage()
++  onMount(async () => {
++    const workspace = await globalSDK.fetch("/workspace").then((r) => r.ok ? r.json() : undefined).catch(() => undefined)
++    if (!workspace?.locked) return
++    for (const project of layout.projects.list()) {
++      if (project.worktree !== workspace.directory) layout.projects.close(project.worktree)
++    }
++    layout.projects.open(workspace.directory)
++    const directory = decode64(params.dir)
++    if (!directory || (directory !== workspace.directory && !directory.startsWith(workspace.directory + "/"))) {
++      navigate(`/${base64Encode(workspace.directory)}/session`, { replace: true })
++    }
++  })
+   const initialDirectory = decode64(params.dir)
+   const availableThemeEntries = createMemo(() => Object.entries(theme.themes()))
+   const colorSchemeOrder: ColorScheme[] = ["system", "light", "dark"]
+@@ -497,7 +510,7 @@
+     const sandbox = projects.find((p) => p.sandboxes?.includes(directory))
+     if (sandbox) return sandbox
+ 
+-    const direct = projects.find((p) => p.worktree === directory)
++    const direct = projects.find((p) => p.worktree === directory || directory.slice(0, directory.lastIndexOf("/")) === p.worktree)
+     if (direct) return direct
+ 
+     const [child] = globalSync.child(directory, { bootstrap: false })
+@@ -917,13 +930,17 @@
+     const [store, setStore] = globalSync.child(session.directory)
+     const sessions = store.session ?? []
+     const index = sessions.findIndex((s) => s.id === session.id)
+-    const nextSession = sessions[index + 1] ?? sessions[index - 1]
+-
+-    await globalSDK.client.session.update({
+-      directory: session.directory,
+-      sessionID: session.id,
+-      time: { archived: Date.now() },
+-    })
++    const nextSession = index < 0 ? undefined : sessions[index + 1] ?? sessions[index - 1]
++
++    try {
++      await globalSDK.client.session.update({
++        directory: session.directory, sessionID: session.id, time: { archived: Date.now() },
++      }, { throwOnError: true })
++    } catch (error) {
++      showToast({ title: "Could not archive session", description: error instanceof Error ? error.message : "Please try again" })
++      return
++    }
++    globalSync.removeSession(session.id)
+     setStore(
+       produce((draft) => {
+         const match = Binary.search(draft.session, session.id, (s) => s.id)
+@@ -932,7 +949,7 @@
+     )
+     if (session.id === params.id) {
+       if (nextSession) {
+-        navigate(`/${params.dir}/session/${nextSession.id}`)
++        navigate(`/${base64Encode(nextSession.directory)}/session/${nextSession.id}`)
+       } else {
+         navigate(`/${params.dir}/session`)
+       }
+@@ -1199,6 +1216,11 @@
+   const showEditProjectDialog = (project: LocalProject) => dialog.show(() => <DialogEditProject project={project} />)
+ 
+   async function chooseProject() {
++    const workspace = await globalSDK.fetch("/workspace").then((r) => r.ok ? r.json() : undefined)
++    if (workspace?.locked) {
++      openProject(workspace.directory)
++      return
++    }
+     function resolve(result: string | string[] | null) {
+       if (Array.isArray(result)) {
+         for (const directory of result) {
+@@ -1828,24 +1850,9 @@
+                             icon="plus-small"
+                             class="w-full"
+                             onClick={() => {
+-                              const directory = p().worktree
+-                              const slug = base64Encode(directory)
+-                              const client = globalSDK.createClient({ directory, throwOnError: true })
+                               clearSidebarHoverState()
+                               layout.mobileSidebar.hide()
+-                              client.session
+-                                .create()
+-                                .then((result) => {
+-                                  const session = result.data
+-                                  if (session) {
+-                                    navigate(`/${slug}/session/${session.id}`)
+-                                    return
+-                                  }
+-                                  navigate(`/${slug}/session`)
+-                                })
+-                                .catch(() => {
+-                                  navigate(`/${slug}/session`)
+-                                })
++                              dialog.show(() => <DialogNewSession directory={p().worktree} onCreated={(session) => navigate(`/${base64Encode(session.directory)}/session/${session.id}`)} />)
+                             }}
+                           >
+                             {language.t("command.session.new")}
+--- a/packages/app/src/pages/layout/helpers.ts
++++ b/packages/app/src/pages/layout/helpers.ts
+@@ -23,7 +23,8 @@
+ }
+ 
+ export const isRootVisibleSession = (session: Session, directory: string) =>
+-  workspaceKey(session.directory) === workspaceKey(directory) && !session.parentID && !session.time?.archived
++  (workspaceKey(session.directory) === workspaceKey(directory) ||
++    workspaceKey(session.directory).slice(0, workspaceKey(session.directory).lastIndexOf("/")) === workspaceKey(directory)) && !session.parentID && !session.time?.archived
+ 
+ export const sortedRootSessions = (store: { session: Session[]; path: { directory: string } }, now: number) =>
+   store.session.filter((session) => isRootVisibleSession(session, store.path.directory)).sort(sortSessions(now))
+--- a/packages/app/src/pages/layout/helpers.test.ts
++++ b/packages/app/src/pages/layout/helpers.test.ts
+@@ -1,6 +1,6 @@
+ import { describe, expect, test } from "bun:test"
+ import { collectOpenProjectDeepLinks, drainPendingDeepLinks, parseDeepLink } from "./deep-links"
+-import { displayName, errorMessage, getDraggableId, syncWorkspaceOrder, workspaceKey } from "./helpers"
++import { isRootVisibleSession, displayName, errorMessage, getDraggableId, syncWorkspaceOrder, workspaceKey } from "./helpers"
+ 
+ describe("layout deep links", () => {
+   test("parses open-project deep links", () => {
+@@ -90,3 +90,11 @@
+     expect(errorMessage("unknown", "fallback")).toBe("fallback")
+   })
+ })
++
++
++test("named session folders stay visible only under their own root", () => {
++  const session = { id: "ses_test", directory: "/Sessions/Mobile assessment", time: {} } as Parameters<typeof isRootVisibleSession>[0]
++  expect(isRootVisibleSession(session, "/Sessions")).toBe(true)
++  expect(isRootVisibleSession(session, "/Other")).toBe(false)
++  expect(isRootVisibleSession({ ...session, time: { ...session.time, archived: 1 } }, "/Sessions")).toBe(false)
++})
+--- a/packages/app/src/pages/layout/sidebar-workspace.tsx
++++ b/packages/app/src/pages/layout/sidebar-workspace.tsx
+@@ -1,3 +1,5 @@
++import { useDialog } from "@cyberstrike-io/ui/context/dialog"
++import { DialogNewSession } from "@/components/dialog-new-session"
+ import { useNavigate, useParams } from "@solidjs/router"
+ import { createEffect, createMemo, For, Show, type Accessor, type JSX } from "solid-js"
+ import { createStore } from "solid-js/store"
+@@ -268,7 +270,7 @@
+       {(session) => (
+         <SessionItem
+           session={session}
+-          slug={props.slug()}
++          slug={base64Encode(session.directory)}
+           mobile={props.mobile}
+           children={props.children()}
+           sidebarExpanded={props.ctx.sidebarExpanded}
+@@ -342,26 +344,8 @@
+     await globalSync.project.loadSessions(props.directory)
+   }
+ 
+-  const createNewSession = async () => {
+-    const client = globalSDK.createClient({
+-      directory: props.directory,
+-      throwOnError: true,
+-    })
+-    try {
+-      const result = await client.session.create()
+-      const session = result.data
+-      if (session) {
+-        navigate(`/${slug()}/session/${session.id}`)
+-        return
+-      }
+-    } catch (err) {
+-      showToast({
+-        title: language.t("prompt.toast.sessionCreateFailed.title"),
+-        description: err instanceof Error ? err.message : language.t("common.requestFailed"),
+-      })
+-    }
+-    navigate(`/${slug()}/session`)
+-  }
++  const dialog = useDialog()
++  const createNewSession = () => dialog.show(() => <DialogNewSession directory={props.directory} onCreated={(session) => navigate(`/${base64Encode(session.directory)}/session/${session.id}`)} />)
+ 
+   const workspaceEditActive = createMemo(() => props.ctx.editorOpen(`workspace:${props.directory}`))
+ 
+@@ -522,7 +506,7 @@
+           {(session) => (
+             <SessionItem
+               session={session}
+-              slug={slug()}
++              slug={base64Encode(session.directory)}
+               mobile={props.mobile}
+               children={children()}
+               sidebarExpanded={props.ctx.sidebarExpanded}
+--- a/packages/app/src/pages/session.tsx
++++ b/packages/app/src/pages/session.tsx
+@@ -1,3 +1,4 @@
++import { useGlobalSync } from "@/context/global-sync"
+ import { For, onCleanup, Show, Match, Switch, createMemo, createEffect, on } from "solid-js"
+ import { createMediaQuery } from "@solid-primitives/media"
+ import { createResizeObserver } from "@solid-primitives/resize-observer"
+@@ -91,6 +92,7 @@
+   const local = useLocal()
+   const file = useFile()
+   const sync = useSync()
++  const globalSync = useGlobalSync()
+   const terminal = useTerminal()
+   const dialog = useDialog()
+   const codeComponent = useCodeComponent()
+@@ -414,7 +416,7 @@
+       return
+     }
+     if (nextSessionID) {
+-      navigate(`/${params.dir}/session/${nextSessionID}`)
++      navigate(`/${base64Encode(sync.session.get(nextSessionID)?.directory ?? sdk.directory)}/session/${nextSessionID}`)
+       return
+     }
+     navigate(`/${params.dir}/session`)
+@@ -429,7 +431,7 @@
+     const nextSession = index === -1 ? undefined : (sessions[index + 1] ?? sessions[index - 1])
+ 
+     await sdk.client.session
+-      .update({ sessionID, time: { archived: Date.now() } })
++      .update({ sessionID, time: { archived: Date.now() } }, { throwOnError: true })
+       .then(() => {
+         sync.set(
+           produce((draft) => {
+@@ -437,6 +439,7 @@
+             if (index !== -1) draft.session.splice(index, 1)
+           }),
+         )
++        globalSync.removeSession(sessionID)
+         navigateAfterSessionRemoval(sessionID, session.parentID, nextSession?.id)
+       })
+       .catch((err) => {
+@@ -456,7 +459,7 @@
+     const nextSession = index === -1 ? undefined : (sessions[index + 1] ?? sessions[index - 1])
+ 
+     const result = await sdk.client.session
+-      .delete({ sessionID })
++      .delete({ sessionID }, { throwOnError: true })
+       .then((x) => x.data)
+       .catch((err) => {
+         showToast({
+@@ -467,6 +470,7 @@
+       })
+ 
+     if (!result) return false
++    globalSync.removeSession(sessionID)
+ 
+     sync.set(
+       produce((draft) => {
+@@ -510,8 +514,7 @@
+   function DialogDeleteSession(props: { sessionID: string }) {
+     const title = createMemo(() => sync.session.get(props.sessionID)?.title ?? language.t("command.session.new"))
+     const handleDelete = async () => {
+-      await deleteSession(props.sessionID)
+-      dialog.close()
++      if (await deleteSession(props.sessionID)) dialog.close()
+     }
+ 
+     return (
+--- a/packages/app/src/pages/session/use-session-commands.tsx
++++ b/packages/app/src/pages/session/use-session-commands.tsx
+@@ -1,3 +1,5 @@
++import { DialogNewSession } from "@/components/dialog-new-session"
++import { base64Encode } from "@cyberstrike-io/util/encode"
+ import { createMemo } from "solid-js"
+ import { useNavigate, useParams } from "@solidjs/router"
+ import { useCommand, type CommandOption } from "@/context/command"
+@@ -79,17 +81,7 @@
+       title: input.language.t("command.session.new"),
+       keybind: "mod+shift+s",
+       slash: "new",
+-      onSelect: async () => {
+-        try {
+-          const result = await input.sdk.client.session.create()
+-          const session = result.data
+-          if (session) {
+-            input.navigate(`/${input.params.dir}/session/${session.id}`)
+-            return
+-          }
+-        } catch {}
+-        input.navigate(`/${input.params.dir}/session`)
+-      },
++      onSelect: () => input.dialog.show(() => <DialogNewSession directory={input.sdk.directory} onCreated={(session) => input.navigate(`/${base64Encode(session.directory)}/session/${session.id}`)} />),
+     }),
+     sessionCommand({
+       id: "session.list",
+--- a/packages/cyberstrike/src/project/instance.ts
++++ b/packages/cyberstrike/src/project/instance.ts
+@@ -1,3 +1,4 @@
++import { Workspace } from "../session/workspace"
+ import { Log } from "@/util/log"
+ import { Context } from "../util/context"
+ import { Project } from "./project"
+@@ -24,11 +25,12 @@
+     if (!existing) {
+       Log.Default.info("creating instance", { directory: input.directory })
+       existing = iife(async () => {
+-        const { project, sandbox } = await Project.fromDirectory(input.directory)
++        const { project, sandbox } = await Project.fromDirectory(Workspace.root() || input.directory)
+         const ctx = {
+           directory: input.directory,
+-          worktree: sandbox,
+-          project,
++          worktree: Workspace.root() ? input.directory : sandbox,
++
++          project: Workspace.root() ? { ...project, worktree: Workspace.root()!, sandboxes: [] } : project,
+         }
+         await context.provide(ctx, async () => {
+           await input.init?.()
+@@ -57,6 +59,7 @@
+    * Paths within the worktree but outside the working directory should not trigger external_directory permission.
+    */
+   containsPath(filepath: string) {
++    if (Workspace.root()) return Workspace.allowed(filepath, Instance.directory)
+     if (Filesystem.contains(Instance.directory, filepath)) return true
+     // Non-git projects set worktree to "/" which would match ANY absolute path.
+     // Skip worktree check in this case to preserve external_directory permissions.
+--- a/packages/cyberstrike/src/server/routes/project.ts
++++ b/packages/cyberstrike/src/server/routes/project.ts
+@@ -1,3 +1,4 @@
++import { Workspace } from "../../session/workspace"
+ import { Hono } from "hono"
+ import { describeRoute, validator } from "hono-openapi"
+ import { resolver } from "hono-openapi"
+@@ -27,7 +28,7 @@
+         },
+       }),
+       async (c) => {
+-        const projects = await Project.list()
++        const projects = Workspace.root() ? [Instance.project] : await Project.list()
+         return c.json(projects)
+       },
+     )
+--- a/packages/cyberstrike/src/server/server.ts
++++ b/packages/cyberstrike/src/server/server.ts
+@@ -1,4 +1,6 @@
+ import path from "node:path"
++import { Workspace } from "../session/workspace"
++import { Session } from "../session"
+ import { BusEvent } from "@/bus/bus-event"
+ import { Bus } from "@/bus"
+ import { Log } from "../util/log"
+@@ -228,6 +230,7 @@
+             return c.json(true)
+           },
+         )
++        .get("/workspace", (c) => c.json({ locked: !!Workspace.root(), directory: Workspace.root(), namedFolders: true }))
+         .use(async (c, next) => {
+           if (c.req.path === "/log") return next()
+           const explicit = c.req.query("directory") || c.req.header("x-cyberstrike-directory")
+@@ -243,14 +246,20 @@
+           }
+           // For requests without directory (e.g. browser extension ingest),
+           // use the last active web UI directory if available
+-          const raw = explicit || Server.lastActiveDirectory || process.cwd()
+-          const directory = (() => {
++          const raw = explicit || Workspace.root() || Server.lastActiveDirectory || process.cwd()
++          let directory = (() => {
+             try {
+               return decodeURIComponent(raw)
+             } catch {
+               return raw
+             }
+           })()
++          if (Workspace.root()) {
++            if (!Workspace.allowed(directory)) throw new HTTPException(403, { message: "Session storage is locked to the configured folder" })
++            const id = c.req.path.match(/^\/session\/(ses_[a-zA-Z0-9]+)(?:\/|$)/)?.[1]
++            if (id) directory = (await Session.get(id)).directory
++            if (!Workspace.allowed(directory)) throw new HTTPException(403, { message: "Session is outside the configured folder" })
++          }
+           return Instance.provide({
+             directory,
+             init: InstanceBootstrap,
+@@ -588,6 +597,7 @@
+           // Resolve web UI dist directory (cached after first lookup)
+           if (_webDistDir === undefined) {
+             const candidates = [
++              process.env.SYNAPDOME_WEB_DIST || "",
+               // 1. ~/.cyberstrike/web/ (installed/production)
+               path.join(Global.Path.data, "web"),
+               // 2. Workspace-relative (dev: running from repo root)
+--- a/packages/cyberstrike/src/session/index.ts
++++ b/packages/cyberstrike/src/session/index.ts
+@@ -1,3 +1,4 @@
++import { Workspace } from "./workspace"
+ import { Slug } from "@cyberstrike-io/util/slug"
+ import path from "path"
+ import { BusEvent } from "@/bus/bus-event"
+@@ -194,6 +195,7 @@
+       .object({
+         parentID: Identifier.schema("session").optional(),
+         title: z.string().optional(),
++        folderName: z.string().max(80).optional(),
+         permission: Info.shape.permission,
+       })
+       .optional(),
+@@ -202,6 +204,7 @@
+         parentID: input?.parentID,
+         directory: Instance.directory,
+         title: input?.title,
++        folderName: input?.folderName,
+         permission: input?.permission,
+       })
+     },
+@@ -265,18 +268,21 @@
+   })
+ 
+   export async function createNext(input: {
++    folderName?: string
+     id?: string
+     title?: string
+     parentID?: string
+     directory: string
+     permission?: PermissionNext.Ruleset
+   }) {
++    const id = Identifier.descending("session", input.id)
++    const directory = await Workspace.create(id, input.directory, input.folderName)
+     const result: Info = {
+-      id: Identifier.descending("session", input.id),
++      id,
+       slug: Slug.create(),
+       version: Installation.VERSION,
+       projectID: Instance.project.id,
+-      directory: input.directory,
++      directory,
+       parentID: input.parentID,
+       title: input.title ?? createDefaultTitle(!!input.parentID),
+       permission: input.permission,
+@@ -515,7 +521,7 @@
+     const project = Instance.project
+     const conditions = [eq(SessionTable.project_id, project.id)]
+ 
+-    if (input?.directory) {
++    if (input?.directory && input.directory !== Workspace.root()) {
+       conditions.push(eq(SessionTable.directory, input.directory))
+     }
+     if (input?.roots) {
+@@ -639,6 +645,7 @@
+       })
+     } catch (e) {
+       log.error(e)
++      throw e
+     }
+   })
+ 
+--- /dev/null
++++ b/packages/cyberstrike/src/session/workspace.ts
+@@ -0,0 +1,48 @@
++import path from "node:path"
++import fs from "node:fs"
++
++/** Operator configuration, never supplied by an HTTP client. */
++export namespace Workspace {
++  export function root() {
++    return process.env.SYNAPDOME_SESSION_ROOT ? path.resolve(process.env.SYNAPDOME_SESSION_ROOT) : undefined
++  }
++
++  export function contains(base: string, target: string) {
++    const relative = path.relative(base, target)
++    return relative === "" || (!relative.startsWith(".." + path.sep) && relative !== ".." && !path.isAbsolute(relative))
++  }
++
++  // Resolve existing ancestors too, so symlinks cannot escape for new files.
++  export function canonical(target: string): string {
++    const resolved = path.resolve(target)
++    try {
++      return fs.realpathSync(resolved)
++    } catch (error) {
++      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error
++      const parent = path.dirname(resolved)
++      if (parent === resolved) throw error
++      return path.join(canonical(parent), path.basename(resolved))
++    }
++  }
++
++  export function allowed(target: string, base = root()) {
++    if (!base) return true
++    return contains(canonical(base), canonical(target))
++  }
++
++  export async function create(id: string, fallback: string, folderName?: string) {
++    const base = root()
++    if (!base) return fallback
++    if (!/^ses_[a-zA-Z0-9]+$/.test(id)) throw new Error("Invalid session identifier")
++    const name = folderName?.trim() || id
++    if (!/^[a-zA-Z0-9][a-zA-Z0-9 ._-]{0,79}$/.test(name) || name.endsWith(".")) throw new Error("Use 1–80 letters, numbers, spaces, dots, underscores or hyphens; start with a letter or number")
++    const directory = path.join(base, name)
++    if (!allowed(directory)) throw new Error("Session path escapes configured workspace")
++    await fs.promises.mkdir(base, { recursive: true, mode: 0o700 })
++    await fs.promises.mkdir(directory, { mode: 0o700 })
++    for (const name of ["uploads", "evidence"]) {
++      await fs.promises.mkdir(path.join(directory, name), { recursive: true, mode: 0o700 })
++    }
++    return directory
++  }
++}
+--- a/packages/cyberstrike/src/session/prompt.ts
++++ b/packages/cyberstrike/src/session/prompt.ts
+@@ -1,3 +1,4 @@
++import { Workspace } from "./workspace"
+ import path from "path"
+ import os from "os"
+ import fs from "fs/promises"
+@@ -1391,6 +1392,17 @@
+             return pieces
+           }
+           const url = new URL(part.url)
++          if (Workspace.root() && url.protocol === "data:") {
++            const name = path.basename((part.filename || "attachment").replaceAll("\\", "/")).replace(/[^a-zA-Z0-9._-]/g, "_")
++            const destination = path.join(Instance.directory, "uploads", `${Identifier.ascending("part")}-${name}`)
++            if (!Workspace.allowed(destination, Instance.directory)) throw new Error("Invalid upload path")
++            await fs.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 })
++            const response = await fetch(part.url)
++            await Bun.write(destination, await response.arrayBuffer())
++          }
++          if (Workspace.root() && url.protocol === "file:" && !Workspace.allowed(fileURLToPath(part.url), Instance.directory)) {
++            throw new Error("File attachment is outside this session folder")
++          }
+           switch (url.protocol) {
+             case "data:":
+               if (part.mime === "text/plain") {
+--- /dev/null
++++ b/packages/cyberstrike/test/session/workspace.test.ts
+@@ -0,0 +1,43 @@
++import { afterEach, expect, test } from "bun:test"
++import fs from "node:fs/promises"
++import os from "node:os"
++import path from "node:path"
++import { Workspace } from "../../src/session/workspace"
++const previous = process.env.SYNAPDOME_SESSION_ROOT
++const directories: string[] = []
++afterEach(async () => {
++  if (previous === undefined) delete process.env.SYNAPDOME_SESSION_ROOT
++  else process.env.SYNAPDOME_SESSION_ROOT = previous
++  for (const directory of directories.splice(0)) await fs.rm(directory, { recursive: true, force: true })
++})
++test("creates distinct sessions and rejects traversal and symlink escapes", async () => {
++  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "synapdome-storage-"))
++  directories.push(temporary)
++  const root = path.join(temporary, "sessions")
++  await fs.mkdir(root)
++  process.env.SYNAPDOME_SESSION_ROOT = root
++  const first = await Workspace.create("ses_first123", "/")
++  const second = await Workspace.create("ses_second123", "/")
++  expect(first).not.toBe(second)
++  expect(await fs.readdir(first)).toEqual(["evidence", "uploads"])
++  expect(Workspace.allowed(path.join(root, "..", "outside"))).toBe(false)
++  await fs.symlink(temporary, path.join(first, "escape"))
++  expect(Workspace.allowed(path.join(first, "escape", "new.txt"))).toBe(false)
++  expect(Workspace.allowed(second, first)).toBe(false)
++  await expect(Workspace.create("../../escape", "/")).rejects.toThrow()
++})
++test("preserves existing behavior without configuration", async () => {
++  delete process.env.SYNAPDOME_SESSION_ROOT
++  expect(await Workspace.create("ses_test", "/existing")).toBe("/existing")
++})
++
++test("named folders are isolated and duplicates and unsafe names are rejected", async () => {
++  const root = await fs.mkdtemp(path.join(os.tmpdir(), "synapdome-names-"))
++  directories.push(root)
++  process.env.SYNAPDOME_SESSION_ROOT = root
++  expect(await Workspace.create("ses_named", "/", "Mobile assessment")).toBe(path.join(root, "Mobile assessment"))
++  await expect(Workspace.create("ses_other", "/", "Mobile assessment")).rejects.toThrow()
++  for (const name of ["../escape", "/tmp/escape", "..", "a/b", "a\\b"]) {
++    await expect(Workspace.create("ses_invalid", "/", name)).rejects.toThrow()
++  }
++})

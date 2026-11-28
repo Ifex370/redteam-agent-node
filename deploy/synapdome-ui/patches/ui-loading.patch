@@ -1,0 +1,116 @@
+--- a/packages/app/src/context/global-sync/bootstrap.ts
++++ b/packages/app/src/context/global-sync/bootstrap.ts
+@@ -69,7 +69,7 @@
+       }),
+     ),
+     retry(() =>
+-      input.globalSDK.provider.list().then((x) => {
++      input.globalSDK.provider.list(undefined, { headers: { "x-synapdome-ui-summary": "1" } }).then((x) => {
+         input.setGlobalStore("provider", normalizeProviderList(x.data!))
+       }),
+     ),
+@@ -117,10 +117,10 @@
+   const blockingRequests = {
+     project: () => input.sdk.project.current().then((x) => input.setStore("project", x.data!.id)),
+     provider: () =>
+-      input.sdk.provider.list().then((x) => {
++      input.sdk.provider.list(undefined, { headers: { "x-synapdome-ui-summary": "1" } }).then((x) => {
+         input.setStore("provider", normalizeProviderList(x.data!))
+       }),
+-    agent: () => input.sdk.app.agents().then((x) => input.setStore("agent", x.data ?? [])),
++    agent: () => input.sdk.app.agents(undefined, { headers: { "x-synapdome-ui-summary": "1" } }).then((x) => input.setStore("agent", x.data ?? [])),
+     config: () => input.sdk.config.get().then((x) => input.setStore("config", x.data!)),
+   }
+ 
+--- a/packages/cyberstrike/src/server/server.ts
++++ b/packages/cyberstrike/src/server/server.ts
+@@ -1,3 +1,4 @@
++import { summarizeAgents } from "./ui-summary"
+ import path from "node:path"
+ import { Workspace } from "../session/workspace"
+ import { Session } from "../session"
+@@ -109,7 +110,7 @@
+               return
+             },
+             credentials: true,
+-            allowHeaders: ["Authorization", "Content-Type", "x-cyberstrike-directory"],
++            allowHeaders: ["Authorization", "Content-Type", "x-cyberstrike-directory", "x-synapdome-ui-summary"],
+           }),
+         )
+         .use(async (c, next) => {
+@@ -475,7 +476,8 @@
+           }),
+           async (c) => {
+             const modes = await Agent.list()
+-            return c.json(modes)
++            c.header("Vary", "x-synapdome-ui-summary")
++            return c.json(c.req.header("x-synapdome-ui-summary") === "1" ? summarizeAgents(modes) : modes)
+           },
+         )
+         .route("/skill", SkillRoutes())
+--- a/packages/cyberstrike/src/server/routes/provider.ts
++++ b/packages/cyberstrike/src/server/routes/provider.ts
+@@ -1,3 +1,4 @@
++import { summarizeProviders } from "../ui-summary"
+ import { Hono } from "hono"
+ import { describeRoute, validator, resolver } from "hono-openapi"
+ import z from "zod"
+@@ -52,8 +53,11 @@
+           mapValues(filteredProviders, (x) => Provider.fromModelsDevProvider(x)),
+           connected,
+         )
++        c.header("Vary", "x-synapdome-ui-summary")
+         return c.json({
+-          all: Object.values(providers),
++          all: c.req.header("x-synapdome-ui-summary") === "1"
++            ? summarizeProviders(Object.values(providers), Object.keys(connected))
++            : Object.values(providers),
+           default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
+           connected: Object.keys(connected),
+         })
+--- /dev/null
++++ b/packages/cyberstrike/src/server/ui-summary.ts
+@@ -0,0 +1,16 @@
++/** Browser selectors need metadata, not server-side execution instructions. */
++export function summarizeAgents<T extends { prompt?: string; permission: unknown[] }>(agents: T[]) {
++  return agents.map(({ prompt: _prompt, permission: _permission, ...metadata }) => ({
++    ...metadata,
++    permission: [],
++  }))
++}
++
++/** Keep connection cards for every provider and complete models for connected ones. */
++export function summarizeProviders<T extends { id: string; models: Record<string, unknown> }>(
++  providers: T[],
++  connected: string[],
++) {
++  const ids = new Set(connected)
++  return providers.map((provider) => ids.has(provider.id) ? provider : { ...provider, models: {} })
++}
+--- /dev/null
++++ b/packages/cyberstrike/test/server/ui-summary.test.ts
+@@ -0,0 +1,24 @@
++import { expect, test } from "bun:test"
++import { summarizeAgents, summarizeProviders } from "../../src/server/ui-summary"
++
++test("UI summary excludes repeated execution data without modifying server agents", () => {
++  const permission = [{ permission: "bash", pattern: "*", action: "ask" }]
++  const agent = { name: "mobile-application", mode: "primary", prompt: "private instruction".repeat(1000), permission, model: { providerID: "deepseek", modelID: "test" } }
++  const [summary] = summarizeAgents([agent])
++  expect(summary).not.toHaveProperty("prompt")
++  expect(summary.permission).toEqual([])
++  expect(summary.name).toBe(agent.name)
++  expect(summary.model).toEqual(agent.model)
++  expect(agent.permission).toBe(permission)
++  expect(agent.prompt).toContain("private instruction")
++  expect(JSON.stringify(summary).length).toBeLessThan(JSON.stringify(agent).length / 10)
++})
++
++test("provider summary preserves connected models and disconnected connection cards", () => {
++  const models = { test: { id: "test", cost: { input: 1 }, limit: { context: 1000 } } }
++  const providers = [{ id: "deepseek", name: "DeepSeek", models }, { id: "other", name: "Other", models }]
++  const result = summarizeProviders(providers, ["deepseek"])
++  expect(result[0]).toBe(providers[0])
++  expect(result[1]).toEqual({ id: "other", name: "Other", models: {} })
++  expect(providers[1].models).toBe(models)
++})
